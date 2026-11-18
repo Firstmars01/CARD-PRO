@@ -34,6 +34,8 @@ export const CHAMPS_AFFICHABLES = [
   ['entreprise', 'Entreprise'], ['telephoneMobile', 'Téléphone mobile'], ['telephonePro', 'Téléphone fixe'],
   ['email', 'E-mail'], ['siteWeb', 'Site web'], ['adresse', 'Adresse complète'], ['rue', 'Rue'],
   ['villeComplete', 'Code postal + ville'], ['pays', 'Pays'], ['note', 'Note'], ['liens', 'Liens (noms)'],
+  // Nom d'un lien précis (légende sous un QR code de lien).
+  ...Array.from({ length: LIENS_MAX }, (_, i) => [`lien${i + 1}`, `Lien ${i + 1} (nom)`]),
 ];
 
 /**
@@ -119,7 +121,9 @@ export function valeurChamp(personne, champ) {
     case 'villeComplete': return villeComplete;
     case 'adresse': return [personne.rue, villeComplete, personne.pays].filter(Boolean).join(', ');
     case 'liens': return personne.liens.map((l) => l.libelle).join(' · ');
-    default: return typeof personne[champ] === 'string' ? personne[champ] : '';
+    default:
+      if (/^lien[1-8]$/.test(champ)) return personne.liens[Number(champ.slice(4)) - 1]?.libelle || '';
+      return typeof personne[champ] === 'string' ? personne[champ] : '';
   }
 }
 
@@ -128,5 +132,9 @@ export const PERSONNE_EXEMPLE = Object.freeze(normaliserPersonne({
   prenom: 'Camille', nom: 'Durand', poste: 'Responsable commerciale', entreprise: 'Entreprise Exemple',
   telephoneMobile: '06 12 34 56 78', telephonePro: '01 23 45 67 89', email: 'camille.durand@exemple.fr',
   siteWeb: 'exemple.fr', rue: '12 rue des Lilas', codePostal: '75011', ville: 'Paris', pays: 'France',
-  liens: [{ libelle: 'LinkedIn', url: 'https://linkedin.com/in/exemple' }],
+  liens: [
+    { libelle: 'LinkedIn', url: 'https://linkedin.com/in/exemple' },
+    { libelle: 'Instagram', url: 'https://instagram.com/exemple' },
+    { libelle: 'Portfolio', url: 'https://exemple.fr/portfolio' },
+  ],
 }));

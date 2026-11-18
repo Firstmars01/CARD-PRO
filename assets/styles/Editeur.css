@@ -1,25 +1,25 @@
 /*
  * Editeur.css
- * Styles de l'onglet « Modèles » : barre des modèles, barre d'outils,
- * zone d'édition (sélection, poignée, grille), propriétés et calques.
+ * Styles de l'onglet « Modèles » : barre des modèles, barres d'outils,
+ * zone d'édition (sélection, poignée, cadre, grille), propriétés et calques.
+ * L'éditeur occupe toute la largeur de la fenêtre.
  */
 
+/* Barre des modèles (une seule ligne compacte) */
 .Editeur-entete {
-  display: grid;
-  grid-template-columns: minmax(180px, 260px) minmax(160px, 260px) 1fr;
-  align-items: end;
-  gap: 12px;
-  margin-bottom: 12px;
-  padding: 12px 14px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px 14px;
+  margin-bottom: 10px;
+  padding: 10px 14px;
   background: var(--surface);
   border: 1px solid var(--bordure);
   border-radius: var(--rayon);
 }
 
-@media (max-width: 800px) {
-  .Editeur-entete {
-    grid-template-columns: 1fr;
-  }
+.Editeur-entete .Champ--modele {
+  width: 220px;
 }
 
 .Etat-enregistrement {
@@ -32,50 +32,82 @@
   color: var(--alerte-texte);
 }
 
+/* Disposition : carte au centre, réglages à droite */
 .Editeur-corps {
   display: grid;
   gap: 14px;
 }
 
+.Editeur-centre,
+.Editeur-cote {
+  min-width: 0;
+}
+
 @media (min-width: 1100px) {
   .Editeur-corps {
-    grid-template-columns: minmax(0, 1fr) 360px;
+    grid-template-columns: minmax(0, 1fr) 400px;
     align-items: start;
   }
 
   .Editeur-cote {
     position: sticky;
-    top: 76px;
-    max-height: calc(100vh - 92px);
+    top: 70px;
+    max-height: calc(100vh - 84px);
+    overflow-x: hidden;
     overflow-y: auto;
   }
 }
 
-/* Barre d'outils */
+/* Barres d'outils */
 .Outils {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.Outils-ligne {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 16px;
-  margin-bottom: 10px;
+  align-items: center;
+  gap: 8px 14px;
+  padding: 6px 10px;
+  background: var(--surface);
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon);
+}
+
+.Outils-ligne--selection {
+  background: #f7f8fb;
 }
 
 .Outils-groupe {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
 }
 
-.Outils-libelle,
-.Outils-option {
+.Outils-libelle {
+  margin-right: 2px;
+  color: var(--texte-doux);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.Outils-info {
+  min-width: 110px;
   color: var(--texte-doux);
   font-size: 0.85rem;
+  font-weight: 600;
 }
 
 .Outils-option {
   display: flex;
   align-items: center;
   gap: 6px;
+  color: var(--texte-doux);
+  font-size: 0.85rem;
 }
 
 .Outils-option select {
@@ -84,9 +116,65 @@
   padding: 4px 8px;
 }
 
-/* Zone d'édition */
+.Outil {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 34px;
+  min-height: 34px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--texte);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.Outil:hover:not(:disabled) {
+  background: var(--accent-clair);
+  color: var(--accent-fonce);
+}
+
+.Outil:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.Outil--ajout {
+  border-color: var(--bordure);
+  background: #fff;
+}
+
+.Icone {
+  flex: none;
+}
+
+.Segments {
+  display: inline-flex;
+  padding: 3px;
+  background: #e8ebf0;
+  border-radius: 9px;
+}
+
+.Segment {
+  padding: 5px 14px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.Segment[aria-pressed="true"] {
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+/* Zone d'édition : la carte aussi grande que possible sans dépasser l'écran */
 .ZoneEdition {
-  padding: 24px;
+  padding: 28px;
   border-radius: var(--rayon);
   background: repeating-conic-gradient(#e7e9ee 0 25%, #f4f5f7 0 50%) 0 0 / 20px 20px;
   touch-action: none;
@@ -95,8 +183,10 @@
 
 .ZoneEdition svg {
   display: block;
-  width: 100%;
+  width: min(100%, calc((100vh - 300px) * 1.545));
+  min-width: 320px;
   height: auto;
+  margin: 0 auto;
   overflow: visible;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 18px 40px rgba(20, 24, 31, 0.18);
 }
@@ -127,6 +217,19 @@
   stroke-dasharray: 8 5;
 }
 
+.Selection--groupe {
+  stroke: #f59e0b;
+  stroke-width: 2;
+  stroke-dasharray: none;
+}
+
+.CadreSelection {
+  fill: #2f5bea;
+  fill-opacity: 0.08;
+  stroke: #2f5bea;
+  stroke-width: 1.5;
+}
+
 .Poignee {
   fill: #ffffff;
   stroke: #2f5bea;
@@ -135,8 +238,9 @@
   cursor: nwse-resize;
 }
 
-/* Panneau des propriétés */
+/* Panneau des propriétés (le contenu ne déborde jamais en largeur) */
 .Carte-panneau {
+  min-width: 0;
   padding: 12px 14px;
   background: var(--surface);
   border: 1px solid var(--bordure);
@@ -150,6 +254,7 @@
 .Panneau-titre {
   margin: 4px 0 10px;
   font-size: 0.98rem;
+  overflow-wrap: anywhere;
 }
 
 .Carte-panneau .BarreActions {
@@ -159,12 +264,14 @@
 .FormulaireSchema {
   display: grid;
   gap: 10px;
+  min-width: 0;
 }
 
 .Groupe {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px 10px;
+  min-width: 0;
   margin: 0;
   padding: 10px;
   border: 1px solid var(--bordure);
@@ -173,17 +280,44 @@
 
 .Groupe legend {
   padding: 0 4px;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 700;
   color: var(--texte-doux);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 
+.Groupe .Champ {
+  min-width: 0;
+}
+
+.Groupe input,
+.Groupe select,
+.Groupe textarea {
+  min-width: 0;
+  max-width: 100%;
+}
+
 .Groupe .Champ--texte,
 .Groupe .Champ--image,
-.Groupe .Champ--choix {
+.Groupe .Champ--choix,
+.Groupe .Champ--plage {
   grid-column: 1 / -1;
+}
+
+.Groupe .Champ--plage {
+  grid-template-columns: minmax(0, 1fr) 3em;
+}
+
+.Groupe input[type="range"] {
+  width: 100%;
+}
+
+.ListeSelection {
+  margin: 0 0 10px;
+  padding-left: 18px;
+  color: var(--texte-doux);
+  font-size: 0.88rem;
 }
 
 /* Liste des calques */
@@ -199,6 +333,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
+  min-width: 0;
   padding: 3px;
   border: 1px solid transparent;
   border-radius: 8px;

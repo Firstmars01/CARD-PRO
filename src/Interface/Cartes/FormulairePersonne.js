@@ -151,7 +151,7 @@ function verifierChamp(champ, element, erreur) {
  * @returns {{lire:Function, surSuppression:Function}} Accès aux liens saisis.
  */
 function creerSectionLiens(conteneur, liensInitiaux) {
-  const { section, contenu } = creerSection('Liens (réseaux, portfolio…)', liensInitiaux.length > 0);
+  const { section, contenu } = creerSection('Liens (réseaux, portfolio…) — chaque lien peut avoir son QR code', true);
   const liste = creerElement('div', { classe: 'Liens' });
   const boutonAjout = creerElement('button', { classe: 'Bouton Bouton--secondaire', texte: '+ Ajouter un lien', attributs: { type: 'button' } });
   const rapides = creerElement('div', { classe: 'Puces' });

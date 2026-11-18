@@ -100,11 +100,9 @@ textarea {
   color: var(--texte);
 }
 
-/* Contenu principal */
+/* Contenu principal : toute la largeur de la fenêtre */
 .Application {
-  max-width: 1500px;
-  margin: 0 auto;
-  padding: 18px;
+  padding: 14px 18px;
 }
 
 /* Utilitaire : masque un élément visuellement mais le garde accessible */

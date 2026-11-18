@@ -1,21 +1,28 @@
 /**
  * EtatEdition.js
- * État de l'éditeur de modèles : brouillon du modèle en cours, face
- * affichée, élément sélectionné, grille et historique (annuler / rétablir).
- * Toutes les modifications passent par ces fonctions et sont validées.
+ * État de l'éditeur de modèles : brouillon du modèle, face affichée,
+ * sélection (un ou plusieurs éléments), grille, historique (annuler /
+ * rétablir) et presse-papiers (éléments et style). Toutes les
+ * modifications passent par ces fonctions et sont validées.
  */
 
 import { normaliserModele, normaliserFace, SCHEMA_FOND, ELEMENTS_MAX } from '../../Metier/ModeleCarte.js';
-import { normaliserElement, creerElementCarte } from '../../Metier/Elements.js';
+import {
+  normaliserElement, creerElementCarte, extraireStyle, appliquerStyle,
+} from '../../Metier/Elements.js';
+import {
+  aligner, centrerSurCarte, repartir, boiteEnglobante, CARTE, LARGEUR_CARTE, HAUTEUR_CARTE,
+} from '../../Metier/Alignement.js';
 import { normaliserObjet, nouvelId } from '../../Utilitaires/Schema.js';
 import { nettoyerTexte } from '../../Utilitaires/Validation.js';
 
 const HISTORIQUE_MAX = 60;
-const LARGEUR_CARTE = 850;
-const HAUTEUR_CARTE = 550;
+const DECALAGE_COPIE = 20; // 2 mm
 
-const edition = { modele: null, cote: 'recto', selectionId: null, grille: true, modifie: false, personneApercuId: '' };
+const edition = { modele: null, cote: 'recto', selectionIds: [], grille: true, modifie: false, personneApercuId: '' };
 const historique = { passe: [], futur: [] };
+// Presse-papiers interne (conservé quand on change de face ou de modèle).
+const pressePapiers = { elements: [], style: null };
 const abonnes = new Set();
 
 /**
@@ -24,6 +31,14 @@ const abonnes = new Set();
  */
 export function obtenirEdition() {
   return edition;
+}
+
+/**
+ * Indique ce que contient le presse-papiers.
+ * @returns {{elements:boolean, style:boolean}} Disponibilité du collage.
+ */
+export function contenuPressePapiers() {
+  return { elements: pressePapiers.elements.length > 0, style: Boolean(pressePapiers.style) };
 }
 
 /**
@@ -51,7 +66,7 @@ function notifier(type) {
  */
 export function chargerModele(modele, modifie = false) {
   edition.modele = normaliserModele(structuredClone(modele));
-  edition.selectionId = null;
+  edition.selectionIds = [];
   edition.modifie = modifie;
   historique.passe = [];
   historique.futur = [];
@@ -77,31 +92,60 @@ export function elementsFace() {
 }
 
 /**
- * Renvoie l'élément sélectionné.
- * @returns {object|undefined} Élément.
+ * Renvoie les éléments sélectionnés (dans l'ordre des calques).
+ * @returns {object[]} Éléments sélectionnés.
  */
-export function elementSelectionne() {
-  return elementsFace().find((e) => e.id === edition.selectionId);
+export function elementsSelectionnes() {
+  return elementsFace().filter((e) => edition.selectionIds.includes(e.id));
 }
 
 /**
- * Change la face affichée.
+ * Renvoie l'élément sélectionné s'il est seul.
+ * @returns {object|undefined} Élément, ou undefined si 0 ou plusieurs sélectionnés.
+ */
+export function elementSelectionne() {
+  const selection = elementsSelectionnes();
+  return selection.length === 1 ? selection[0] : undefined;
+}
+
+/**
+ * Change la face affichée (la sélection est vidée).
  * @param {"recto"|"verso"} cote - Face.
  */
 export function choisirCote(cote) {
   edition.cote = cote === 'verso' ? 'verso' : 'recto';
-  edition.selectionId = null;
+  edition.selectionIds = [];
   notifier('cote');
 }
 
 /**
- * Sélectionne un élément (null pour désélectionner).
- * @param {string|null} id - Identifiant.
+ * Sélectionne un élément.
+ * @param {string|null} id - Identifiant (null pour tout désélectionner).
+ * @param {boolean} [ajouter=false] - true (Ctrl + clic) pour ajouter / retirer de la sélection.
  */
-export function selectionner(id) {
-  if (edition.selectionId === id) return;
-  edition.selectionId = id;
+export function selectionner(id, ajouter = false) {
+  if (!id) edition.selectionIds = [];
+  else if (!ajouter) edition.selectionIds = [id];
+  else if (edition.selectionIds.includes(id)) edition.selectionIds = edition.selectionIds.filter((s) => s !== id);
+  else edition.selectionIds = [...edition.selectionIds, id];
   notifier('selection');
+}
+
+/**
+ * Remplace (ou complète) la sélection par une liste d'éléments.
+ * @param {string[]} ids - Identifiants.
+ * @param {boolean} [ajouter=false] - true pour ajouter à la sélection actuelle.
+ */
+export function selectionnerPlusieurs(ids, ajouter = false) {
+  const existants = new Set(elementsFace().map((e) => e.id));
+  const valides = ids.filter((id) => existants.has(id));
+  edition.selectionIds = ajouter ? [...new Set([...edition.selectionIds, ...valides])] : valides;
+  notifier('selection');
+}
+
+/** Sélectionne tous les éléments de la face. */
+export function toutSelectionner() {
+  selectionnerPlusieurs(elementsFace().map((e) => e.id));
 }
 
 /**
@@ -114,25 +158,19 @@ export function modifierOptions(options) {
   notifier('options');
 }
 
-/**
- * Mémorise l'état actuel dans l'historique (avant une modification).
- */
+/** Mémorise l'état actuel dans l'historique (avant une modification). */
 export function memoriser() {
   historique.passe.push(JSON.stringify(edition.modele));
   if (historique.passe.length > HISTORIQUE_MAX) historique.passe.shift();
   historique.futur = [];
 }
 
-/**
- * Oublie la dernière mémorisation (geste sans effet, ex. simple clic).
- */
+/** Oublie la dernière mémorisation (geste sans effet, ex. simple clic). */
 export function oublierDernierMemo() {
   historique.passe.pop();
 }
 
-/**
- * Indique un changement du modèle.
- */
+/** Signale un changement du modèle. */
 function signalerModification() {
   edition.modifie = true;
   notifier('modele');
@@ -147,7 +185,8 @@ function restaurer(source, cible) {
   if (!source.length) return;
   cible.push(JSON.stringify(edition.modele));
   edition.modele = normaliserModele(JSON.parse(source.pop()));
-  if (!elementSelectionne()) edition.selectionId = null;
+  const existants = new Set(elementsFace().map((e) => e.id));
+  edition.selectionIds = edition.selectionIds.filter((id) => existants.has(id));
   edition.modifie = true;
   notifier('tout');
 }
@@ -168,10 +207,19 @@ export function retablir() {
  * @param {object} changements - Réglages modifiés.
  */
 export function modifierElement(id, changements) {
+  modifierElements([{ id, ...changements }]);
+}
+
+/**
+ * Modifie plusieurs éléments en une seule fois (une seule mise à jour d'affichage).
+ * @param {object[]} liste - Changements, chacun avec l'id de l'élément visé.
+ */
+export function modifierElements(liste) {
   const elements = elementsFace();
-  const index = elements.findIndex((e) => e.id === id);
-  if (index < 0) return;
-  elements[index] = normaliserElement({ ...elements[index], ...changements, id, type: elements[index].type });
+  liste.forEach(({ id, ...changements }) => {
+    const index = elements.findIndex((e) => e.id === id);
+    if (index >= 0) elements[index] = normaliserElement({ ...elements[index], ...changements, id, type: elements[index].type });
+  });
   signalerModification();
 }
 
@@ -197,51 +245,163 @@ export function modifierModele(changements) {
 }
 
 /**
- * Ajoute un élément au premier plan de la face affichée et le sélectionne.
- * @param {string} type - Type d'élément.
- * @param {object} [valeurs] - Valeurs initiales.
- * @returns {boolean} false si la face est pleine.
+ * Ajoute des éléments au premier plan et les sélectionne.
+ * @param {object[]} nouveaux - Éléments déjà validés.
+ * @returns {boolean} false si la face serait trop pleine.
  */
-export function ajouterElement(type, valeurs = {}) {
-  if (elementsFace().length >= ELEMENTS_MAX) return false;
+function insererElements(nouveaux) {
+  if (!nouveaux.length || elementsFace().length + nouveaux.length > ELEMENTS_MAX) return false;
   memoriser();
-  const element = creerElementCarte(type, valeurs);
-  // Sans position imposée, l'élément est centré sur la carte.
-  if (valeurs.x === undefined) element.x = Math.round((LARGEUR_CARTE - element.largeur) / 2);
-  if (valeurs.y === undefined) element.y = Math.round((HAUTEUR_CARTE - element.hauteur) / 2);
-  elementsFace().push(element);
-  edition.selectionId = element.id;
+  elementsFace().push(...nouveaux);
+  edition.selectionIds = nouveaux.map((e) => e.id);
   signalerModification();
   notifier('selection');
   return true;
 }
 
 /**
- * Supprime un élément.
- * @param {string} id - Identifiant.
+ * Ajoute un nouvel élément (centré sur la carte si aucune position n'est donnée).
+ * @param {string} type - Type d'élément.
+ * @param {object} [valeurs] - Valeurs initiales.
+ * @returns {boolean} false si la face est pleine.
  */
-export function supprimerElement(id) {
+export function ajouterElement(type, valeurs = {}) {
+  const element = creerElementCarte(type, valeurs);
+  if (valeurs.x === undefined) element.x = Math.round((LARGEUR_CARTE - element.largeur) / 2);
+  if (valeurs.y === undefined) element.y = Math.round((HAUTEUR_CARTE - element.hauteur) / 2);
+  return insererElements([element]);
+}
+
+/**
+ * Ajoute plusieurs nouveaux éléments d'un coup (ex. : QR des liens) et les sélectionne.
+ * @param {Array<[string, object]>} definitions - Liste de [type, valeurs initiales].
+ * @returns {boolean} false si la face serait trop pleine.
+ */
+export function ajouterGroupe(definitions) {
+  return insererElements(definitions.map(([type, valeurs]) => creerElementCarte(type, valeurs)));
+}
+
+/**
+ * Crée des copies d'éléments avec de nouveaux identifiants.
+ * @param {object[]} elements - Éléments à copier.
+ * @param {number} decalage - Décalage en dixièmes de mm.
+ * @returns {object[]} Copies validées.
+ */
+function copierAvecNouveauxIds(elements, decalage) {
+  return elements.map((e) => normaliserElement({ ...structuredClone(e), id: nouvelId('e'), x: e.x + decalage, y: e.y + decalage }));
+}
+
+/**
+ * Supprime des éléments.
+ * @param {string[]} ids - Identifiants.
+ */
+export function supprimerElements(ids) {
+  if (!ids.length) return;
   memoriser();
   const face = edition.modele[edition.cote];
-  face.elements = face.elements.filter((e) => e.id !== id);
-  if (edition.selectionId === id) edition.selectionId = null;
+  face.elements = face.elements.filter((e) => !ids.includes(e.id));
+  edition.selectionIds = edition.selectionIds.filter((id) => !ids.includes(id));
   signalerModification();
   notifier('selection');
 }
 
+/** Supprime les éléments sélectionnés. */
+export function supprimerSelection() {
+  supprimerElements([...edition.selectionIds]);
+}
+
 /**
- * Duplique un élément (décalé de 2 mm) et sélectionne la copie.
- * @param {string} id - Identifiant.
+ * Duplique des éléments (décalés de 2 mm) et sélectionne les copies.
+ * @param {string[]} [ids] - Identifiants (par défaut : la sélection).
+ * @returns {boolean} false si la face est pleine.
  */
-export function dupliquerElement(id) {
-  const source = elementsFace().find((e) => e.id === id);
-  if (!source || elementsFace().length >= ELEMENTS_MAX) return;
+export function dupliquer(ids = edition.selectionIds) {
+  return insererElements(copierAvecNouveauxIds(elementsFace().filter((e) => ids.includes(e.id)), DECALAGE_COPIE));
+}
+
+/**
+ * Copie les éléments sélectionnés dans le presse-papiers.
+ * @returns {number} Nombre d'éléments copiés.
+ */
+export function copierSelection() {
+  pressePapiers.elements = structuredClone(elementsSelectionnes());
+  pressePapiers.cote = edition.cote;
+  notifier('options');
+  return pressePapiers.elements.length;
+}
+
+/**
+ * Colle les éléments du presse-papiers sur la face affichée (décalés
+ * s'ils sont collés sur la même face, à la même place sinon).
+ * @returns {boolean} false si rien à coller ou face pleine.
+ */
+export function coller() {
+  const memeFace = pressePapiers.cote === edition.cote;
+  const copies = copierAvecNouveauxIds(pressePapiers.elements, memeFace ? DECALAGE_COPIE : 0);
+  // Collages successifs : chaque collage est décalé un peu plus.
+  if (memeFace) pressePapiers.elements = pressePapiers.elements.map((e) => ({ ...e, x: e.x + DECALAGE_COPIE, y: e.y + DECALAGE_COPIE }));
+  return insererElements(copies);
+}
+
+/**
+ * Copie le style de l'élément sélectionné (couleurs, police, tailles…).
+ * @returns {boolean} false si aucun élément unique n'est sélectionné.
+ */
+export function copierStyle() {
+  const element = elementSelectionne();
+  if (!element) return false;
+  pressePapiers.style = extraireStyle(element);
+  notifier('options');
+  return true;
+}
+
+/**
+ * Applique le style copié à tous les éléments sélectionnés.
+ * @returns {boolean} false si rien à coller.
+ */
+export function collerStyle() {
+  const selection = elementsSelectionnes();
+  if (!pressePapiers.style || !selection.length) return false;
   memoriser();
-  const copie = normaliserElement({ ...structuredClone(source), id: nouvelId('e'), x: source.x + 20, y: source.y + 20 });
-  elementsFace().push(copie);
-  edition.selectionId = copie.id;
-  signalerModification();
-  notifier('selection');
+  modifierElements(selection.map((e) => appliquerStyle(e, pressePapiers.style)));
+  return true;
+}
+
+/**
+ * Applique des positions calculées (alignement, centrage, répartition).
+ * @param {{id:string, x:number, y:number}[]} positions - Nouvelles positions.
+ */
+function appliquerPositions(positions) {
+  memoriser();
+  modifierElements(positions);
+}
+
+/**
+ * Aligne la sélection : sur la carte si un seul élément, sur la sélection sinon.
+ * @param {string} mode - gauche, centreH, droite, haut, centreV ou bas.
+ */
+export function alignerSelection(mode) {
+  const selection = elementsSelectionnes();
+  if (!selection.length) return;
+  appliquerPositions(aligner(selection, mode, selection.length === 1 ? CARTE : boiteEnglobante(selection)));
+}
+
+/**
+ * Centre la sélection (d'un bloc) sur la carte.
+ * @param {"horizontal"|"vertical"} axe - Axe de centrage.
+ */
+export function centrerSelection(axe) {
+  const selection = elementsSelectionnes();
+  if (selection.length) appliquerPositions(centrerSurCarte(selection, axe));
+}
+
+/**
+ * Répartit régulièrement la sélection (3 éléments minimum).
+ * @param {"horizontal"|"vertical"} axe - Axe de répartition.
+ */
+export function repartirSelection(axe) {
+  const selection = elementsSelectionnes();
+  if (selection.length >= 3) appliquerPositions(repartir(selection, axe));
 }
 
 /**
@@ -259,9 +419,7 @@ export function deplacerCalque(id, sens) {
   signalerModification();
 }
 
-/**
- * Copie toute la face affichée sur l'autre face (remplace son contenu).
- */
+/** Copie toute la face affichée sur l'autre face (remplace son contenu). */
 export function copierSurAutreFace() {
   memoriser();
   const autre = edition.cote === 'recto' ? 'verso' : 'recto';

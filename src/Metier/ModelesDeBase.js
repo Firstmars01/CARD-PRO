@@ -87,6 +87,26 @@ function versoEntreprise(fond, couleur, secondaire, style = {}) {
   };
 }
 
+/**
+ * Rangée de QR codes de liens (liens 1 à n) avec le nom du lien dessous.
+ * @param {number} y - Position verticale des QR.
+ * @param {number} taille - Côté de chaque QR.
+ * @param {string} couleur - Couleur des légendes.
+ * @param {number} [nombre=3] - Nombre de liens.
+ * @returns {object[]} Éléments bruts.
+ */
+function qrLiens(y, taille, couleur, nombre = 3) {
+  const ecart = 50;
+  const depart = Math.round((850 - nombre * taille - (nombre - 1) * ecart) / 2);
+  return Array.from({ length: nombre }, (_, i) => {
+    const x = depart + i * (taille + ecart);
+    return [
+      qr(x, y, taille, { contenu: 'lien', numeroLien: i + 1, arrondi: 14 }),
+      champ(`lien${i + 1}`, [x, y + taille + 14, taille, 32], { taille: 20, graisse: '600', couleur, alignement: 'middle' }),
+    ];
+  }).flat();
+}
+
 const BRUTS = [
   {
     id: 'base-classique', nom: 'Classique', arrondi: 16,
@@ -166,6 +186,29 @@ const BRUTS = [
         qr(285, 70, 280, { arrondi: 10 }),
         libre('Scannez pour enregistrer le contact', [50, 385, 750, 34], { taille: 20, couleur: '#ffffff', alignement: 'middle', police: 'condensee', espacement: 2 }),
         champ('email', [50, 440, 750, 30], { taille: 18, couleur: '#aaaaaa', alignement: 'middle', police: 'condensee' }),
+      ],
+    },
+  },
+  {
+    id: 'base-reseaux', nom: 'Réseaux (QR des liens au verso)', arrondi: 16,
+    recto: {
+      fond: { type: 'uni', couleur1: '#ffffff' },
+      elements: [
+        forme('rectangle', [0, 0, 850, 14], { remplissage: '#2563eb' }),
+        champ('nomComplet', [60, 70, 470, 60], { taille: 44, graisse: '700', couleur: '#1d2430' }),
+        champ('poste', [60, 138, 470, 34], { taille: 24, graisse: '600', couleur: '#2563eb' }),
+        champ('entreprise', [60, 176, 470, 32], { taille: 22, couleur: '#5b6575' }),
+        ...coordonnees(60, 360, 470, { taille: 19, couleur: '#5b6575' }),
+        qr(570, 145, 260),
+      ],
+    },
+    verso: {
+      fond: { type: 'uni', couleur1: '#1d2430' },
+      elements: [
+        libre('Retrouvez-moi en ligne', [50, 55, 750, 44], { taille: 30, graisse: '700', couleur: '#ffffff', alignement: 'middle' }),
+        forme('rectangle', [395, 112, 60, 4], { remplissage: '#2563eb' }),
+        ...qrLiens(160, 190, '#ffffff'),
+        champ('siteWeb', [50, 470, 750, 30], { taille: 18, couleur: '#9aa5b1', alignement: 'middle' }),
       ],
     },
   },

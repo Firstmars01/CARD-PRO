@@ -40,6 +40,8 @@ const SPECIFIQUES = {
     { cle: 'interligne', type: 'plage', libelle: 'Interligne (%)', groupe: 'Style', min: 90, max: 220 },
   ],
   qr: [
+    { cle: 'contenu', type: 'choix', libelle: 'Contenu du QR code', groupe: 'QR code', options: [['vcard', 'Contact (vCard)'], ['lien', 'Un lien de la personne'], ['siteWeb', 'Site web']] },
+    { cle: 'numeroLien', type: 'plage', libelle: 'Numéro du lien (ordre dans la fiche)', groupe: 'QR code', min: 1, max: 8, visibleSi: (e) => e.contenu === 'lien' },
     { cle: 'couleur', type: 'couleur', libelle: 'Couleur des modules', groupe: 'QR code' },
     { cle: 'fond', type: 'couleur', libelle: 'Couleur du fond', groupe: 'QR code' },
     { cle: 'marge', type: 'plage', libelle: 'Marge (modules)', groupe: 'QR code', min: 0, max: 4 },
@@ -66,7 +68,7 @@ const DEFAUTS = {
     largeur: 420, hauteur: 50, source: 'champ', champ: 'nomComplet', texte: 'Texte', prefixe: '', police: 'moderne',
     taille: 36, graisse: '400', italique: false, majuscules: false, couleur: '#1d2430', alignement: 'start', espacement: 0, interligne: 120,
   },
-  qr: { largeur: 300, hauteur: 300, couleur: '#000000', fond: '#ffffff', marge: 2, arrondi: 14 },
+  qr: { largeur: 300, hauteur: 300, contenu: 'vcard', numeroLien: 1, couleur: '#000000', fond: '#ffffff', marge: 2, arrondi: 14 },
   image: { largeur: 200, hauteur: 100, image: '', ajustement: 'contain' },
   forme: { largeur: 200, hauteur: 120, forme: 'rectangle', remplissage: '#2563eb', sansRemplissage: false, contour: '#1d2430', epaisseurContour: 0, arrondi: 0 },
 };
@@ -116,5 +118,40 @@ export function decrireElement(element) {
     return `Texte : ${libelle}`;
   }
   if (element.type === 'forme') return `Forme : ${element.forme}`;
+  if (element.type === 'qr' && element.contenu === 'lien') return `QR code : lien ${element.numeroLien}`;
+  if (element.type === 'qr' && element.contenu === 'siteWeb') return 'QR code : site web';
   return TYPES_ELEMENT[element.type];
+}
+
+// Réglages de contenu ou de position : jamais copiés avec le style.
+const CLES_HORS_STYLE = ['x', 'y', 'largeur', 'hauteur', 'visible', 'source', 'champ', 'texte', 'prefixe', 'image', 'forme', 'contenu', 'numeroLien'];
+
+/**
+ * Liste les réglages de style d'un type d'élément (couleurs, police…).
+ * @param {string} type - Type d'élément.
+ * @returns {string[]} Clés de style.
+ */
+export function clesStyle(type) {
+  return schemaElement(type).map((r) => r.cle).filter((cle) => !CLES_HORS_STYLE.includes(cle));
+}
+
+/**
+ * Extrait le style d'un élément (pour « Copier le style »).
+ * @param {object} element - Élément source.
+ * @returns {object} Valeurs de style.
+ */
+export function extraireStyle(element) {
+  return Object.fromEntries(clesStyle(element.type).map((cle) => [cle, element[cle]]));
+}
+
+/**
+ * Applique un style copié : seuls les réglages existant sur l'élément
+ * cible sont repris (ex. : une forme ne reçoit pas la police d'un texte).
+ * @param {object} element - Élément cible.
+ * @param {object} style - Style copié.
+ * @returns {object} Élément modifié et validé.
+ */
+export function appliquerStyle(element, style) {
+  const changements = Object.fromEntries(clesStyle(element.type).filter((cle) => Object.hasOwn(style, cle)).map((cle) => [cle, style[cle]]));
+  return normaliserElement({ ...element, ...changements, id: element.id, type: element.type });
 }

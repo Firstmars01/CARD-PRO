@@ -9,6 +9,7 @@ import { creerSvg } from '../../Utilitaires/Dom.js';
 import { decouperTexte } from '../../Utilitaires/MesureTexte.js';
 import { POLICES } from '../../Metier/Polices.js';
 import { valeurChamp, nomComplet, CHAMPS_AFFICHABLES } from '../../Metier/Personne.js';
+import { qrPourElement } from '../../Metier/ContenuQr.js';
 import { dessinerQr } from './RenduQrSvg.js';
 
 export const LARGEUR = 850;
@@ -121,20 +122,26 @@ function dessinerTexte(groupe, el, { personne, edition }) {
 }
 
 /**
- * Dessine le QR code (carré centré dans la zone de l'élément).
+ * Dessine le QR code (carré centré dans la zone de l'élément) : contact
+ * (vCard), site web ou lien. Si la personne n'a pas ce lien, rien n'est
+ * dessiné sur la carte ; l'éditeur affiche un repère en pointillés.
  * @param {SVGElement} groupe - Groupe parent.
  * @param {object} el - Élément QR.
- * @param {object} contexte - { qr }.
+ * @param {object} contexte - { personne, qr, edition }.
  */
-function dessinerElementQr(groupe, el, { qr }) {
+function dessinerElementQr(groupe, el, { personne, qr, edition }) {
   const taille = Math.min(el.largeur, el.hauteur);
   const x = el.x + (el.largeur - taille) / 2;
   const y = el.y + (el.hauteur - taille) / 2;
-  if (qr) {
-    dessinerQr(groupe, qr, { x, y, taille, couleur: el.couleur, fond: el.fond, marge: el.marge, arrondi: el.arrondi });
+  const code = qrPourElement(personne, el, qr);
+  if (code) {
+    dessinerQr(groupe, code, { x, y, taille, couleur: el.couleur, fond: el.fond, marge: el.marge, arrondi: el.arrondi });
     return;
   }
+  if (!edition && el.contenu !== 'vcard') return;
   creerSvg('rect', { x, y, width: taille, height: taille, fill: el.fond, stroke: el.couleur, 'stroke-dasharray': '8 6' }, groupe);
+  const repere = creerSvg('text', { x: x + taille / 2, y: y + taille / 2 + 6, 'text-anchor': 'middle', 'font-size': Math.max(12, taille / 9), fill: el.couleur, 'font-family': POLICES.moderne }, groupe);
+  repere.textContent = el.contenu === 'lien' ? `Lien ${el.numeroLien} absent` : 'QR indisponible';
 }
 
 /**

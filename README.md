@@ -4,6 +4,7 @@ Application locale (Docker) pour créer les **cartes de visite de toute une équ
 - des **modèles** recto / verso entièrement personnalisables, créés dans un éditeur visuel ;
 - une **liste de personnes** (saisie ou import Excel/CSV) ;
 - pour chaque personne, une carte avec un **QR code** qui contient ses coordonnées : un scan permet de l'ajouter aux contacts, même sans internet ;
+- en option, **un QR code par lien** (LinkedIn, GitHub, portfolio…) qui ouvre directement la page ;
 - des **exports** prêts à envoyer par e-mail ou à imprimer.
 
 ## Fonctionnalités
@@ -17,13 +18,21 @@ Application locale (Docker) pour créer les **cartes de visite de toute une équ
 - **Téléchargements** : recto/verso en PNG, JPG et SVG (300 dpi), PDF recto + verso (85 × 55 mm), planche A4 recto-verso de 10 cartes, contact `.vcf`, ZIP de la carte, et **ZIP de toutes les cartes** (un dossier par personne).
 
 ### Onglet « Modèles »
-- 6 modèles de base : Classique, Ardoise, Océan, Bandeau corail, Minimal (QR au verso), Néon.
+- 7 modèles de base : Classique, Ardoise, Océan, Bandeau corail, Minimal (QR au verso), Réseaux (QR des liens au verso), Néon.
 - **Éditeur visuel recto / verso** :
   - placement à la souris (glisser), redimensionnement avec la poignée, déplacement au clavier ;
+  - **sélection multiple** : Ctrl + clic, ou cadre tracé à la souris sur une zone vide, puis déplacement du groupe ;
+  - **copier / couper / coller** des éléments, y compris d'une face ou d'un modèle à l'autre ;
+  - **copier / coller le style** d'un élément (couleurs, police, tailles…) sur un ou plusieurs autres ;
+  - **alignement** :
+    - à gauche, au centre, à droite, en haut, au milieu ou en bas : sur la carte pour 1 élément, entre eux pour plusieurs ;
+    - **centrage sur la carte** de la sélection d'un bloc ;
+    - **répartition** régulière (3 éléments minimum) ;
   - grille et aimantation (au millimètre et aux axes centraux) ;
   - éléments :
     - **texte** : lié à une information de la personne, ou texte fixe ;
-    - **QR code** ;
+    - **QR code** : contact (vCard), site web ou **un lien précis** de la personne (lien n° 1 à 8) ;
+    - **QR des liens** : un bouton ajoute 3 QR codes de liens avec le nom du lien en dessous ;
     - **image** : logo, photo… ;
     - **formes** : rectangle, ellipse, ligne ;
   - réglages de chaque élément :
@@ -33,9 +42,22 @@ Application locale (Docker) pour créer les **cartes de visite de toute une équ
     - remplissage, contour et arrondi des formes ;
   - fond de chaque face : uni, dégradé ou image ;
   - **calques** : ordre, masquer, supprimer ;
-  - **annuler / rétablir** (Ctrl + Z / Ctrl + Y), dupliquer (Ctrl + D), copier une face sur l'autre ;
+  - **annuler / rétablir**, dupliquer, copier une face sur l'autre ;
   - aperçu avec une personne d'exemple ou une vraie personne de la liste.
 - **Enregistrement des modèles** (nouveau, dupliquer, renommer, supprimer) et import / export en `.json`.
+
+### Raccourcis de l'éditeur
+
+| Action | Raccourci |
+| --- | --- |
+| Ajouter / retirer de la sélection | Ctrl + clic (ou cadre tracé sur une zone vide) |
+| Tout sélectionner / désélectionner | Ctrl + A / Échap |
+| Déplacer de 1 mm (5 mm) | Flèches (Maj + flèches) |
+| Copier / couper / coller | Ctrl + C / Ctrl + X / Ctrl + V |
+| Dupliquer | Ctrl + D |
+| Copier / coller le style | Ctrl + Maj + C / Ctrl + Maj + V |
+| Supprimer | Suppr |
+| Annuler / rétablir | Ctrl + Z / Ctrl + Y |
 
 ## Technologies
 
@@ -61,9 +83,9 @@ CARD PRO/
 │   ├── Main.js                # Point d'entrée
 │   ├── Interface/
 │   │   ├── Cartes/            # Liste, formulaire, import, aperçu, exports
-│   │   ├── Modeles/           # Éditeur : zone, outils, propriétés, calques, modèles
+│   │   ├── Modeles/           # Éditeur : zone, outils, raccourcis, propriétés, calques, modèles
 │   │   └── Rendu/             # Dessin des faces et du QR en SVG
-│   ├── Metier/                # Personne, éléments, modèles, polices, vCard, import, état
+│   ├── Metier/                # Personne, éléments, modèles, alignement, polices, vCard, import, état
 │   ├── Donnees/               # Appels à l'API
 │   └── Utilitaires/           # QR, validation, schémas, images, CSV, ZIP, PDF
 ├── serveur/
@@ -104,8 +126,15 @@ Il faut Node.js 22.13 ou plus récent.
 
 ```bash
 npm start      # http://localhost:3000 (base dans ./donnees)
-npm test       # 18 tests
+npm test       # 21 tests
 ```
+
+## QR codes des liens
+
+- Dans la fiche d'une personne, les liens sont numérotés dans l'ordre : lien 1, lien 2…
+- Dans un modèle, un QR code réglé sur « Un lien de la personne » + « Numéro du lien » ouvre ce lien quand on le scanne. Une légende « Lien N (nom) » affiche son nom (ex. « LinkedIn »).
+- Si une personne n'a pas ce lien, le QR code et sa légende n'apparaissent pas sur sa carte. L'éditeur les signale en pointillés.
+- Garde le même ordre de liens pour tout le monde (ex. lien 1 = LinkedIn, lien 2 = site du portfolio) pour que les cartes restent cohérentes.
 
 ## Exemples d'utilisation
 
