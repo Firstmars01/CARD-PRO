@@ -1,0 +1,83 @@
+/**
+ * Image.js
+ * Chargement sécurisé d'une image (logo, fond) : vérifie le type et le poids,
+ * puis le redessine dans un canvas. Le ré-encodage en PNG supprime tout
+ * contenu caché (métadonnées, scripts) : seuls les pixels sont conservés.
+ */
+
+const TYPES_AUTORISES = ['image/png', 'image/jpeg', 'image/webp'];
+const POIDS_MAX = 8 * 1024 * 1024; // 8 Mo
+const DIMENSION_MAX = 1200; // pixels (≈ 360 dpi sur une carte)
+const POIDS_MAX_ENCODE = 1400000; // caractères de la data URL (≈ 1 Mo)
+
+/**
+ * Vérifie puis convertit un fichier image en data URL redimensionnée.
+ * @param {File} fichier - Fichier choisi par l'utilisateur.
+ * @returns {Promise<string>} Data URL PNG.
+ * @throws {Error} Si le fichier n'est pas une image autorisée.
+ */
+export async function chargerImage(fichier) {
+  if (!fichier || !TYPES_AUTORISES.includes(fichier.type)) {
+    throw new Error('Format refusé : utilise une image PNG, JPEG ou WebP.');
+  }
+  if (fichier.size > POIDS_MAX) throw new Error('Image trop lourde (8 Mo maximum).');
+  if (!(await verifierSignature(fichier))) throw new Error("Le fichier n'est pas une image valide.");
+
+  const image = await decoderImage(fichier);
+  const echelle = Math.min(1, DIMENSION_MAX / Math.max(image.width, image.height));
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.max(1, Math.round(image.width * echelle));
+  canvas.height = Math.max(1, Math.round(image.height * echelle));
+  canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
+  if (typeof image.close === 'function') image.close();
+  return encoderCanvas(canvas);
+}
+
+/**
+ * Encode le canvas en PNG, ou en WebP si le PNG est trop lourd
+ * (le WebP garde la transparence et pèse beaucoup moins).
+ * @param {HTMLCanvasElement} canvas - Canvas contenant l'image.
+ * @returns {string} Data URL de l'image.
+ * @throws {Error} Si l'image reste trop lourde.
+ */
+function encoderCanvas(canvas) {
+  const png = canvas.toDataURL('image/png');
+  if (png.length <= POIDS_MAX_ENCODE) return png;
+  const webp = canvas.toDataURL('image/webp', 0.9);
+  if (webp.startsWith('data:image/webp') && webp.length <= POIDS_MAX_ENCODE) return webp;
+  const jpeg = canvas.toDataURL('image/jpeg', 0.9);
+  if (jpeg.length <= POIDS_MAX_ENCODE) return jpeg;
+  throw new Error('Image trop détaillée : utilise une image plus légère.');
+}
+
+/**
+ * Vérifie les premiers octets du fichier (signature réelle du format).
+ * @param {File} fichier - Fichier à contrôler.
+ * @returns {Promise<boolean>} true si la signature correspond à PNG, JPEG ou WebP.
+ */
+async function verifierSignature(fichier) {
+  const o = new Uint8Array(await fichier.slice(0, 12).arrayBuffer());
+  const png = o[0] === 0x89 && o[1] === 0x50 && o[2] === 0x4e && o[3] === 0x47;
+  const jpeg = o[0] === 0xff && o[1] === 0xd8 && o[2] === 0xff;
+  const webp = o[0] === 0x52 && o[1] === 0x49 && o[2] === 0x46 && o[3] === 0x46
+    && o[8] === 0x57 && o[9] === 0x45 && o[10] === 0x42 && o[11] === 0x50;
+  return png || jpeg || webp;
+}
+
+/**
+ * Décode un fichier image en objet dessinable.
+ * @param {File} fichier - Fichier image.
+ * @returns {Promise<ImageBitmap|HTMLImageElement>} Image décodée.
+ */
+async function decoderImage(fichier) {
+  if (typeof createImageBitmap === 'function') return createImageBitmap(fichier);
+  const url = URL.createObjectURL(fichier);
+  try {
+    const image = new Image();
+    image.src = url;
+    await image.decode();
+    return image;
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}

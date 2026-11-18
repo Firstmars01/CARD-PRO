@@ -1,0 +1,368 @@
+/*
+ * Composants.css
+ * Composants communs (sections, champs, boutons, notifications) et
+ * mise en page de l'onglet « Cartes ».
+ */
+
+/* Sections repliables */
+.Section {
+  background: var(--surface);
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon);
+}
+
+.Section + .Section,
+.Formulaire > * + * {
+  margin-top: 10px;
+}
+
+.Section-titre {
+  padding: 12px 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.Section-contenu {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 10px 12px;
+  padding: 0 14px 14px;
+}
+
+/* Champs */
+.Champ {
+  display: grid;
+  gap: 4px;
+  align-content: start;
+}
+
+.Champ label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--texte-doux);
+}
+
+.Champ--large,
+.Liens,
+.Puces,
+.BarreActions,
+.GrilleBoutons,
+.Aide,
+.Avertissement {
+  grid-column: 1 / -1;
+}
+
+input[type="text"],
+input[type="tel"],
+input[type="email"],
+input[type="url"],
+input[type="number"],
+select,
+textarea {
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 10px;
+  border: 1px solid var(--bordure);
+  border-radius: 8px;
+  background: #fff;
+}
+
+textarea {
+  resize: vertical;
+}
+
+[aria-invalid="true"] {
+  border-color: var(--danger);
+}
+
+.Champ-erreur {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--danger);
+  font-size: 0.8rem;
+}
+
+.Champ--couleur input[type="color"] {
+  width: 100%;
+  height: 40px;
+  padding: 3px;
+  border: 1px solid var(--bordure);
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.Champ--plage {
+  grid-template-columns: 1fr auto;
+}
+
+.Champ--plage label,
+.Champ--plage .Champ-erreur {
+  grid-column: 1 / -1;
+}
+
+.Champ--plage input,
+.Champ--booleen input {
+  accent-color: var(--accent);
+}
+
+.Valeur {
+  min-width: 2.5em;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--texte-doux);
+}
+
+.Champ--booleen {
+  grid-template-columns: auto 1fr;
+  align-items: center;
+}
+
+.Champ--booleen input {
+  order: -1;
+  width: 18px;
+  height: 18px;
+}
+
+.Image-apercu {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.Miniature {
+  max-width: 90px;
+  max-height: 50px;
+  object-fit: contain;
+  background: repeating-conic-gradient(#eee 0 25%, #fff 0 50%) 0 0 / 10px 10px;
+  border-radius: 4px;
+}
+
+.Aide {
+  margin: 0;
+  color: var(--texte-doux);
+  font-size: 0.85rem;
+}
+
+.Avertissement {
+  margin: 8px 0 0;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--alerte-fond);
+  color: var(--alerte-texte);
+  font-size: 0.88rem;
+}
+
+/* Liens personnalisés */
+.Liens {
+  display: grid;
+  gap: 8px;
+}
+
+.Lien {
+  display: grid;
+  grid-template-columns: minmax(80px, 0.6fr) 1fr auto;
+  gap: 8px;
+}
+
+.Puces {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.Puce {
+  padding: 4px 10px;
+  border: 1px solid var(--bordure);
+  border-radius: 999px;
+  background: #f7f8fa;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.Puce:disabled {
+  opacity: 0.45;
+}
+
+/* Boutons */
+.Bouton {
+  min-height: 40px;
+  padding: 8px 14px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.Bouton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.Bouton--principal {
+  background: var(--accent);
+  color: #fff;
+}
+
+.Bouton--principal:hover:not(:disabled) {
+  background: var(--accent-fonce);
+}
+
+.Bouton--secondaire,
+.Bouton--icone {
+  background: #fff;
+  border-color: var(--bordure);
+}
+
+.Bouton--secondaire:hover:not(:disabled),
+.Bouton--icone:hover:not(:disabled) {
+  border-color: #aeb6c4;
+}
+
+.Bouton--secondaire[aria-pressed="true"] {
+  background: var(--accent-clair);
+  border-color: var(--accent);
+  color: var(--accent-fonce);
+}
+
+.Bouton--danger {
+  background: #fff;
+  border-color: #f0c4c4;
+  color: var(--danger);
+}
+
+.Bouton--icone {
+  min-width: 36px;
+  padding: 0 8px;
+}
+
+.Bouton--petit {
+  min-height: 32px;
+  padding: 4px 10px;
+  font-size: 0.85rem;
+}
+
+.Bouton--icone.Bouton--petit {
+  min-width: 30px;
+  padding: 0 6px;
+}
+
+.GrilleBoutons {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
+  gap: 8px;
+}
+
+.BarreActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Onglet « Cartes » : liste | formulaire | aperçu */
+.Cartes {
+  display: grid;
+  gap: 16px;
+}
+
+@media (min-width: 1100px) {
+  .Cartes {
+    grid-template-columns: 280px minmax(0, 1fr) minmax(0, 1.1fr);
+    align-items: start;
+  }
+
+  .Cartes-droite {
+    position: sticky;
+    top: 76px;
+  }
+}
+
+.Cartes-liste {
+  display: grid;
+  gap: 10px;
+}
+
+.Personnes {
+  display: grid;
+  gap: 6px;
+  max-height: 55vh;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.Personne {
+  display: grid;
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--bordure);
+  border-radius: 10px;
+  background: var(--surface);
+  text-align: left;
+  cursor: pointer;
+}
+
+.Personne span {
+  color: var(--texte-doux);
+  font-size: 0.82rem;
+}
+
+.Personne--active {
+  border-color: var(--accent);
+  background: var(--accent-clair);
+}
+
+.Cartes-apercu {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.Apercu-face {
+  margin: 0;
+}
+
+.Apercu-face svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08), 0 14px 32px rgba(20, 24, 31, 0.14);
+}
+
+.Apercu-face figcaption {
+  margin-top: 6px;
+  color: var(--texte-doux);
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+/* Notifications */
+.Notifications {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  display: grid;
+  gap: 8px;
+  width: min(92vw, 420px);
+  z-index: 10;
+}
+
+.Notification {
+  padding: 11px 16px;
+  border-radius: 10px;
+  background: #14181f;
+  color: #fff;
+  box-shadow: var(--ombre);
+}
+
+.Notification--succes {
+  background: #1d7a46;
+}
+
+.Notification--erreur {
+  background: var(--danger);
+}

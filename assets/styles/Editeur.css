@@ -1,0 +1,227 @@
+/*
+ * Editeur.css
+ * Styles de l'onglet « Modèles » : barre des modèles, barre d'outils,
+ * zone d'édition (sélection, poignée, grille), propriétés et calques.
+ */
+
+.Editeur-entete {
+  display: grid;
+  grid-template-columns: minmax(180px, 260px) minmax(160px, 260px) 1fr;
+  align-items: end;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon);
+}
+
+@media (max-width: 800px) {
+  .Editeur-entete {
+    grid-template-columns: 1fr;
+  }
+}
+
+.Etat-enregistrement {
+  color: #1d7a46;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.Etat-enregistrement--modifie {
+  color: var(--alerte-texte);
+}
+
+.Editeur-corps {
+  display: grid;
+  gap: 14px;
+}
+
+@media (min-width: 1100px) {
+  .Editeur-corps {
+    grid-template-columns: minmax(0, 1fr) 360px;
+    align-items: start;
+  }
+
+  .Editeur-cote {
+    position: sticky;
+    top: 76px;
+    max-height: calc(100vh - 92px);
+    overflow-y: auto;
+  }
+}
+
+/* Barre d'outils */
+.Outils {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-bottom: 10px;
+}
+
+.Outils-groupe {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.Outils-libelle,
+.Outils-option {
+  color: var(--texte-doux);
+  font-size: 0.85rem;
+}
+
+.Outils-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.Outils-option select {
+  width: auto;
+  min-height: 32px;
+  padding: 4px 8px;
+}
+
+/* Zone d'édition */
+.ZoneEdition {
+  padding: 24px;
+  border-radius: var(--rayon);
+  background: repeating-conic-gradient(#e7e9ee 0 25%, #f4f5f7 0 50%) 0 0 / 20px 20px;
+  touch-action: none;
+  user-select: none;
+}
+
+.ZoneEdition svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 18px 40px rgba(20, 24, 31, 0.18);
+}
+
+.ZoneEdition [data-id] {
+  cursor: move;
+}
+
+.Surcouche {
+  pointer-events: none;
+}
+
+.Grille {
+  stroke: #2f5bea;
+  stroke-opacity: 0.12;
+  stroke-width: 1;
+}
+
+.Grille--axe {
+  stroke-opacity: 0.3;
+  stroke-dasharray: 6 6;
+}
+
+.Selection {
+  fill: none;
+  stroke: #2f5bea;
+  stroke-width: 2.5;
+  stroke-dasharray: 8 5;
+}
+
+.Poignee {
+  fill: #ffffff;
+  stroke: #2f5bea;
+  stroke-width: 3;
+  pointer-events: all;
+  cursor: nwse-resize;
+}
+
+/* Panneau des propriétés */
+.Carte-panneau {
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon);
+}
+
+.Carte-panneau + .Carte-panneau {
+  margin-top: 12px;
+}
+
+.Panneau-titre {
+  margin: 4px 0 10px;
+  font-size: 0.98rem;
+}
+
+.Carte-panneau .BarreActions {
+  margin-bottom: 10px;
+}
+
+.FormulaireSchema {
+  display: grid;
+  gap: 10px;
+}
+
+.Groupe {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 10px;
+  margin: 0;
+  padding: 10px;
+  border: 1px solid var(--bordure);
+  border-radius: 10px;
+}
+
+.Groupe legend {
+  padding: 0 4px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--texte-doux);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.Groupe .Champ--texte,
+.Groupe .Champ--image,
+.Groupe .Champ--choix {
+  grid-column: 1 / -1;
+}
+
+/* Liste des calques */
+.Calques {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.Calque {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+}
+
+.Calque--actif {
+  border-color: var(--accent);
+  background: var(--accent-clair);
+}
+
+.Calque--masque .Calque-nom {
+  opacity: 0.5;
+}
+
+.Calque-nom {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 8px;
+  overflow: hidden;
+  border: 0;
+  background: none;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}

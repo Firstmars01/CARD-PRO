@@ -1,0 +1,25 @@
+# docker-compose.yml
+# Lance Card Pro en local : docker compose up -d --build
+# Accès : http://localhost:8080 (ou http://<adresse-du-pc>:8080 depuis le réseau)
+
+services:
+  cardpro:
+    build: .
+    image: cardpro:3.0.0
+    container_name: cardpro
+    restart: unless-stopped
+    ports:
+      - "8080:3000"
+    volumes:
+      - cardpro_donnees:/donnees
+    # Durcissement : lecture seule, aucun privilège supplémentaire.
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+
+volumes:
+  cardpro_donnees:

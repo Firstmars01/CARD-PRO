@@ -1,0 +1,16 @@
+{
+  "name": "Card Pro – Carte de visite QR",
+  "short_name": "Card Pro",
+  "description": "Crée ta carte de visite avec QR code, personnalisable, à partager par lien ou NFC.",
+  "lang": "fr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f2f3f6",
+  "theme_color": "#14181f",
+  "icons": [
+    { "src": "assets/icons/Icone192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "assets/icons/Icone512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "assets/icons/Icone512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

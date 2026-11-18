@@ -1,0 +1,117 @@
+/*
+ * Base.css
+ * Variables de thème, remise à zéro, en-tête et mise en page générale.
+ */
+
+:root {
+  --fond: #f2f3f6;
+  --surface: #ffffff;
+  --texte: #14181f;
+  --texte-doux: #5d6675;
+  --bordure: #dfe2e8;
+  --accent: #2f5bea;
+  --accent-fonce: #2148c7;
+  --accent-clair: #eef2ff;
+  --danger: #c62f2f;
+  --alerte-fond: #fff6e0;
+  --alerte-texte: #7a5200;
+  --rayon: 12px;
+  --ombre: 0 1px 2px rgba(20, 24, 31, 0.06), 0 8px 24px rgba(20, 24, 31, 0.06);
+  --police: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--police);
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--texte);
+  background: var(--fond);
+}
+
+[hidden] {
+  display: none !important;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* En-tête avec les onglets */
+.EnTete {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  padding: 10px 20px;
+  background: #14181f;
+  color: #fff;
+}
+
+.EnTete-titre {
+  font-weight: 700;
+  font-size: 1.15rem;
+}
+
+.EnTete-sous {
+  color: #9aa3b2;
+  font-size: 0.9rem;
+}
+
+.Onglets {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+  padding: 4px;
+  background: #262c36;
+  border-radius: 10px;
+}
+
+.Onglets [role="tab"] {
+  padding: 8px 22px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #c5ccd8;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.Onglets [aria-selected="true"] {
+  background: #fff;
+  color: var(--texte);
+}
+
+/* Contenu principal */
+.Application {
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 18px;
+}
+
+/* Utilitaire : masque un élément visuellement mais le garde accessible */
+.Masque {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}

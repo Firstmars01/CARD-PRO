@@ -1,0 +1,12 @@
+# Secrets et configuration locale (aucun n'est nécessaire aujourd'hui)
+.env
+.env.*
+
+# Dépendances et fichiers système
+node_modules/
+.DS_Store
+Thumbs.db
+*.log
+
+# Base de données locale (hors Docker)
+donnees/
