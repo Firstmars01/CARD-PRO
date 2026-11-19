@@ -372,7 +372,7 @@ textarea {
 
 /* Fenêtre du QR animé (portefeuille mobile). */
 .Transfert {
-  width: min(96vw, 760px);
+  width: min(96vw, 1040px);
   max-height: 96vh;
   border: none;
   border-radius: var(--rayon);
@@ -394,7 +394,7 @@ textarea {
 
 .Transfert-qr {
   display: block;
-  width: min(100%, calc(96vh - 260px));
+  width: min(100%, calc(96vh - 280px));
   height: auto;
   margin: 12px auto 6px;
   border-radius: 8px;
@@ -412,4 +412,35 @@ textarea {
   flex-wrap: wrap;
   justify-content: center;
   gap: 8px;
+}
+
+/* Deux étapes côte à côte : installer l'appli, puis scanner la carte. */
+.Transfert-etapes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 24px;
+}
+
+.Transfert-etape {
+  flex: 1 1 420px;
+  min-width: 0;
+}
+
+.Transfert-etape--installation {
+  flex: 0 1 240px;
+}
+
+.Transfert-etape h3 {
+  margin: 8px 0 4px;
+  font-size: 1rem;
+}
+
+.QrLien {
+  display: block;
+  width: 100%;
+  max-width: 240px;
+  margin: 12px auto 6px;
+  border-radius: 8px;
 }

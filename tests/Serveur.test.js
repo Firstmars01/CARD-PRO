@@ -100,3 +100,10 @@ test('portefeuille : servi avec la caméra autorisée, redirection du « / » fi
   assert.match((await fetch(`${base}/`)).headers.get('permissions-policy'), /camera=\(\)/);
   assert.equal((await fetch(`${base}/portefeuille/../serveur/Serveur.js`)).status, 404);
 });
+
+test("configuration : adresse de l'appli mobile en HTTPS uniquement", async () => {
+  assert.equal(lireConfiguration({ LIEN_PORTEFEUILLE: 'https://exemple.github.io/app/portefeuille/' }).lienPortefeuille, 'https://exemple.github.io/app/portefeuille/');
+  assert.equal(lireConfiguration({ LIEN_PORTEFEUILLE: 'http://exemple.fr/' }).lienPortefeuille, '');
+  assert.equal(lireConfiguration({ LIEN_PORTEFEUILLE: 'javascript:alert(1)' }).lienPortefeuille, '');
+  assert.deepEqual((await appeler('GET', '/api/configuration')).donnees, { lienPortefeuille: '' });
+});

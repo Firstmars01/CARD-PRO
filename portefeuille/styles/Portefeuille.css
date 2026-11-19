@@ -309,3 +309,73 @@ a.Coordonnee-valeur {
 .Notification--erreur {
   background: var(--danger);
 }
+
+/* Écran d'installation (appli ouverte dans un navigateur ou sur PC) */
+.Installation {
+  text-align: center;
+}
+
+.Installation p {
+  margin: 10px 0;
+}
+
+.Etapes {
+  max-width: 460px;
+  margin: 16px auto;
+  padding: 0;
+  list-style: none;
+  counter-reset: etape;
+  text-align: left;
+}
+
+.Etapes li {
+  position: relative;
+  margin: 10px 0;
+  padding: 12px 14px 12px 52px;
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon);
+  background: var(--surface);
+  counter-increment: etape;
+}
+
+.Etapes li::before {
+  content: counter(etape);
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  transform: translateY(-50%);
+}
+
+.QrLien {
+  display: block;
+  width: min(100%, 280px);
+  margin: 18px auto 8px;
+  border-radius: 10px;
+}
+
+.Lien-appli {
+  color: var(--texte-doux);
+  font-size: 0.85rem;
+  overflow-wrap: anywhere;
+}
+
+.Installation .Actions {
+  justify-content: center;
+}
+
+.PBouton--grand {
+  min-height: 56px;
+  font-size: 1.1rem;
+}
+
+.Installation .Actions .PBouton {
+  flex: 0 1 300px;
+}

@@ -29,6 +29,8 @@ export function creerServeur(config) {
   const depots = { modeles: creerDepotModeles(base), personnes: creerDepotPersonnes(base) };
   const routeur = new Routeur();
   routeur.ajouter('GET', '/api/sante', (ctx) => envoyerJson(ctx.res, 200, { ok: true }));
+  // Réglages publics utiles à la page (adresse de l'appli mobile).
+  routeur.ajouter('GET', '/api/configuration', (ctx) => envoyerJson(ctx.res, 200, { lienPortefeuille: config.lienPortefeuille }));
   enregistrerRoutesModeles(routeur);
   enregistrerRoutesPersonnes(routeur);
 

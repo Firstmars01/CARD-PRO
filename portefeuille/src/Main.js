@@ -3,6 +3,8 @@
  * Point d'entrée de Card Pro Portefeuille : thème, écrans, chargement des
  * cartes du téléphone, fichiers partagés depuis une autre appli (e-mail)
  * et mode hors ligne (service worker).
+ * Dans un navigateur (appli non installée) ou sur PC, seul l'écran
+ * d'installation est affiché : les fonctions ne sont pas chargées.
  */
 
 import { obtenirElement } from '../../src/Utilitaires/Dom.js';
@@ -13,6 +15,8 @@ import { declarerEcran, demarrerNavigation } from './Interface/Navigation.js';
 import { creerVueListe, importerFichiers } from './Interface/VueListe.js';
 import { creerVueCarte } from './Interface/VueCarte.js';
 import { creerVueScanner } from './Interface/VueScanner.js';
+import { afficherEcranInstallation } from './Interface/EcranInstallation.js';
+import { estInstalle, systeme } from './Utilitaires/Plateforme.js';
 
 const CACHE_PARTAGE = 'cardpro-partage';
 
@@ -49,6 +53,15 @@ async function demarrer() {
   initialiserTheme();
   obtenirElement('entete').append(creerBoutonTheme());
   const principal = obtenirElement('principal');
+  enregistrerServiceWorker();
+
+  // Appli réservée aux téléphones, et seulement une fois installée.
+  if (!estInstalle() || systeme() === 'pc') {
+    obtenirElement('chargement').hidden = true;
+    afficherEcranInstallation(principal);
+    return;
+  }
+
   [['liste', creerVueListe()], ['carte', creerVueCarte()], ['scanner', creerVueScanner()]].forEach(([nom, ecran]) => {
     ecran.element.hidden = true;
     principal.append(ecran.element);
@@ -58,7 +71,6 @@ async function demarrer() {
   obtenirElement('chargement').hidden = true;
   demarrerNavigation();
   await importerFichiersPartages();
-  enregistrerServiceWorker();
 }
 
 demarrer().catch((erreur) => {

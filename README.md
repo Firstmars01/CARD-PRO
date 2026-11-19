@@ -96,7 +96,7 @@ CARD PRO/
 │   │   ├── Cartes/            # Liste, formulaire, import, aperçu, exports, QR animé du portefeuille
 │   │   ├── Themes.js          # Thème clair / sombre (partagé avec le portefeuille)
 │   │   ├── Modeles/           # Éditeur : zone, outils, raccourcis, propriétés, calques, modèles
-│   │   └── Rendu/             # Dessin des faces, du QR, dégradés, ombres et motifs en SVG
+│   │   └── Rendu/             # Dessin des faces, du QR, dégradés, ombres et motifs en SVG ; QR d'un lien
 │   ├── Metier/                # Personne, éléments, modèles, formats, palette, icônes, alignement, polices, vCard, import, état,
 │   │                          # PaquetCarte (carte complète compressée), TransfertQr (découpage en QR animé)
 │   ├── Donnees/               # Appels à l'API
@@ -113,10 +113,10 @@ CARD PRO/
 │   ├── vendor/                # jsQR (ajouté à la publication)
 │   └── src/
 │       ├── Main.js            # Point d'entrée
-│       ├── Interface/         # Écrans : liste, carte (recto / verso), scanner ; navigation
+│       ├── Interface/         # Écrans : installation, liste, carte (recto / verso), scanner ; navigation
 │       ├── Metier/            # Portefeuille : import, liste, suppression
 │       ├── Donnees/           # Stockage sur le téléphone (IndexedDB)
-│       └── Utilitaires/       # Lecture des QR par la caméra
+│       └── Utilitaires/       # Lecture des QR par la caméra, détection de l'appareil et de l'installation
 └── tests/                     # Tests unitaires, de l'API et du portefeuille
 ```
 
@@ -143,7 +143,7 @@ docker compose cp cardpro:/donnees/cardpro.sqlite ./sauvegarde.sqlite   # sauveg
 
 > Si tu avais installé une ancienne version de Card Pro, recharge la page avec **Ctrl + F5** la première fois.
 >
-> Après une mise à jour du code, relance **`docker compose up -d --build`** (le `--build` est indispensable : sans lui, Docker garde l'ancienne version). Le numéro affiché à côté du titre (ex. « v3.2 ») confirme la version chargée.
+> Après une mise à jour du code, relance **`docker compose up -d --build`** (le `--build` est indispensable : sans lui, Docker garde l'ancienne version). Le numéro affiché à côté du titre (ex. « v3.3 ») confirme la version chargée.
 
 ## Développement sans Docker
 
@@ -151,7 +151,7 @@ Il faut Node.js 22.13 ou plus récent.
 
 ```bash
 npm start      # http://localhost:3000 (base dans ./donnees)
-npm test       # 36 tests
+npm test       # 37 tests
 ```
 
 ## QR codes des liens
@@ -183,10 +183,20 @@ L'appareil photo et l'installation d'une application web exigent le **HTTPS** : 
 
 ### Installer l'application sur le téléphone
 
-- **Android (Chrome)** : ouvre l'adresse → menu ⋮ → **Installer l'application**.
-- **iPhone (Safari)** : ouvre l'adresse → bouton **Partager** → **Sur l'écran d'accueil**.
+La page web du portefeuille ne sert **qu'à installer l'appli** : les cartes, le scan et l'import ne s'ouvrent que dans l'appli installée, sur un téléphone.
 
-L'icône Card Pro apparaît comme une application. Elle fonctionne ensuite **hors ligne**.
+| Ouvert depuis | Ce que la page affiche |
+| --- | --- |
+| **Android** (Chrome, Edge, Samsung…) | Un bouton **Installer l'application** (ou les étapes du menu ⋮ si le navigateur ne le propose pas). |
+| **iPhone / iPad** (Safari) | Les étapes : **Partager → Sur l'écran d'accueil → Ajouter**. |
+| Autre navigateur sur iPhone, navigateur intégré (Gmail, Outlook, Facebook…) | « Ouvre ce lien dans Safari / dans Chrome » + **Copier le lien**. |
+| **PC** | « Installe Card Pro sur ton téléphone » + un **QR code** du lien à scanner. |
+
+L'icône Card Pro apparaît ensuite sur l'écran d'accueil comme une application. Elle fonctionne **hors ligne**.
+
+### Adresse de l'appli dans la page des RH
+
+Dans `docker-compose.yml`, la variable `LIEN_PORTEFEUILLE` contient l'adresse de l'appli (HTTPS obligatoire). Elle est affichée en **QR code d'installation** à côté du QR animé : la personne installe l'appli, puis scanne sa carte dans la foulée. Si tu changes d'adresse, modifie cette ligne puis relance `docker compose up -d --build`.
 
 ### Donner une carte à quelqu'un
 
@@ -205,9 +215,9 @@ Pratique : dans l'e-mail, mets le lien du portefeuille (pour l'installer) **et**
 - Une carte reçue plusieurs fois est ajoutée plusieurs fois : la personne supprime elle-même celles dont elle ne veut plus.
 - Les fichiers `.cardpro` et `-portefeuille.gif` sont aussi inclus dans les ZIP.
 
-### Essayer sur le PC
+### Essayer en local
 
-Le serveur Docker sert aussi le portefeuille : **http://localhost:8080/portefeuille/** (import de fichiers, affichage, thème). Le scan par caméra a besoin du lecteur intégré (Android) ou de jsQR (voir `portefeuille/vendor/LISEZMOI.md`).
+Le serveur Docker sert aussi le portefeuille : **http://localhost:8080/portefeuille/**. Sur PC, il n'affiche que l'écran « Installe Card Pro sur ton téléphone » (c'est voulu). Pour tester l'appli elle-même, utilise l'adresse GitHub Pages sur un téléphone.
 
 ## Exemples d'utilisation
 
@@ -247,4 +257,6 @@ Le serveur Docker sert aussi le portefeuille : **http://localhost:8080/portefeui
   - les cartes lues depuis le stockage sont revalidées avant affichage ; les liens d'appel et d'e-mail sont construits à partir de valeurs déjà nettoyées ;
   - le QR animé est contrôlé par un **CRC-32** : une lecture incomplète ou erronée est rejetée ;
   - la page web n'a pas accès à la caméra (`Permissions-Policy: camera=()`), seul le portefeuille y a droit ;
+  - l'appli ne s'ouvre qu'installée sur un téléphone : c'est une règle d'usage, pas une protection (le code est public et ne contient aucune donnée) ;
+  - l'adresse de l'appli (`LIEN_PORTEFEUILLE`) est validée par le serveur : HTTPS uniquement ;
   - la publication GitHub n'a que les droits nécessaires (lecture du code, écriture sur Pages), lance les tests avant de publier, et fige la version de jsQR.

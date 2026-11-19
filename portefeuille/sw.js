@@ -7,7 +7,7 @@
  * Change VERSION à chaque mise à jour pour renouveler les fichiers.
  */
 
-const VERSION = 'v1';
+const VERSION = 'v2';
 const CACHE_APPLI = `cardpro-portefeuille-${VERSION}`;
 const CACHE_PARTAGE = 'cardpro-partage';
 const TAILLE_MAX_PARTAGE = 20 * 1024 * 1024;
@@ -23,12 +23,14 @@ const FICHIERS = [
   './src/Main.js',
   './src/Donnees/StockageCartes.js',
   './src/Metier/Portefeuille.js',
+  './src/Interface/EcranInstallation.js',
   './src/Interface/Navigation.js',
   './src/Interface/RenduCarte.js',
   './src/Interface/VueCarte.js',
   './src/Interface/VueListe.js',
   './src/Interface/VueScanner.js',
   './src/Utilitaires/LecteurQr.js',
+  './src/Utilitaires/Plateforme.js',
   '../assets/styles/Themes.css',
   '../assets/icons/Icone.svg',
   '../assets/icons/Icone192.png',
@@ -37,6 +39,7 @@ const FICHIERS = [
   '../src/Interface/Notifications.js',
   '../src/Interface/Themes.js',
   '../src/Interface/Rendu/Peintures.js',
+  '../src/Interface/Rendu/QrLien.js',
   '../src/Interface/Rendu/RenduFaceSvg.js',
   '../src/Interface/Rendu/RenduQrSvg.js',
   '../src/Metier/ContenuQr.js',

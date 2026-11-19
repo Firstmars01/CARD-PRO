@@ -5,9 +5,12 @@
 services:
   cardpro:
     build: .
-    image: cardpro:3.2.0
+    image: cardpro:3.3.0
     container_name: cardpro
     restart: unless-stopped
+    environment:
+      # Adresse de l'appli mobile (GitHub Pages) : affichée en QR code pour l'installer.
+      LIEN_PORTEFEUILLE: "https://firstmars01.github.io/CARD-PRO/portefeuille/"
     ports:
       - "8080:3000"
     volumes:
