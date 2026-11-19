@@ -11,14 +11,23 @@ import { genererQrPersonne } from '../../../src/Metier/ContenuQr.js';
 const cacheQr = new WeakMap();
 
 /**
+ * QR code « fiche contact » (vCard complète) de la carte.
+ * @param {{personne:object}} carte - Carte du portefeuille.
+ * @returns {object|null} QR code, ou null si le contact est trop long.
+ */
+export function qrContact(carte) {
+  if (!cacheQr.has(carte)) cacheQr.set(carte, genererQrPersonne(carte.personne).qr);
+  return cacheQr.get(carte);
+}
+
+/**
  * Crée le SVG d'une face (recto ou verso).
  * @param {{personne:object, modele:object}} carte - Carte du portefeuille.
  * @param {"recto"|"verso"} cote - Face.
  * @returns {SVGSVGElement} Face, qui s'adapte à la largeur disponible.
  */
 export function dessinerFace(carte, cote) {
-  if (!cacheQr.has(carte)) cacheQr.set(carte, genererQrPersonne(carte.personne).qr);
-  const svg = rendreFaceSvg(carte.modele, cote, carte.personne, cacheQr.get(carte));
+  const svg = rendreFaceSvg(carte.modele, cote, carte.personne, qrContact(carte));
   svg.removeAttribute('width');
   svg.removeAttribute('height');
   svg.classList.add('Face');

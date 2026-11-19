@@ -7,7 +7,7 @@
  * Change VERSION à chaque mise à jour pour renouveler les fichiers.
  */
 
-const VERSION = 'v2';
+const VERSION = 'v3';
 const CACHE_APPLI = `cardpro-portefeuille-${VERSION}`;
 const CACHE_PARTAGE = 'cardpro-partage';
 const TAILLE_MAX_PARTAGE = 20 * 1024 * 1024;
@@ -25,6 +25,7 @@ const FICHIERS = [
   './src/Metier/Portefeuille.js',
   './src/Interface/EcranInstallation.js',
   './src/Interface/Navigation.js',
+  './src/Interface/PartageContact.js',
   './src/Interface/RenduCarte.js',
   './src/Interface/VueCarte.js',
   './src/Interface/VueListe.js',

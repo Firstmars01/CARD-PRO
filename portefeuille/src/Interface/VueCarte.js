@@ -1,18 +1,17 @@
 /**
  * VueCarte.js
  * Écran d'une carte : recto et verso en grand (on touche la carte pour la
- * retourner), coordonnées cliquables, ajout aux contacts et suppression.
+ * retourner), coordonnées cliquables, transmission du contact (QR plein
+ * écran, partage), ajout aux contacts et suppression.
  */
 
 import { creerElement, vider } from '../../../src/Utilitaires/Dom.js';
-import { telechargerBlob } from '../../../src/Utilitaires/Telechargement.js';
-import { nomFichierSur } from '../../../src/Utilitaires/Validation.js';
-import { genererVCard } from '../../../src/Metier/GenerateurVCard.js';
 import { valeurChamp, urlLisible } from '../../../src/Metier/Personne.js';
 import { notifier } from '../../../src/Interface/Notifications.js';
 import { trouverCarte, retirerCarte, titreCarte } from '../Metier/Portefeuille.js';
 import { dessinerFace } from './RenduCarte.js';
 import { revenirALaListe } from './Navigation.js';
+import { montrerContact, envoyerContact, ajouterAuxContacts } from './PartageContact.js';
 
 /**
  * Crée une ligne de coordonnée (lien cliquable).
@@ -59,24 +58,6 @@ function creerCoordonnees(personne) {
 }
 
 /**
- * Propose le contact au téléphone (partage vers « Contacts », sinon téléchargement .vcf).
- * @param {object} carte - Carte.
- */
-async function ajouterAuxContacts(carte) {
-  const nom = `${nomFichierSur(titreCarte(carte), 'contact')}.vcf`;
-  const fichier = new File([genererVCard(carte.personne)], nom, { type: 'text/vcard' });
-  if (navigator.canShare?.({ files: [fichier] })) {
-    try {
-      await navigator.share({ files: [fichier], title: titreCarte(carte) });
-      return;
-    } catch (erreur) {
-      if (erreur.name === 'AbortError') return; // Partage annulé par la personne
-    }
-  }
-  telechargerBlob(fichier, nom);
-}
-
-/**
  * Crée l'écran « carte ».
  * @returns {{element:HTMLElement, afficher:(id:string) => void}} Écran.
  */
@@ -120,8 +101,16 @@ export function creerVueCarte() {
         notifier(erreur.message, 'erreur');
       }
     });
-    const contact = creerElement('button', { classe: 'PBouton PBouton--principal', texte: 'Ajouter aux contacts', attributs: { type: 'button' } });
-    contact.addEventListener('click', () => ajouterAuxContacts(carte).catch(() => notifier("Ajout aux contacts impossible.", 'erreur')));
+    // Boutons d'action : [libellé, style, action].
+    const [montrer, envoyer, contact] = [
+      ['Montrer le contact', 'PBouton PBouton--principal', montrerContact],
+      ['Envoyer le contact', 'PBouton', envoyerContact],
+      ['Ajouter à mes contacts', 'PBouton', ajouterAuxContacts],
+    ].map(([texte, classe, action]) => {
+      const bouton = creerElement('button', { classe, texte, attributs: { type: 'button' } });
+      bouton.addEventListener('click', () => action(carte).catch(() => notifier('Action impossible.', 'erreur')));
+      return bouton;
+    });
     const retour = creerElement('button', { classe: 'PBouton', texte: '← Mes cartes', attributs: { type: 'button' } });
     retour.addEventListener('click', () => history.back());
 
@@ -131,6 +120,7 @@ export function creerVueCarte() {
       creerElement('p', { classe: 'Astuce', texte: 'Touche la carte pour voir le recto ou le verso.' }),
       creerElement('h2', { classe: 'Carte-nom', texte: titreCarte(carte) }),
       creerElement('p', { classe: 'Carte-poste', texte: [personne.poste, personne.entreprise].filter(Boolean).join(' · ') }),
+      creerElement('div', { classe: 'Actions' }, [montrer, envoyer]),
       creerCoordonnees(personne),
       creerElement('div', { classe: 'Actions' }, [contact, supprimer]),
     );

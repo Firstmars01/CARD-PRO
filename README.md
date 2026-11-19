@@ -113,7 +113,7 @@ CARD PRO/
 │   ├── vendor/                # jsQR (ajouté à la publication)
 │   └── src/
 │       ├── Main.js            # Point d'entrée
-│       ├── Interface/         # Écrans : installation, liste, carte (recto / verso), scanner ; navigation
+│       ├── Interface/         # Écrans : installation, liste, carte (recto / verso), scanner ; navigation ; partage du contact
 │       ├── Metier/            # Portefeuille : import, liste, suppression
 │       ├── Donnees/           # Stockage sur le téléphone (IndexedDB)
 │       └── Utilitaires/       # Lecture des QR par la caméra, détection de l'appareil et de l'installation
@@ -170,6 +170,12 @@ npm test       # 37 tests
 ## Portefeuille mobile (Card Pro Portefeuille)
 
 Une application pour téléphone qui remplace la carte papier : la personne garde les cartes reçues, avec le **recto et le verso** exactement comme sur la page web, ses coordonnées cliquables et un bouton « Ajouter aux contacts ». Les cartes restent **sur le téléphone** : rien n'est envoyé sur Internet.
+
+Depuis une carte ouverte, on peut aussi **transmettre le contact** à quelqu'un :
+- **Montrer le contact** : le QR code de la fiche contact complète s'affiche en plein écran (noir sur blanc, écran maintenu allumé). L'autre personne le scanne avec l'appareil photo, sans appli.
+- **Envoyer le contact** : ouvre le menu de partage du téléphone (Quick Share, AirDrop, WhatsApp, SMS, e-mail…) avec le fichier `.vcf`.
+
+> Le NFC entre deux téléphones n'est pas possible depuis une appli web (navigateurs et Apple ne le permettent pas) : ces deux options le remplacent.
 
 ### Mise en ligne (une seule fois)
 
