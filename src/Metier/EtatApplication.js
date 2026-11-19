@@ -111,6 +111,32 @@ export async function ajouterPersonne(modeleId) {
 }
 
 /**
+ * Ajoute une personne déjà remplie (import d'une carte).
+ * @param {object} personne - Personne (revalidée par le serveur).
+ * @param {string} modeleId - Modèle de sa carte.
+ * @returns {Promise<object>} Entrée créée.
+ */
+export async function ajouterPersonneRemplie(personne, modeleId) {
+  const entree = normaliserEntree(await DepotPersonnes.creerPersonne(normaliserPersonne(personne), modeleId));
+  etat.personnes.push(entree);
+  notifier('personnes');
+  return entree;
+}
+
+/**
+ * Remplace les informations et le modèle d'une personne, enregistrés tout de suite.
+ * @param {string} id - Identifiant.
+ * @param {object} personne - Nouvelles informations.
+ * @param {string} modeleId - Modèle de sa carte.
+ * @returns {Promise<void>}
+ */
+export async function remplacerPersonne(id, personne, modeleId) {
+  modifierPersonne(id, { personne, modeleId });
+  await sauvegarderPersonne(id);
+  notifier('personnes');
+}
+
+/**
  * Modifie une personne (sauvegarde différée, regroupe les frappes).
  * @param {string} id - Identifiant.
  * @param {{personne?:object, modeleId?:string}} modifications - Changements.

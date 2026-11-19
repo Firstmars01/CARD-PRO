@@ -17,6 +17,7 @@ Application Windows (**CardPro-RH.exe**, sans installation) pour créer les **ca
 - Choix du modèle pour chaque carte.
 - Aperçu en direct du **recto** et du **verso**, avec une alerte si le QR code risque d'être mal lu.
 - **Import d'une liste** (CSV exporté d'Excel) avec un fichier modèle à télécharger.
+- **Import d'une carte** (`.cardpro` ou GIF de portefeuille) : la personne est ajoutée avec, au choix, un **nouveau modèle** créé à partir du design de la carte ou un **modèle existant** ; si elle est déjà dans la liste (même prénom, nom et e-mail), Card Pro demande s'il faut **mettre à jour** sa fiche ou en **créer une nouvelle**.
 - **Téléchargements** : recto/verso en PNG, JPG et SVG (300 dpi), PDF recto + verso au format de la carte, planche A4 recto-verso, **PDF imprimeur** (fonds perdus 3 mm + traits de coupe), contact `.vcf`, ZIP de la carte, et **ZIP de toutes les cartes** (un dossier par personne).
 
 ### Onglet « Modèles »

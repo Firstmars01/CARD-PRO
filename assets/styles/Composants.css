@@ -444,3 +444,58 @@ textarea {
   margin: 12px auto 6px;
   border-radius: 8px;
 }
+
+/* Fenêtre « Importer une carte » */
+.ImportCarte {
+  width: min(96vw, 560px);
+  border: none;
+  border-radius: var(--rayon);
+  padding: 20px;
+  background: var(--surface);
+  color: var(--texte);
+  box-shadow: var(--ombre);
+}
+
+.ImportCarte::backdrop {
+  background: var(--voile);
+}
+
+.ImportCarte-apercu {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 260px;
+  margin: 8px 0 12px;
+}
+
+.ImportCarte-groupe {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--bordure);
+  border-radius: 10px;
+}
+
+.ImportCarte-groupe legend {
+  padding: 0 4px;
+  font-weight: 600;
+}
+
+.Choix {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0;
+  cursor: pointer;
+}
+
+.Choix-ligne {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.Choix-ligne select {
+  flex: 1 1 200px;
+  width: auto;
+}

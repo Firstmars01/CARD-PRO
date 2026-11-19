@@ -5,8 +5,7 @@
  * (fichier ou stockage) est revalidée avant d'être affichée.
  */
 
-import { lirePaquet, estPaquet, IDENTIFIANT_GIF, TAILLE_MAX_PAQUET } from '../../../src/Metier/PaquetCarte.js';
-import { extraireDonneesGif } from '../../../src/Utilitaires/LectureGif.js';
+import { lirePaquet, extrairePaquet } from '../../../src/Metier/PaquetCarte.js';
 import { normaliserPersonne, nomComplet } from '../../../src/Metier/Personne.js';
 import { normaliserModele } from '../../../src/Metier/ModeleCarte.js';
 import { listerCartes, enregistrerCarte, supprimerCarte } from '../Donnees/StockageCartes.js';
@@ -97,11 +96,7 @@ export async function ajouterDepuisPaquet(paquet) {
  */
 export async function importerFichier(fichier) {
   if (fichier.size > TAILLE_MAX_FICHIER) throw new Error('Fichier trop volumineux.');
-  const octets = new Uint8Array(await fichier.arrayBuffer());
-  if (estPaquet(octets)) return ajouterDepuisPaquet(octets);
-  const paquet = extraireDonneesGif(octets, IDENTIFIANT_GIF, TAILLE_MAX_PAQUET);
-  if (paquet) return ajouterDepuisPaquet(paquet);
-  throw new Error("Ce fichier n'est pas une carte Card Pro (choisis le GIF ou le fichier .cardpro reçu).");
+  return ajouterDepuisPaquet(extrairePaquet(new Uint8Array(await fichier.arrayBuffer())));
 }
 
 /**

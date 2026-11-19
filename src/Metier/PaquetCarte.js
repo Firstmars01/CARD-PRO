@@ -19,6 +19,7 @@ import { normaliserPersonne } from './Personne.js';
 import { normaliserModele } from './ModeleCarte.js';
 import { compresser, decompresser } from '../Utilitaires/Compression.js';
 import { dataUrlVersOctets, octetsVersDataUrl } from '../Utilitaires/DataUrl.js';
+import { extraireDonneesGif } from '../Utilitaires/LectureGif.js';
 
 const SIGNATURE = [0x43, 0x50, 0x52, 0x4f]; // "CPRO"
 const VERSION_PAQUET = 1;
@@ -126,6 +127,20 @@ export async function creerPaquet(personne, modele) {
  */
 export function estPaquet(octets) {
   return octets.length > 5 && SIGNATURE.every((o, i) => octets[i] === o);
+}
+
+/**
+ * Retrouve le paquet d'une carte dans un fichier reçu : .cardpro, ou GIF de
+ * portefeuille (la carte y est cachée).
+ * @param {Uint8Array} octets - Contenu du fichier (source non fiable).
+ * @returns {Uint8Array} Paquet de la carte.
+ * @throws {Error} Si le fichier n'est ni un .cardpro ni un GIF Card Pro.
+ */
+export function extrairePaquet(octets) {
+  if (estPaquet(octets)) return octets;
+  const paquet = extraireDonneesGif(octets, IDENTIFIANT_GIF, TAILLE_MAX_PAQUET);
+  if (paquet) return paquet;
+  throw new Error("Ce fichier n'est pas une carte Card Pro (choisis le GIF ou le fichier .cardpro reçu).");
 }
 
 /**
