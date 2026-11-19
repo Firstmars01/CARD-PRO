@@ -4,6 +4,8 @@
  * uniquement) : le téléphone se fait passer pour une puce NFC. Un autre
  * téléphone approché reçoit la fiche contact (Android) ou un lien qui
  * l'ouvre (iPhone). Le partage s'arrête en quittant la carte.
+ * Ailleurs, la section explique pourquoi le NFC n'est pas disponible
+ * (appli web sur Android → télécharger l'APK ; téléphone sans NFC).
  */
 
 import { creerElement, vider } from '../../../src/Utilitaires/Dom.js';
@@ -11,6 +13,7 @@ import { genererVCard } from '../../../src/Metier/GenerateurVCard.js';
 import { creerLienContact } from '../../../src/Metier/LienContact.js';
 import { notifier } from '../../../src/Interface/Notifications.js';
 import { ADRESSE_SITE } from '../AdresseSite.js';
+import { systeme } from '../Utilitaires/Plateforme.js';
 import {
   estAppliAndroid, etatNfc, activerNfc, desactiverNfc, ouvrirReglagesNfc, nfcActif,
 } from '../Utilitaires/PontAndroid.js';
@@ -29,12 +32,34 @@ function bouton(texte, classe, action) {
 }
 
 /**
+ * Section d'information quand le partage NFC est impossible ici.
+ * @returns {HTMLElement|null} Section, ou null sur iPhone / PC (pas d'envoi NFC possible).
+ */
+function sectionIndisponible() {
+  let contenu;
+  if (estAppliAndroid()) {
+    contenu = [creerElement('p', { classe: 'Astuce', texte: "Ce téléphone n'a pas de NFC compatible avec le partage de carte." })];
+  } else if (systeme() === 'android') {
+    contenu = [
+      creerElement('p', { classe: 'Astuce', texte: "Le partage NFC fonctionne dans l'appli Android Card Pro (APK), pas dans la version web. Installe-la, puis réimporte tes cartes." }),
+      creerElement('div', { classe: 'Actions' }, [creerElement('a', {
+        classe: 'PBouton', texte: "Télécharger l'appli Android",
+        attributs: { href: '../telechargement/CardPro.apk', download: 'CardPro.apk', type: 'application/vnd.android.package-archive' },
+      })]),
+    ];
+  } else {
+    return null;
+  }
+  return creerElement('section', { classe: 'Nfc' }, [creerElement('h3', { classe: 'Nfc-titre', texte: 'Partager par NFC' }), ...contenu]);
+}
+
+/**
  * Crée la section NFC d'une carte.
  * @param {object} carte - Carte du portefeuille.
  * @returns {{element:HTMLElement|null, fermer:() => void}} Section (null hors appli Android) et fermeture (coupe le partage).
  */
 export function creerSectionNfc(carte) {
-  if (!estAppliAndroid() || etatNfc() === 'absent') return { element: null, fermer: () => {} };
+  if (!estAppliAndroid() || etatNfc() === 'absent') return { element: sectionIndisponible(), fermer: () => {} };
   const element = creerElement('section', { classe: 'Nfc', attributs: { 'aria-live': 'polite' } });
   let actif = false;
 

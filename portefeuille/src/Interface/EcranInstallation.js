@@ -107,6 +107,7 @@ function contenuAndroid() {
   return [
     creerElement('h2', { classe: 'Titre-ecran', texte: "Installe l'appli Card Pro" }),
     creerElement('div', { classe: 'Actions' }, [telecharger]),
+    creerElement('p', { classe: 'Astuce', texte: "Tu avais installé l'ancienne version web ? Désinstalle-la (appui long sur son icône → Désinstaller), puis installe l'appli ci-dessous." }),
     listeEtapes([
       "Touche « Télécharger l'appli Card Pro ».",
       'Ouvre le fichier CardPro.apk (notification de téléchargement).',

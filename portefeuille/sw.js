@@ -7,7 +7,7 @@
  * Change VERSION à chaque mise à jour pour renouveler les fichiers.
  */
 
-const VERSION = 'v4';
+const VERSION = 'v6';
 const CACHE_APPLI = `cardpro-portefeuille-${VERSION}`;
 const CACHE_PARTAGE = 'cardpro-partage';
 const TAILLE_MAX_PARTAGE = 20 * 1024 * 1024;

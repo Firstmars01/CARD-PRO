@@ -3,8 +3,11 @@
  * Point d'entrée de Card Pro Portefeuille : thème, écrans, chargement des
  * cartes du téléphone, fichiers partagés depuis une autre appli (e-mail)
  * et mode hors ligne (service worker).
- * Dans un navigateur (appli non installée) ou sur PC, seul l'écran
- * d'installation est affiché : les fonctions ne sont pas chargées.
+ * Seules deux façons d'ouvrir l'appli donnent accès aux fonctions :
+ *  - l'appli Android (APK) ;
+ *  - l'appli web ajoutée à l'écran d'accueil d'un iPhone.
+ * Partout ailleurs (navigateur, PC, ancienne appli web sur Android), seul
+ * l'écran d'installation est affiché.
  */
 
 import { obtenirElement } from '../../src/Utilitaires/Dom.js';
@@ -29,6 +32,27 @@ function enregistrerServiceWorker() {
   if ('serviceWorker' in navigator && !estAppliAndroid()) {
     navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(() => {});
   }
+}
+
+/**
+ * Rend la page installable comme appli web, sur iPhone uniquement.
+ * Sur Android, l'absence de manifeste empêche Chrome de proposer
+ * « Installer l'application » : seule l'APK s'installe.
+ */
+function ajouterManifesteIphone() {
+  if (systeme() !== 'ios') return;
+  const lien = document.createElement('link');
+  lien.rel = 'manifest';
+  lien.href = 'manifest.webmanifest';
+  document.head.append(lien);
+}
+
+/**
+ * Indique si les fonctions de l'appli sont autorisées ici.
+ * @returns {boolean} true dans l'APK Android ou l'appli web installée sur iPhone.
+ */
+function appliAutorisee() {
+  return estAppliAndroid() || (systeme() === 'ios' && estInstalle());
 }
 
 /**
@@ -63,10 +87,11 @@ async function demarrer() {
   initialiserTheme();
   obtenirElement('entete').append(creerBoutonTheme());
   const principal = obtenirElement('principal');
+  ajouterManifesteIphone();
   enregistrerServiceWorker();
 
-  // Appli réservée aux téléphones, et seulement une fois installée.
-  if (!estInstalle() || systeme() === 'pc') {
+  // Appli réservée à l'APK Android et à l'appli installée sur iPhone.
+  if (!appliAutorisee()) {
     obtenirElement('chargement').hidden = true;
     afficherEcranInstallation(principal);
     return;
