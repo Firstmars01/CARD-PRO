@@ -1,30 +1,50 @@
 /**
  * ModeleCarte.js
- * Modèle de carte (le design) : un nom, un arrondi d'aperçu et deux faces
- * (recto et verso). Chaque face a un fond et une liste d'éléments.
+ * Modèle de carte (le design) : un nom, un format (taille + orientation),
+ * une palette de couleurs, un arrondi d'aperçu et deux faces (recto et
+ * verso). Chaque face a un fond (couleur, dégradé, image, motif, voile)
+ * et une liste d'éléments.
  */
 
 import { normaliserObjet, nouvelId, idValide } from '../Utilitaires/Schema.js';
 import { nettoyerTexte } from '../Utilitaires/Validation.js';
 import { normaliserElement } from './Elements.js';
+import { OPTIONS_FORMATS } from './Formats.js';
+import { TAILLE_PALETTE } from './Palette.js';
 
 export const ELEMENTS_MAX = 40;
 export const COTES = { recto: 'Recto', verso: 'Verso' };
 
 // Réglages du fond d'une face.
 export const SCHEMA_FOND = [
-  { cle: 'type', type: 'choix', libelle: 'Type de fond', options: [['uni', 'Uni'], ['degrade', 'Dégradé'], ['image', 'Image']] },
-  { cle: 'couleur1', type: 'couleur', libelle: 'Couleur principale' },
-  { cle: 'couleur2', type: 'couleur', libelle: 'Seconde couleur', visibleSi: (f) => f.type === 'degrade' },
-  { cle: 'angle', type: 'plage', libelle: 'Angle du dégradé', min: 0, max: 360, visibleSi: (f) => f.type === 'degrade' },
-  { cle: 'image', type: 'image', libelle: 'Image de fond', visibleSi: (f) => f.type === 'image' },
+  { cle: 'type', type: 'choix', libelle: 'Type de fond', groupe: 'Fond', options: [['uni', 'Uni'], ['degrade', 'Dégradé linéaire'], ['radial', 'Dégradé circulaire'], ['image', 'Image']] },
+  { cle: 'couleur1', type: 'couleur', libelle: 'Couleur principale', groupe: 'Fond' },
+  { cle: 'couleur2', type: 'couleur', libelle: 'Seconde couleur', groupe: 'Fond', visibleSi: (f) => f.type === 'degrade' || f.type === 'radial' },
+  { cle: 'angle', type: 'plage', libelle: 'Angle du dégradé', groupe: 'Fond', min: 0, max: 360, visibleSi: (f) => f.type === 'degrade' },
+  { cle: 'image', type: 'image', libelle: 'Image de fond', groupe: 'Fond', visibleSi: (f) => f.type === 'image' },
+  { cle: 'motif', type: 'choix', libelle: 'Motif', groupe: 'Motif', options: [['aucun', 'Aucun'], ['points', 'Points'], ['lignes', 'Lignes'], ['diagonales', 'Diagonales'], ['grille', 'Grille'], ['cercles', 'Cercles'], ['vagues', 'Vagues']] },
+  { cle: 'motifCouleur', type: 'couleur', libelle: 'Couleur du motif', groupe: 'Motif', visibleSi: (f) => f.motif !== 'aucun' },
+  { cle: 'motifOpacite', type: 'plage', libelle: 'Opacité du motif (%)', groupe: 'Motif', min: 0, max: 100, visibleSi: (f) => f.motif !== 'aucun' },
+  { cle: 'motifTaille', type: 'plage', libelle: 'Espacement du motif', groupe: 'Motif', min: 10, max: 120, visibleSi: (f) => f.motif !== 'aucun' },
+  { cle: 'voileOpacite', type: 'plage', libelle: 'Voile de couleur (%) — rend le texte lisible sur une image', groupe: 'Voile', min: 0, max: 90 },
+  { cle: 'voileCouleur', type: 'couleur', libelle: 'Couleur du voile', groupe: 'Voile', visibleSi: (f) => f.voileOpacite > 0 },
 ];
-const FOND_DEFAUT = { type: 'uni', couleur1: '#ffffff', couleur2: '#e8eef5', angle: 135, image: '' };
+const FOND_DEFAUT = {
+  type: 'uni', couleur1: '#ffffff', couleur2: '#e8eef5', angle: 135, image: '',
+  motif: 'aucun', motifCouleur: '#2563eb', motifOpacite: 20, motifTaille: 30, voileOpacite: 0, voileCouleur: '#000000',
+};
 
-// Réglages globaux du modèle.
+// Réglages globaux du modèle : format, palette, arrondi d'aperçu.
 export const SCHEMA_MODELE = [
-  { cle: 'arrondi', type: 'plage', libelle: "Arrondi des coins (aperçu et images)", min: 0, max: 40 },
+  { cle: 'format', type: 'choix', libelle: 'Format de la carte', groupe: 'Format', options: OPTIONS_FORMATS },
+  { cle: 'orientation', type: 'choix', libelle: 'Orientation', groupe: 'Format', options: [['paysage', 'Paysage (horizontale)'], ['portrait', 'Portrait (verticale)']] },
+  { cle: 'arrondi', type: 'plage', libelle: 'Arrondi des coins (aperçu et images)', groupe: 'Format', min: 0, max: 40 },
+  ...Array.from({ length: TAILLE_PALETTE }, (_, i) => ({ cle: `palette${i + 1}`, type: 'couleur', libelle: `Couleur ${i + 1}`, groupe: 'Palette' })),
 ];
+const MODELE_DEFAUT = {
+  format: 'standard', orientation: 'paysage', arrondi: 16,
+  palette1: '#1d2430', palette2: '#2563eb', palette3: '#5b6575', palette4: '#ffffff', palette5: '#f5b942',
+};
 
 /**
  * Crée une face vide.
@@ -58,14 +78,14 @@ export function normaliserFace(brut) {
 /**
  * Valide un modèle complet.
  * @param {unknown} brut - Modèle non fiable.
- * @returns {object} Modèle propre { id, nom, arrondi, recto, verso }.
+ * @returns {object} Modèle propre { id, nom, format, orientation, arrondi, palette1…5, recto, verso }.
  */
 export function normaliserModele(brut) {
   const source = brut && typeof brut === 'object' ? brut : {};
   return {
     id: idValide(source.id) ? source.id : nouvelId('m'),
     nom: nettoyerTexte(source.nom, 50) || 'Modèle sans nom',
-    ...normaliserObjet(SCHEMA_MODELE, source, { arrondi: 16 }),
+    ...normaliserObjet(SCHEMA_MODELE, source, MODELE_DEFAUT),
     recto: normaliserFace(source.recto),
     verso: normaliserFace(source.verso),
   };

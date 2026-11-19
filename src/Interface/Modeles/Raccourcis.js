@@ -6,12 +6,13 @@
  * - Ctrl + C / X / V : copier, couper, coller ;
  * - Ctrl + D : dupliquer ; Ctrl + A : tout sélectionner ;
  * - Ctrl + Maj + C / V : copier / coller le style ;
+ * - Ctrl + G / Ctrl + Maj + G : grouper / dissocier ;
  * - Ctrl + Z / Y (ou Ctrl + Maj + Z) : annuler / rétablir ; Échap : désélectionner.
  */
 
 import {
-  elementsSelectionnes, modifierElements, memoriser, supprimerSelection, dupliquer, copierSelection, coller,
-  copierStyle, collerStyle, toutSelectionner, selectionner, annuler, retablir,
+  elementsDeplacables, modifierElements, memoriser, supprimerSelection, dupliquer, copierSelection, coller,
+  copierStyle, collerStyle, toutSelectionner, selectionner, annuler, retablir, grouperSelection, degrouperSelection,
 } from './EtatEdition.js';
 import { notifier } from '../Notifications.js';
 
@@ -21,7 +22,7 @@ import { notifier } from '../Notifications.js';
  * @param {number} dy - Déplacement vertical.
  */
 function deplacer(dx, dy) {
-  const selection = elementsSelectionnes();
+  const selection = elementsDeplacables();
   if (!selection.length) return;
   memoriser();
   modifierElements(selection.map((e) => ({ id: e.id, x: e.x + dx, y: e.y + dy })));
@@ -44,6 +45,8 @@ export function gererRaccourci(e) {
   else if (ctrl && e.shiftKey && touche === 'c') action = () => { if (copierStyle()) notifier('Style copié.', 'info'); };
   else if (ctrl && e.shiftKey && touche === 'v') action = collerStyle;
   else if (ctrl && e.shiftKey && touche === 'z') action = retablir;
+  else if (ctrl && e.shiftKey && touche === 'g') action = degrouperSelection;
+  else if (ctrl && touche === 'g') action = () => { if (!grouperSelection()) notifier('Sélectionne au moins 2 éléments pour les grouper.', 'info'); };
   else if (ctrl && touche === 'z') action = annuler;
   else if (ctrl && touche === 'y') action = retablir;
   else if (ctrl && touche === 'c') action = copierSelection;

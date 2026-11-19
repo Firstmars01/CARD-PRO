@@ -1,9 +1,10 @@
 /**
  * EtatEdition.js
  * État de l'éditeur de modèles : brouillon du modèle, face affichée,
- * sélection (un ou plusieurs éléments), grille, historique (annuler /
- * rétablir) et presse-papiers (éléments et style). Toutes les
- * modifications passent par ces fonctions et sont validées.
+ * sélection (un ou plusieurs éléments, groupes), grille, repères
+ * d'impression, historique (annuler / rétablir) et presse-papiers
+ * (éléments et style). Toutes les modifications passent par ces
+ * fonctions et sont validées.
  */
 
 import { normaliserModele, normaliserFace, SCHEMA_FOND, ELEMENTS_MAX } from '../../Metier/ModeleCarte.js';
@@ -11,19 +12,24 @@ import {
   normaliserElement, creerElementCarte, extraireStyle, appliquerStyle,
 } from '../../Metier/Elements.js';
 import {
-  aligner, centrerSurCarte, repartir, boiteEnglobante, CARTE, LARGEUR_CARTE, HAUTEUR_CARTE,
+  aligner, centrerSurCarte, repartir, boiteEnglobante, zoneCarte,
 } from '../../Metier/Alignement.js';
+import { dimensionsModele, adapterElements } from '../../Metier/Formats.js';
+import { remplacerCouleur, TAILLE_PALETTE } from '../../Metier/Palette.js';
 import { normaliserObjet, nouvelId } from '../../Utilitaires/Schema.js';
 import { nettoyerTexte } from '../../Utilitaires/Validation.js';
 
 const HISTORIQUE_MAX = 60;
 const DECALAGE_COPIE = 20; // 2 mm
 
-const edition = { modele: null, cote: 'recto', selectionIds: [], grille: true, modifie: false, personneApercuId: '' };
+const edition = { modele: null, cote: 'recto', selectionIds: [], grille: true, reperes: false, modifie: false, personneApercuId: '' };
 const historique = { passe: [], futur: [] };
 // Presse-papiers interne (conservé quand on change de face ou de modèle).
 const pressePapiers = { elements: [], style: null };
 const abonnes = new Set();
+// Disposition d'origine avant un changement de format : chaque nouveau format
+// est recalculé depuis elle (pas d'erreurs cumulées, retour exact au départ).
+let referenceFormat = null;
 
 /**
  * Renvoie l'état de l'éditeur (à ne pas modifier directement).
@@ -68,6 +74,7 @@ export function chargerModele(modele, modifie = false) {
   edition.modele = normaliserModele(structuredClone(modele));
   edition.selectionIds = [];
   edition.modifie = modifie;
+  referenceFormat = null;
   historique.passe = [];
   historique.futur = [];
   notifier('tout');
@@ -81,6 +88,33 @@ export function marquerEnregistre(modele) {
   edition.modele.id = modele.id;
   edition.modifie = false;
   notifier('options');
+}
+
+/**
+ * Renvoie les dimensions de la carte en cours d'édition.
+ * @returns {{largeur:number, hauteur:number}} Dimensions en dixièmes de mm.
+ */
+export function dimensions() {
+  return dimensionsModele(edition.modele);
+}
+
+/**
+ * Ajoute à une liste d'identifiants tous les membres de leurs groupes.
+ * @param {string[]} ids - Identifiants.
+ * @returns {string[]} Identifiants complétés (sans doublon).
+ */
+function avecGroupes(ids) {
+  const groupes = new Set(elementsFace().filter((e) => ids.includes(e.id) && e.groupe).map((e) => e.groupe));
+  const membres = elementsFace().filter((e) => groupes.has(e.groupe)).map((e) => e.id);
+  return [...new Set([...ids, ...membres])];
+}
+
+/**
+ * Renvoie les éléments sélectionnés qui peuvent bouger (non verrouillés).
+ * @returns {object[]} Éléments déplaçables.
+ */
+export function elementsDeplacables() {
+  return elementsSelectionnes().filter((e) => !e.verrouille);
 }
 
 /**
@@ -124,10 +158,11 @@ export function choisirCote(cote) {
  * @param {boolean} [ajouter=false] - true (Ctrl + clic) pour ajouter / retirer de la sélection.
  */
 export function selectionner(id, ajouter = false) {
+  const membres = id ? avecGroupes([id]) : [];
   if (!id) edition.selectionIds = [];
-  else if (!ajouter) edition.selectionIds = [id];
-  else if (edition.selectionIds.includes(id)) edition.selectionIds = edition.selectionIds.filter((s) => s !== id);
-  else edition.selectionIds = [...edition.selectionIds, id];
+  else if (!ajouter) edition.selectionIds = membres;
+  else if (edition.selectionIds.includes(id)) edition.selectionIds = edition.selectionIds.filter((s) => !membres.includes(s));
+  else edition.selectionIds = [...new Set([...edition.selectionIds, ...membres])];
   notifier('selection');
 }
 
@@ -138,7 +173,7 @@ export function selectionner(id, ajouter = false) {
  */
 export function selectionnerPlusieurs(ids, ajouter = false) {
   const existants = new Set(elementsFace().map((e) => e.id));
-  const valides = ids.filter((id) => existants.has(id));
+  const valides = avecGroupes(ids.filter((id) => existants.has(id)));
   edition.selectionIds = ajouter ? [...new Set([...edition.selectionIds, ...valides])] : valides;
   notifier('selection');
 }
@@ -154,6 +189,7 @@ export function toutSelectionner() {
  */
 export function modifierOptions(options) {
   if (typeof options.grille === 'boolean') edition.grille = options.grille;
+  if (typeof options.reperes === 'boolean') edition.reperes = options.reperes;
   if (typeof options.personneApercuId === 'string') edition.personneApercuId = options.personneApercuId;
   notifier('options');
 }
@@ -171,7 +207,8 @@ export function oublierDernierMemo() {
 }
 
 /** Signale un changement du modèle. */
-function signalerModification() {
+function signalerModification(garderReferenceFormat = false) {
+  if (!garderReferenceFormat) referenceFormat = null;
   edition.modifie = true;
   notifier('modele');
 }
@@ -185,6 +222,7 @@ function restaurer(source, cible) {
   if (!source.length) return;
   cible.push(JSON.stringify(edition.modele));
   edition.modele = normaliserModele(JSON.parse(source.pop()));
+  referenceFormat = null;
   const existants = new Set(elementsFace().map((e) => e.id));
   edition.selectionIds = edition.selectionIds.filter((id) => existants.has(id));
   edition.modifie = true;
@@ -239,9 +277,38 @@ export function modifierFond(changements) {
  */
 export function modifierModele(changements) {
   const { id } = edition.modele;
+  const avant = dimensionsModele(edition.modele);
   const nom = changements.nom !== undefined ? nettoyerTexte(changements.nom, 50) : edition.modele.nom;
-  edition.modele = normaliserModele({ ...edition.modele, ...changements, nom: nom || 'Modèle sans nom', id });
-  signalerModification();
+  // Palette : la couleur remplacée change partout dans le modèle.
+  for (let i = 1; i <= TAILLE_PALETTE; i++) {
+    const cle = `palette${i}`;
+    if (changements[cle] && /^#[0-9a-f]{6}$/i.test(changements[cle])) remplacerCouleur(edition.modele, edition.modele[cle], changements[cle].toLowerCase());
+  }
+  const modele = normaliserModele({ ...edition.modele, ...changements, nom: nom || 'Modèle sans nom', id });
+  const apres = dimensionsModele(modele);
+  const formatChange = apres.largeur !== avant.largeur || apres.hauteur !== avant.hauteur;
+  if (formatChange) replacerSelonFormat(modele, avant, apres);
+  edition.modele = modele;
+  signalerModification(formatChange);
+}
+
+/**
+ * Replace les éléments des deux faces pour un nouveau format, toujours à partir
+ * de la disposition d'origine (mémorisée au premier changement de format).
+ * @param {object} modele - Modèle déjà au nouveau format (modifié sur place).
+ * @param {{largeur:number, hauteur:number}} avant - Dimensions actuelles.
+ * @param {{largeur:number, hauteur:number}} apres - Nouvelles dimensions.
+ */
+function replacerSelonFormat(modele, avant, apres) {
+  if (!referenceFormat) {
+    referenceFormat = { dimensions: avant, recto: structuredClone(modele.recto.elements), verso: structuredClone(modele.verso.elements) };
+  }
+  const { dimensions: origine } = referenceFormat;
+  const retourOrigine = origine.largeur === apres.largeur && origine.hauteur === apres.hauteur;
+  ['recto', 'verso'].forEach((cote) => {
+    const elements = structuredClone(referenceFormat[cote]);
+    modele[cote] = normaliserFace({ ...modele[cote], elements: retourOrigine ? elements : adapterElements(elements, origine, apres) });
+  });
 }
 
 /**
@@ -267,8 +334,9 @@ function insererElements(nouveaux) {
  */
 export function ajouterElement(type, valeurs = {}) {
   const element = creerElementCarte(type, valeurs);
-  if (valeurs.x === undefined) element.x = Math.round((LARGEUR_CARTE - element.largeur) / 2);
-  if (valeurs.y === undefined) element.y = Math.round((HAUTEUR_CARTE - element.hauteur) / 2);
+  const { largeur, hauteur } = dimensions();
+  if (valeurs.x === undefined) element.x = Math.round((largeur - element.largeur) / 2);
+  if (valeurs.y === undefined) element.y = Math.round((hauteur - element.hauteur) / 2);
   return insererElements([element]);
 }
 
@@ -288,7 +356,16 @@ export function ajouterGroupe(definitions) {
  * @returns {object[]} Copies validées.
  */
 function copierAvecNouveauxIds(elements, decalage) {
-  return elements.map((e) => normaliserElement({ ...structuredClone(e), id: nouvelId('e'), x: e.x + decalage, y: e.y + decalage }));
+  // Les copies forment leurs propres groupes (sans rejoindre ceux d'origine).
+  const nouveauxGroupes = new Map();
+  const groupeCopie = (groupe) => {
+    if (!groupe) return '';
+    if (!nouveauxGroupes.has(groupe)) nouveauxGroupes.set(groupe, nouvelId('g'));
+    return nouveauxGroupes.get(groupe);
+  };
+  return elements.map((e) => normaliserElement({
+    ...structuredClone(e), id: nouvelId('e'), groupe: groupeCopie(e.groupe), x: e.x + decalage, y: e.y + decalage,
+  }));
 }
 
 /**
@@ -381,9 +458,9 @@ function appliquerPositions(positions) {
  * @param {string} mode - gauche, centreH, droite, haut, centreV ou bas.
  */
 export function alignerSelection(mode) {
-  const selection = elementsSelectionnes();
+  const selection = elementsDeplacables();
   if (!selection.length) return;
-  appliquerPositions(aligner(selection, mode, selection.length === 1 ? CARTE : boiteEnglobante(selection)));
+  appliquerPositions(aligner(selection, mode, selection.length === 1 ? zoneCarte(dimensions()) : boiteEnglobante(selection)));
 }
 
 /**
@@ -391,8 +468,8 @@ export function alignerSelection(mode) {
  * @param {"horizontal"|"vertical"} axe - Axe de centrage.
  */
 export function centrerSelection(axe) {
-  const selection = elementsSelectionnes();
-  if (selection.length) appliquerPositions(centrerSurCarte(selection, axe));
+  const selection = elementsDeplacables();
+  if (selection.length) appliquerPositions(centrerSurCarte(selection, axe, dimensions()));
 }
 
 /**
@@ -400,7 +477,7 @@ export function centrerSelection(axe) {
  * @param {"horizontal"|"vertical"} axe - Axe de répartition.
  */
 export function repartirSelection(axe) {
-  const selection = elementsSelectionnes();
+  const selection = elementsDeplacables();
   if (selection.length >= 3) appliquerPositions(repartir(selection, axe));
 }
 
@@ -427,4 +504,39 @@ export function copierSurAutreFace() {
   copie.elements.forEach((e) => { e.id = nouvelId('e'); });
   edition.modele[autre] = normaliserFace(copie);
   signalerModification();
+}
+
+/**
+ * Regroupe les éléments sélectionnés : ils seront ensuite sélectionnés
+ * et déplacés ensemble.
+ * @returns {boolean} false s'il y a moins de 2 éléments sélectionnés.
+ */
+export function grouperSelection() {
+  if (edition.selectionIds.length < 2) return false;
+  memoriser();
+  const groupe = nouvelId('g');
+  modifierElements(edition.selectionIds.map((id) => ({ id, groupe })));
+  return true;
+}
+
+/**
+ * Dissocie les groupes des éléments sélectionnés.
+ */
+export function degrouperSelection() {
+  if (!elementsSelectionnes().some((e) => e.groupe)) return;
+  memoriser();
+  modifierElements(edition.selectionIds.map((id) => ({ id, groupe: '' })));
+}
+
+/**
+ * Verrouille ou déverrouille la sélection (un élément verrouillé ne bouge plus).
+ * @returns {boolean} Nouvel état (true = verrouillé).
+ */
+export function basculerVerrouillage() {
+  const selection = elementsSelectionnes();
+  if (!selection.length) return false;
+  const verrouiller = selection.some((e) => !e.verrouille);
+  memoriser();
+  modifierElements(selection.map((e) => ({ id: e.id, verrouille: verrouiller })));
+  return verrouiller;
 }

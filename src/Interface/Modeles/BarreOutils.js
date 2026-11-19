@@ -2,9 +2,10 @@
  * BarreOutils.js
  * Barres d'outils de l'éditeur :
  * - ligne 1 : face (recto / verso), ajout d'éléments, annuler / rétablir,
- *   grille et personne utilisée pour l'aperçu ;
+ *   grille, repères d'impression et personne utilisée pour l'aperçu ;
  * - ligne 2 (selon la sélection) : copier / coller, dupliquer, supprimer,
- *   copier / coller le style, aligner, centrer sur la carte, répartir.
+ *   grouper, verrouiller, copier / coller le style, aligner, centrer sur
+ *   la carte, répartir.
  */
 
 import { creerElement, vider } from '../../Utilitaires/Dom.js';
@@ -15,7 +16,8 @@ import { obtenirEtat, abonner } from '../../Metier/EtatApplication.js';
 import {
   obtenirEdition, abonnerEdition, choisirCote, ajouterElement, ajouterGroupe, annuler, retablir, modifierOptions, copierSurAutreFace,
   contenuPressePapiers, copierSelection, coller, dupliquer, supprimerSelection, copierStyle, collerStyle,
-  alignerSelection, centrerSelection, repartirSelection,
+  alignerSelection, centrerSelection, repartirSelection, grouperSelection, degrouperSelection, basculerVerrouillage,
+  elementsSelectionnes, dimensions,
 } from './EtatEdition.js';
 import { icone } from '../Icones.js';
 import { notifier } from '../Notifications.js';
@@ -26,6 +28,7 @@ const AJOUTS = [
   ['texte', 'Texte', 'texte', { source: 'libre', texte: 'Votre texte', taille: 28 }],
   ['qr', 'QR code', 'qr', {}],
   ['forme', 'Forme', 'forme', { forme: 'rectangle' }],
+  ['icone', 'Icône', 'icone', {}],
 ];
 
 // « QR des liens » : 3 QR codes (liens 1 à 3) avec le nom du lien en dessous.
@@ -37,7 +40,7 @@ const QR_LIENS = { nombre: 3, taille: 160, ecart: 50, y: 230 };
  */
 function definitionsQrLiens() {
   const { nombre, taille, ecart, y } = QR_LIENS;
-  const depart = Math.round((850 - nombre * taille - (nombre - 1) * ecart) / 2);
+  const depart = Math.round((dimensions().largeur - nombre * taille - (nombre - 1) * ecart) / 2);
   return Array.from({ length: nombre }, (_, i) => {
     const x = depart + i * (taille + ecart);
     return [
@@ -101,6 +104,8 @@ export function monterBarreOutils(conteneur) {
 
   const grille = creerElement('input', { attributs: { type: 'checkbox', id: 'option-grille' } });
   grille.addEventListener('change', () => modifierOptions({ grille: grille.checked }));
+  const reperes = creerElement('input', { attributs: { type: 'checkbox', id: 'option-reperes' } });
+  reperes.addEventListener('change', () => modifierOptions({ reperes: reperes.checked }));
   const apercu = creerElement('select', { attributs: { id: 'option-apercu', 'aria-label': "Personne affichée dans l'aperçu" } });
   apercu.addEventListener('change', () => modifierOptions({ personneApercuId: apercu.value }));
 
@@ -119,6 +124,12 @@ export function monterBarreOutils(conteneur) {
     coller: boutonOutil({ icone: 'coller', titre: 'Coller (Ctrl + V)', action: () => { if (!coller()) notifier('Face pleine (40 éléments).', 'erreur'); } }),
     dupliquer: boutonOutil({ icone: 'dupliquer', titre: 'Dupliquer (Ctrl + D)', action: () => dupliquer() }),
     supprimer: boutonOutil({ icone: 'supprimer', titre: 'Supprimer (Suppr)', action: supprimerSelection }),
+    grouper: boutonOutil({ icone: 'grouper', titre: 'Grouper (Ctrl + G)', action: grouperSelection }),
+    degrouper: boutonOutil({ icone: 'degrouper', titre: 'Dissocier le groupe (Ctrl + Maj + G)', action: degrouperSelection }),
+    verrouiller: boutonOutil({
+      icone: 'cadenas', titre: 'Verrouiller / déverrouiller (ne bouge plus)',
+      action: () => notifier(basculerVerrouillage() ? 'Élément(s) verrouillé(s).' : 'Élément(s) déverrouillé(s).', 'info'),
+    }),
     copierStyle: boutonOutil({ icone: 'copierStyle', libelle: 'Copier le style', titre: "Copier le style de l'élément (Ctrl + Maj + C)", action: () => { if (copierStyle()) notifier('Style copié : sélectionne un ou plusieurs éléments puis « Coller le style ».', 'info'); } }),
     collerStyle: boutonOutil({ icone: 'collerStyle', libelle: 'Coller le style', titre: 'Appliquer le style copié à la sélection (Ctrl + Maj + V)', action: collerStyle }),
   };
@@ -146,11 +157,12 @@ export function monterBarreOutils(conteneur) {
         boutonOutil({ icone: 'autreFace', titre: "Copier cette face sur l'autre (remplace son contenu)", action: copierSurAutreFace }),
       ]),
       creerElement('label', { classe: 'Outils-option', attributs: { for: 'option-grille' } }, [grille, creerElement('span', { texte: 'Grille' })]),
+      creerElement('label', { classe: 'Outils-option', attributs: { for: 'option-reperes', title: "Vert : zone de sécurité (3 mm). Rouge : fond perdu pour l'imprimeur (3 mm)." } }, [reperes, creerElement('span', { texte: "Repères d'impression" })]),
       creerElement('label', { classe: 'Outils-option', attributs: { for: 'option-apercu' } }, [creerElement('span', { texte: 'Aperçu :' }), apercu]),
     ]),
     creerElement('div', { classe: 'Outils-ligne Outils-ligne--selection' }, [
       infoSelection,
-      groupe('Édition', [actions.copier, actions.coller, actions.dupliquer, actions.supprimer]),
+      groupe('Édition', [actions.copier, actions.coller, actions.dupliquer, actions.supprimer, actions.grouper, actions.degrouper, actions.verrouiller]),
       groupe('Style', [actions.copierStyle, actions.collerStyle]),
       groupe('Aligner', alignements),
       groupe('Centrer sur la carte', centrages),
@@ -174,8 +186,11 @@ export function monterBarreOutils(conteneur) {
     const presse = contenuPressePapiers();
     boutonsCote.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.cote === edition.cote)));
     grille.checked = edition.grille;
+    reperes.checked = edition.reperes;
     infoSelection.textContent = nombre ? `${nombre} sélectionné${nombre > 1 ? 's' : ''}` : 'Aucune sélection';
-    [actions.copier, actions.dupliquer, actions.supprimer, ...alignements, ...centrages].forEach((b) => { b.disabled = nombre === 0; });
+    [actions.copier, actions.dupliquer, actions.supprimer, actions.verrouiller, ...alignements, ...centrages].forEach((b) => { b.disabled = nombre === 0; });
+    actions.grouper.disabled = nombre < 2;
+    actions.degrouper.disabled = !elementsSelectionnes().some((e) => e.groupe);
     actions.coller.disabled = !presse.elements;
     actions.copierStyle.disabled = nombre !== 1;
     actions.collerStyle.disabled = !presse.style || nombre === 0;

@@ -3,23 +3,52 @@
  * Génère automatiquement un formulaire à partir d'un schéma de réglages
  * (couleur, plage, mm, booléen, choix, texte, image). Utilisé pour les
  * propriétés des éléments, du fond et du modèle : aucun code dupliqué.
+ * Les couleurs proposent les teintes de la palette du modèle en un clic ;
+ * les sections secondaires (ombre, motif…) sont repliées par défaut.
  */
 
-import { creerElement } from '../../Utilitaires/Dom.js';
+import { creerElement, vider } from '../../Utilitaires/Dom.js';
 import { chargerImage } from '../../Utilitaires/Image.js';
 import { creerChamp } from '../Champs.js';
 import { notifier } from '../Notifications.js';
 
 let compteur = 0;
+// Sections repliées par défaut (réglages moins courants).
+const GROUPES_REPLIES = ['Ombre', 'Logo au centre', 'Motif', 'Voile', 'Position'];
+
+/**
+ * Crée le nuancier de la palette sous un contrôle de couleur.
+ * @param {() => string[]} palette - Renvoie les couleurs de la palette.
+ * @param {Function} surChangement - Appelée avec la couleur choisie.
+ * @param {Function} avantModification - Appelée avant la modification.
+ * @returns {{element:HTMLElement, actualiser:Function}} Nuancier.
+ */
+function creerNuancier(palette, surChangement, avantModification) {
+  const element = creerElement('div', { classe: 'Nuancier', attributs: { role: 'group', 'aria-label': 'Couleurs de la palette' } });
+  const actualiser = () => {
+    vider(element);
+    palette().forEach((couleur) => {
+      const pastille = creerElement('button', {
+        classe: 'Pastille', attributs: { type: 'button', title: `Palette : ${couleur}`, 'aria-label': `Utiliser la couleur ${couleur}` },
+        surClic: () => { avantModification(); surChangement(couleur); },
+      });
+      pastille.style.setProperty('--pastille', couleur);
+      element.append(pastille);
+    });
+  };
+  actualiser();
+  return { element, actualiser };
+}
 
 /**
  * Crée le contrôle d'un réglage.
  * @param {object} reglage - Réglage du schéma.
  * @param {(valeur:unknown) => void} surChangement - Appelée à chaque modification.
  * @param {() => void} avantModification - Appelée une fois avant une série de modifications.
+ * @param {(() => string[])|null} palette - Couleurs de la palette (nuancier), ou null.
  * @returns {{bloc:HTMLElement, afficher:(valeur:unknown) => void}} Contrôle.
  */
-function creerControle(reglage, surChangement, avantModification) {
+function creerControle(reglage, surChangement, avantModification, palette) {
   compteur += 1;
   const id = `reglage-${compteur}`;
   let element;
@@ -85,7 +114,15 @@ function creerControle(reglage, surChangement, avantModification) {
 
   const { bloc } = creerChamp(reglage.libelle, element, `Champ--${reglage.type}`);
   if (sortie) bloc.append(sortie);
-  return { bloc, afficher: (v) => { if (document.activeElement !== element) afficher(v); } };
+  const nuancier = reglage.type === 'couleur' && palette ? creerNuancier(palette, surChangement, avantModification) : null;
+  if (nuancier) bloc.append(nuancier.element);
+  return {
+    bloc,
+    afficher: (v) => {
+      if (document.activeElement !== element) afficher(v);
+      if (nuancier) nuancier.actualiser();
+    },
+  };
 }
 
 /**
@@ -131,18 +168,23 @@ function creerControleImage(reglage, id, surChangement, avantModification) {
  * Crée un formulaire complet pour un schéma, regroupé par sections.
  * @param {object[]} schema - Réglages.
  * @param {object} objet - Valeurs actuelles.
- * @param {object} rappels - { surChangement(cle, valeur), avantModification() }.
+ * @param {object} rappels - { surChangement(cle, valeur), avantModification(), palette() facultatif }.
  * @returns {{element:HTMLElement, actualiser:(objet:object) => void}} Formulaire.
  */
-export function creerFormulaireSchema(schema, objet, { surChangement, avantModification }) {
+export function creerFormulaireSchema(schema, objet, { surChangement, avantModification, palette = null }) {
   const element = creerElement('div', { classe: 'FormulaireSchema' });
   const sections = new Map();
   const controles = schema.map((reglage) => {
-    const controle = creerControle(reglage, (valeur) => surChangement(reglage.cle, valeur), avantModification);
-    const groupe = reglage.groupe || '';
+    // Pas de nuancier sur les couleurs de la palette elle-même.
+    const nuancier = reglage.groupe === 'Palette' ? null : palette;
+    const controle = creerControle(reglage, (valeur) => surChangement(reglage.cle, valeur), avantModification, nuancier);
+    const groupe = reglage.groupe || 'Réglages';
     if (!sections.has(groupe)) {
-      const section = creerElement('fieldset', { classe: 'Groupe' }, groupe ? [creerElement('legend', { texte: groupe })] : []);
-      sections.set(groupe, section);
+      const contenu = creerElement('div', { classe: 'Groupe-contenu' });
+      const section = creerElement('details', { classe: 'Groupe', attributs: { open: !GROUPES_REPLIES.includes(groupe) } }, [
+        creerElement('summary', { texte: groupe }), contenu,
+      ]);
+      sections.set(groupe, contenu);
       element.append(section);
     }
     sections.get(groupe).append(controle.bloc);

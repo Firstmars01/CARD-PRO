@@ -3,7 +3,8 @@
  * Génère les QR codes d'une carte :
  * - le QR « contact » contient la vCard (ajout aux contacts, sans internet) ;
  * - un QR « lien » ou « site web » contient une seule adresse (LinkedIn,
- *   portfolio…) et ouvre directement la page quand on le scanne.
+ *   portfolio…) et ouvre directement la page quand on le scanne ;
+ * - un QR avec logo est encodé au niveau de correction maximal (H).
  */
 
 import { encoderTexteQr } from '../Utilitaires/EncodeurQr.js';
@@ -52,20 +53,62 @@ export function adresseQrElement(personne, element) {
 }
 
 /**
- * Renvoie le QR code à dessiner pour un élément QR.
- * Les QR de liens sont mis en cache (une même adresse n'est encodée qu'une fois).
+ * Encode un texte au niveau de correction voulu (avec repli si trop long),
+ * en gardant le résultat en cache.
+ * @param {string} texte - Texte à encoder.
+ * @param {string[]} niveaux - Niveaux à essayer dans l'ordre (ex. ["H", "Q", "M"]).
+ * @returns {object|null} QR code (avec son niveau), ou null si trop long.
+ */
+function encoderAvecCache(texte, niveaux) {
+  const cle = `${niveaux.join('')}|${texte}`;
+  if (!cacheLiens.has(cle)) {
+    if (cacheLiens.size >= CACHE_MAX) cacheLiens.delete(cacheLiens.keys().next().value);
+    let qr = null;
+    for (const niveau of niveaux) {
+      try {
+        qr = { ...encoderTexteQr(texte, niveau), niveau };
+        break;
+      } catch {
+        // Trop long pour ce niveau : on essaie le suivant.
+      }
+    }
+    cacheLiens.set(cle, qr);
+  }
+  return cacheLiens.get(cle);
+}
+
+/**
+ * Renvoie le QR code à dessiner pour un élément QR. Avec un logo au
+ * centre, le QR est encodé au niveau H (30 % de correction) pour rester
+ * lisible malgré les points masqués.
  * @param {object} personne - Personne normalisée.
  * @param {object} element - Élément QR.
  * @param {object|null} qrContact - QR vCard déjà calculé pour la personne.
  * @returns {object|null} QR code, ou null si le contenu est absent.
  */
 export function qrPourElement(personne, element, qrContact) {
+  const texte = element.contenu === 'vcard' ? genererVCard(personne) : adresseQrElement(personne, element);
+  if (!texte) return null;
+  if (element.logo) return encoderAvecCache(texte, ['H', 'Q', 'M']);
   if (element.contenu === 'vcard') return qrContact;
-  const adresse = adresseQrElement(personne, element);
-  if (!adresse) return null;
-  if (!cacheLiens.has(adresse)) {
-    if (cacheLiens.size >= CACHE_MAX) cacheLiens.delete(cacheLiens.keys().next().value);
-    cacheLiens.set(adresse, encoderTexteQr(adresse, 'M'));
+  return encoderAvecCache(texte, ['M', 'L']);
+}
+
+/**
+ * Liste les risques de lecture d'un QR code stylé (logo, coins ronds, densité).
+ * @param {object|null} qr - QR code calculé.
+ * @param {object} element - Élément QR.
+ * @returns {string[]} Avertissements (vide si tout va bien).
+ */
+export function avertissementsQrElement(qr, element) {
+  const avertissements = [];
+  if (!qr) return avertissements;
+  if (element.logo && qr.niveau !== 'H') avertissements.push('QR avec logo trop chargé : réduis le logo ou les informations pour garantir la lecture.');
+  if (element.logo && qr.niveau === 'H' && qr.version > VERSION_CONFORTABLE) {
+    avertissements.push('QR avec logo très dense : agrandis-le, ou mets un lien (site, LinkedIn…) plutôt que le contact complet.');
   }
-  return cacheLiens.get(adresse);
+  if (element.styleYeux !== 'carre') {
+    avertissements.push("Coins du QR arrondis ou ronds : certains lecteurs anciens les lisent mal. Teste la lecture avec un téléphone avant d'imprimer.");
+  }
+  return avertissements;
 }

@@ -5,6 +5,7 @@
  */
 
 import { normaliserModele } from './ModeleCarte.js';
+import { couleursPrincipales, TAILLE_PALETTE } from './Palette.js';
 
 /**
  * Élément texte lié à une information de la personne.
@@ -85,6 +86,19 @@ function versoEntreprise(fond, couleur, secondaire, style = {}) {
       champ('siteWeb', [50, 330, 750, 36], { taille: 22, couleur: secondaire, alignement: 'middle', police: style.police }),
     ],
   };
+}
+
+/**
+ * Élément icône.
+ * @param {string} icone - Clé de l'icône.
+ * @param {number} x - Position X.
+ * @param {number} y - Position Y.
+ * @param {number} taille - Côté.
+ * @param {object} [style] - Couleur, épaisseur…
+ * @returns {object} Élément brut.
+ */
+function icone(icone, x, y, taille, style = {}) {
+  return { type: 'icone', icone, x, y, largeur: taille, hauteur: taille, ...style };
 }
 
 /**
@@ -213,6 +227,36 @@ const BRUTS = [
     },
   },
   {
+    id: 'base-vertical', nom: 'Vertical avec icônes (portrait)', arrondi: 20, orientation: 'portrait',
+    recto: {
+      fond: { type: 'uni', couleur1: '#ffffff' },
+      elements: [
+        forme('rectangle', [0, 0, 550, 230], { typeRemplissage: 'degrade', remplissage: '#1d2430', remplissage2: '#2563eb', angleDegrade: 30 }),
+        forme('ellipse', [380, -90, 260, 260], { remplissage: '#ffffff', opacite: 10 }),
+        champ('entreprise', [40, 90, 470, 50], { taille: 32, graisse: '700', couleur: '#ffffff', alignement: 'middle', majuscules: true, espacement: 4 }),
+        champ('nomComplet', [30, 262, 490, 56], { taille: 40, graisse: '700', couleur: '#1d2430', alignement: 'middle' }),
+        champ('poste', [30, 322, 490, 34], { taille: 22, graisse: '600', couleur: '#2563eb', alignement: 'middle' }),
+        forme('rectangle', [245, 372, 60, 4], { remplissage: '#2563eb' }),
+        icone('mobile', 80, 405, 32, { couleur: '#2563eb' }),
+        champ('telephoneMobile', [130, 408, 380, 30], { taille: 19, couleur: '#3d4654' }),
+        icone('email', 80, 455, 32, { couleur: '#2563eb' }),
+        champ('email', [130, 458, 380, 30], { taille: 19, couleur: '#3d4654' }),
+        icone('web', 80, 505, 32, { couleur: '#2563eb' }),
+        champ('siteWeb', [130, 508, 380, 30], { taille: 19, couleur: '#3d4654' }),
+        qr(185, 590, 180, { styleModules: 'arrondi', couleurYeux: '#2563eb', arrondi: 18 }),
+        libre('Scannez pour enregistrer le contact', [30, 790, 490, 28], { taille: 16, couleur: '#7a8494', alignement: 'middle' }),
+      ],
+    },
+    verso: {
+      fond: { type: 'radial', couleur1: '#2563eb', couleur2: '#1d2430', motif: 'points', motifCouleur: '#ffffff', motifOpacite: 12, motifTaille: 28 },
+      elements: [
+        icone('entreprise', 225, 270, 100, { couleur: '#ffffff', epaisseurTrait: 1.5 }),
+        champ('entreprise', [30, 400, 490, 60], { taille: 40, graisse: '700', couleur: '#ffffff', alignement: 'middle', ombre: true }),
+        champ('siteWeb', [30, 470, 490, 34], { taille: 20, couleur: '#c7d6ff', alignement: 'middle' }),
+      ],
+    },
+  },
+  {
     id: 'base-neon', nom: 'Néon', arrondi: 14,
     recto: {
       fond: { type: 'degrade', couleur1: '#0b0b12', couleur2: '#24123a', angle: 160 },
@@ -228,5 +272,16 @@ const BRUTS = [
   },
 ];
 
+/**
+ * Valide un modèle de base et lui donne une palette tirée de ses couleurs.
+ * @param {object} brut - Modèle brut.
+ * @returns {object} Modèle complet.
+ */
+function preparerModele(brut) {
+  const modele = normaliserModele(brut);
+  couleursPrincipales(modele).slice(0, TAILLE_PALETTE).forEach((couleur, i) => { modele[`palette${i + 1}`] = couleur; });
+  return modele;
+}
+
 // Modèles complets et validés.
-export const MODELES_DE_BASE = Object.freeze(BRUTS.map((m) => Object.freeze(normaliserModele(m))));
+export const MODELES_DE_BASE = Object.freeze(BRUTS.map((m) => Object.freeze(preparerModele(m))));

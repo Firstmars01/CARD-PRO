@@ -1,7 +1,8 @@
 /**
  * ListeCalques.js
  * Liste des éléments de la face (du premier plan à l'arrière-plan) :
- * sélection (Ctrl + clic pour en choisir plusieurs), ordre, visibilité et suppression.
+ * sélection (Ctrl + clic pour en choisir plusieurs), ordre, visibilité,
+ * verrouillage et suppression. 🔒 = verrouillé, ▣ = fait partie d'un groupe.
  */
 
 import { creerElement, vider } from '../../Utilitaires/Dom.js';
@@ -31,12 +32,15 @@ export function monterListeCalques(conteneur) {
       classe: `Calque${selectionIds.includes(element.id) ? ' Calque--actif' : ''}${element.visible ? '' : ' Calque--masque'}`,
     }, [
       creerElement('button', {
-        classe: 'Calque-nom', texte: decrireElement(element), attributs: { type: 'button', title: 'Clic : sélectionner · Ctrl + clic : ajouter à la sélection' },
+        classe: 'Calque-nom',
+        texte: `${element.verrouille ? '🔒 ' : ''}${element.groupe ? '▣ ' : ''}${decrireElement(element)}`,
+        attributs: { type: 'button', title: 'Clic : sélectionner · Ctrl + clic : ajouter à la sélection' },
         surClic: (e) => selectionner(element.id, e.ctrlKey || e.metaKey || e.shiftKey),
       }),
       bouton('↑', 'Passer devant', () => deplacerCalque(element.id, 1)),
       bouton('↓', 'Passer derrière', () => deplacerCalque(element.id, -1)),
       bouton(element.visible ? '◉' : '○', element.visible ? 'Masquer' : 'Afficher', () => { memoriser(); modifierElement(element.id, { visible: !element.visible }); }),
+      bouton(element.verrouille ? '🔒' : '🔓', element.verrouille ? 'Déverrouiller' : 'Verrouiller', () => { memoriser(); modifierElement(element.id, { verrouille: !element.verrouille }); }),
       bouton('✕', 'Supprimer', () => supprimerElements([element.id])),
     ]))));
   };

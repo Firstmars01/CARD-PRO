@@ -16,6 +16,15 @@ import {
 import { creerFormulaireSchema } from './ControlesSchema.js';
 import { notifier } from '../Notifications.js';
 
+/**
+ * Renvoie les couleurs de la palette du modèle en cours (nuancier).
+ * @returns {string[]} Couleurs.
+ */
+function paletteCourante() {
+  const { modele } = obtenirEdition();
+  return [1, 2, 3, 4, 5].map((i) => modele[`palette${i}`]);
+}
+
 const AIDE = 'Clic : sélectionner · Ctrl + clic ou cadre tracé à la souris : sélection multiple · Glisser : déplacer · Poignée bleue : redimensionner · Flèches : 1 mm (Maj : 5 mm) · Ctrl + C / V : copier / coller · Ctrl + Z : annuler.';
 
 /**
@@ -79,6 +88,7 @@ function construireElement(conteneur, element) {
   const formulaire = creerFormulaireSchema(schemaElement(element.type), element, {
     surChangement: (cle, valeur) => modifierElement(element.id, { [cle]: valeur }),
     avantModification: memoriser,
+    palette: paletteCourante,
   });
   conteneur.append(
     creerElement('h3', { classe: 'Panneau-titre', texte: decrireElement(element) }),
@@ -124,6 +134,7 @@ function construireFace(conteneur, edition) {
   const fond = creerFormulaireSchema(SCHEMA_FOND, edition.modele[edition.cote].fond, {
     surChangement: (cle, valeur) => modifierFond({ [cle]: valeur }),
     avantModification: memoriser,
+    palette: paletteCourante,
   });
   const modele = creerFormulaireSchema(SCHEMA_MODELE, edition.modele, {
     surChangement: (cle, valeur) => modifierModele({ [cle]: valeur }),
@@ -132,7 +143,8 @@ function construireFace(conteneur, edition) {
   conteneur.append(
     creerElement('h3', { classe: 'Panneau-titre', texte: `Fond du ${COTES[edition.cote].toLowerCase()}` }),
     fond.element,
-    creerElement('h3', { classe: 'Panneau-titre', texte: 'Modèle' }),
+    creerElement('h3', { classe: 'Panneau-titre', texte: 'Modèle : format et palette' }),
+    creerElement('p', { classe: 'Aide', texte: "Changer une couleur de la palette la remplace partout dans le modèle. Changer le format replace les éléments proportionnellement." }),
     modele.element,
     creerElement('p', { classe: 'Aide', texte: AIDE }),
   );

@@ -5,9 +5,14 @@
  * Fonctions pures : elles renvoient les nouvelles positions sans rien modifier.
  */
 
-export const LARGEUR_CARTE = 850;
-export const HAUTEUR_CARTE = 550;
-export const CARTE = Object.freeze({ x: 0, y: 0, largeur: LARGEUR_CARTE, hauteur: HAUTEUR_CARTE });
+/**
+ * Zone de la carte entière (référence d'alignement pour un seul élément).
+ * @param {{largeur:number, hauteur:number}} dimensions - Dimensions de la carte.
+ * @returns {{x:number, y:number, largeur:number, hauteur:number}} Zone.
+ */
+export function zoneCarte({ largeur, hauteur }) {
+  return { x: 0, y: 0, largeur, hauteur };
+}
 
 /**
  * Calcule le rectangle qui englobe plusieurs éléments.
@@ -47,12 +52,13 @@ export function aligner(elements, mode, reference) {
  * (les positions relatives des éléments sont conservées).
  * @param {object[]} elements - Éléments sélectionnés.
  * @param {"horizontal"|"vertical"} axe - Axe de centrage.
+ * @param {{largeur:number, hauteur:number}} dimensions - Dimensions de la carte.
  * @returns {{id:string, x:number, y:number}[]} Nouvelles positions.
  */
-export function centrerSurCarte(elements, axe) {
+export function centrerSurCarte(elements, axe, dimensions) {
   const boite = boiteEnglobante(elements);
-  const dx = axe === 'horizontal' ? Math.round((LARGEUR_CARTE - boite.largeur) / 2 - boite.x) : 0;
-  const dy = axe === 'vertical' ? Math.round((HAUTEUR_CARTE - boite.hauteur) / 2 - boite.y) : 0;
+  const dx = axe === 'horizontal' ? Math.round((dimensions.largeur - boite.largeur) / 2 - boite.x) : 0;
+  const dy = axe === 'vertical' ? Math.round((dimensions.hauteur - boite.hauteur) / 2 - boite.y) : 0;
   return elements.map((e) => ({ id: e.id, x: e.x + dx, y: e.y + dy }));
 }
 

@@ -3,7 +3,9 @@
  * Zone centrale de l'éditeur : affiche la face en cours et permet de
  * sélectionner (clic, Ctrl + clic, cadre tracé à la souris), déplacer
  * un ou plusieurs éléments (glisser ou flèches) et redimensionner
- * (poignée). Aimantation au millimètre et aux axes centraux.
+ * (poignée, y compris pour un élément tourné). Les éléments verrouillés
+ * ne bougent pas. Aimantation au millimètre et aux axes centraux ;
+ * repères d'impression (zone de sécurité et fond perdu) en option.
  */
 
 import { creerElement, creerSvg, vider } from '../../Utilitaires/Dom.js';
@@ -11,10 +13,11 @@ import { PERSONNE_EXEMPLE } from '../../Metier/Personne.js';
 import { genererQrPersonne } from '../../Metier/ContenuQr.js';
 import { boiteEnglobante, toucheCadre } from '../../Metier/Alignement.js';
 import { trouverPersonne } from '../../Metier/EtatApplication.js';
-import { rendreFaceSvg, LARGEUR, HAUTEUR } from '../Rendu/RenduFaceSvg.js';
+import { FOND_PERDU, MARGE_SECURITE } from '../../Metier/Formats.js';
+import { rendreFaceSvg } from '../Rendu/RenduFaceSvg.js';
 import {
-  obtenirEdition, abonnerEdition, elementsFace, elementsSelectionnes, elementSelectionne, selectionner, selectionnerPlusieurs,
-  modifierElements, memoriser, oublierDernierMemo,
+  obtenirEdition, abonnerEdition, elementsFace, elementsSelectionnes, elementsDeplacables, elementSelectionne, selectionner,
+  selectionnerPlusieurs, modifierElements, memoriser, oublierDernierMemo, dimensions,
 } from './EtatEdition.js';
 import { gererRaccourci } from './Raccourcis.js';
 
@@ -45,6 +48,9 @@ export function monterZoneEdition(conteneur) {
       apercu = { id: edition.personneApercuId, personne, qr: genererQrPersonne(personne).qr };
     }
     const svg = rendreFaceSvg(edition.modele, edition.cote, apercu.personne, apercu.qr, { edition: true });
+    // Proportions de la carte (formats paysage, portrait, carré).
+    const { largeur, hauteur } = dimensions();
+    zone.style.setProperty('--ratio', String(largeur / hauteur));
     dessinerSurcouche(svg, edition);
     vider(zone);
     zone.append(svg);
@@ -78,6 +84,7 @@ export function monterZoneEdition(conteneur) {
     geste.bouge = true;
     if (geste.type === 'cadre') dessinerCadre(svg, geste.depart, point);
     else if (geste.type === 'taille') modifierElements([{ id: geste.initiaux[0].id, ...nouvelleTaille(geste.initiaux[0], dx, dy) }]);
+    else if (!geste.initiaux.length) return;
     else modifierElements(nouvellesPositions(geste.initiaux, geste.principal, dx, dy));
   });
 
@@ -118,7 +125,7 @@ function commencerGeste(e, point) {
   const poignee = e.target.closest('[data-poignee]');
   const groupe = e.target.closest('[data-id]');
 
-  if (poignee && elementSelectionne()) {
+  if (poignee && elementSelectionne() && !elementSelectionne().verrouille) {
     memoriser();
     return { type: 'taille', depart: point, initiaux: [{ ...elementSelectionne() }], bouge: false };
   }
@@ -132,9 +139,11 @@ function commencerGeste(e, point) {
   } else if (!dejaSelectionne) {
     selectionner(id);
   }
+  // Les éléments verrouillés restent sélectionnables mais ne bougent pas.
+  const initiaux = elementsDeplacables().map((el) => ({ ...el }));
+  if (!initiaux.length) return null;
   memoriser();
-  const initiaux = elementsSelectionnes().map((el) => ({ ...el }));
-  return { type: 'deplacement', depart: point, initiaux, principal: initiaux.find((el) => el.id === id), bouge: false };
+  return { type: 'deplacement', depart: point, initiaux, principal: initiaux.find((el) => el.id === id) || initiaux[0], bouge: false };
 }
 
 /**
@@ -177,11 +186,12 @@ function aimanter(valeur) {
  */
 function nouvellesPositions(initiaux, principal, dx, dy) {
   const reference = initiaux.length > 1 ? boiteEnglobante(initiaux) : principal;
+  const { largeur, hauteur } = dimensions();
   let x = aimanter(reference.x + dx);
   let y = aimanter(reference.y + dy);
   if (obtenirEdition().grille) {
-    if (Math.abs(x + reference.largeur / 2 - LARGEUR / 2) < AIMANT) x = Math.round(LARGEUR / 2 - reference.largeur / 2);
-    if (Math.abs(y + reference.hauteur / 2 - HAUTEUR / 2) < AIMANT) y = Math.round(HAUTEUR / 2 - reference.hauteur / 2);
+    if (Math.abs(x + reference.largeur / 2 - largeur / 2) < AIMANT) x = Math.round(largeur / 2 - reference.largeur / 2);
+    if (Math.abs(y + reference.hauteur / 2 - hauteur / 2) < AIMANT) y = Math.round(hauteur / 2 - reference.hauteur / 2);
   }
   const decalageX = x - reference.x;
   const decalageY = y - reference.y;
@@ -189,16 +199,20 @@ function nouvellesPositions(initiaux, principal, dx, dy) {
 }
 
 /**
- * Calcule la nouvelle taille (le QR code reste carré).
+ * Calcule la nouvelle taille (le QR code reste carré). Pour un élément
+ * tourné, le déplacement de la souris est ramené dans son propre repère.
  * @param {object} initial - Élément au début du geste.
  * @param {number} dx - Déplacement horizontal.
  * @param {number} dy - Déplacement vertical.
  * @returns {{largeur:number, hauteur:number}} Taille.
  */
 function nouvelleTaille(initial, dx, dy) {
-  const largeur = Math.max(10, aimanter(initial.largeur + dx));
-  const hauteur = Math.max(5, aimanter(initial.hauteur + dy));
-  if (initial.type === 'qr') {
+  const angle = (-initial.rotation * Math.PI) / 180;
+  const dxLocal = dx * Math.cos(angle) - dy * Math.sin(angle);
+  const dyLocal = dx * Math.sin(angle) + dy * Math.cos(angle);
+  const largeur = Math.max(10, aimanter(initial.largeur + dxLocal));
+  const hauteur = Math.max(5, aimanter(initial.hauteur + dyLocal));
+  if (initial.type === 'qr' || initial.type === 'icone') {
     const cote = Math.max(largeur, hauteur);
     return { largeur: cote, hauteur: cote };
   }
@@ -222,28 +236,37 @@ function dessinerCadre(svg, depart, point) {
 }
 
 /**
- * Ajoute la grille, les cadres de sélection et la poignée par-dessus la face.
+ * Ajoute la grille, les repères d'impression, les cadres de sélection et
+ * la poignée par-dessus la face (les cadres suivent la rotation).
  * @param {SVGSVGElement} svg - Face affichée.
  * @param {object} edition - État de l'éditeur.
  */
 function dessinerSurcouche(svg, edition) {
+  const { largeur, hauteur } = dimensions();
   const couche = creerSvg('g', { class: 'Surcouche' }, svg);
   if (edition.grille) {
-    for (let x = 50; x < LARGEUR; x += 50) creerSvg('line', { x1: x, y1: 0, x2: x, y2: HAUTEUR, class: x === LARGEUR / 2 ? 'Grille Grille--axe' : 'Grille' }, couche);
-    for (let y = 50; y < HAUTEUR; y += 50) creerSvg('line', { x1: 0, y1: y, x2: LARGEUR, y2: y, class: 'Grille' }, couche);
-    creerSvg('line', { x1: 0, y1: HAUTEUR / 2, x2: LARGEUR, y2: HAUTEUR / 2, class: 'Grille Grille--axe' }, couche);
+    for (let x = 50; x < largeur; x += 50) creerSvg('line', { x1: x, y1: 0, x2: x, y2: hauteur, class: 'Grille' }, couche);
+    for (let y = 50; y < hauteur; y += 50) creerSvg('line', { x1: 0, y1: y, x2: largeur, y2: y, class: 'Grille' }, couche);
+    creerSvg('line', { x1: largeur / 2, y1: 0, x2: largeur / 2, y2: hauteur, class: 'Grille Grille--axe' }, couche);
+    creerSvg('line', { x1: 0, y1: hauteur / 2, x2: largeur, y2: hauteur / 2, class: 'Grille Grille--axe' }, couche);
+  }
+  if (edition.reperes) {
+    creerSvg('rect', { x: MARGE_SECURITE, y: MARGE_SECURITE, width: largeur - 2 * MARGE_SECURITE, height: hauteur - 2 * MARGE_SECURITE, class: 'Repere Repere--securite' }, couche);
+    creerSvg('rect', { x: -FOND_PERDU, y: -FOND_PERDU, width: largeur + 2 * FOND_PERDU, height: hauteur + 2 * FOND_PERDU, class: 'Repere Repere--perdu' }, couche);
   }
   const selection = elementsSelectionnes();
-  selection.forEach((el) => creerSvg('rect', { x: el.x, y: el.y, width: el.largeur, height: el.hauteur, class: 'Selection' }, couche));
+  selection.forEach((el) => {
+    const cadre = creerSvg('g', { transform: el.rotation ? `rotate(${el.rotation} ${el.x + el.largeur / 2} ${el.y + el.hauteur / 2})` : undefined }, couche);
+    creerSvg('rect', { x: el.x, y: el.y, width: el.largeur, height: el.hauteur, class: el.verrouille ? 'Selection Selection--verrouille' : 'Selection' }, cadre);
+    if (selection.length === 1 && !el.verrouille) {
+      creerSvg('rect', {
+        x: el.x + el.largeur - TAILLE_POIGNEE / 2, y: el.y + el.hauteur - TAILLE_POIGNEE / 2,
+        width: TAILLE_POIGNEE, height: TAILLE_POIGNEE, class: 'Poignee', 'data-poignee': 'taille',
+      }, cadre);
+    }
+  });
   if (selection.length > 1) {
     const boite = boiteEnglobante(selection);
     creerSvg('rect', { x: boite.x - 6, y: boite.y - 6, width: boite.largeur + 12, height: boite.hauteur + 12, class: 'Selection Selection--groupe' }, couche);
-  }
-  if (selection.length === 1) {
-    const [el] = selection;
-    creerSvg('rect', {
-      x: el.x + el.largeur - TAILLE_POIGNEE / 2, y: el.y + el.hauteur - TAILLE_POIGNEE / 2,
-      width: TAILLE_POIGNEE, height: TAILLE_POIGNEE, class: 'Poignee', 'data-poignee': 'taille',
-    }, couche);
   }
 }

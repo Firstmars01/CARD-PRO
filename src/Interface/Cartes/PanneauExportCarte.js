@@ -1,7 +1,8 @@
 /**
  * PanneauExportCarte.js
  * Boutons de téléchargement de la carte sélectionnée : images (PNG, JPG,
- * SVG) du recto et du verso, PDF, planche A4 recto-verso, contact et ZIP.
+ * SVG) du recto et du verso, PDF, planche A4 recto-verso, PDF imprimeur
+ * (fonds perdus), contact et ZIP.
  */
 
 import { creerElement } from '../../Utilitaires/Dom.js';
@@ -9,21 +10,22 @@ import { telechargerBlob } from '../../Utilitaires/Telechargement.js';
 import { trouverPersonne } from '../../Metier/EtatApplication.js';
 import { personneSelectionnee, abonnerSelection } from './SelectionCarte.js';
 import {
-  preparerCarte, fichierPng, fichierJpg, fichierSvg, fichierPdf, fichierPlanche, fichierVcf, fichierZip,
+  preparerCarte, fichierPng, fichierJpg, fichierSvg, fichierPdf, fichierPlanche, fichierImprimeur, fichierVcf, fichierZip,
 } from './GenerateurFichiers.js';
 import { creerSection } from '../Champs.js';
 import { notifier } from '../Notifications.js';
 
 // Boutons : [libellé, extension du fichier, fonction de génération].
 const EXPORTS = [
-  ['Recto PNG', '-recto.png', (c) => fichierPng(c.recto)],
-  ['Verso PNG', '-verso.png', (c) => fichierPng(c.verso)],
-  ['Recto JPG', '-recto.jpg', (c) => fichierJpg(c.recto)],
-  ['Verso JPG', '-verso.jpg', (c) => fichierJpg(c.verso)],
-  ['Recto SVG', '-recto.svg', (c) => fichierSvg(c.recto)],
-  ['Verso SVG', '-verso.svg', (c) => fichierSvg(c.verso)],
+  ['Recto PNG', '-recto.png', (c) => fichierPng(c, 'recto')],
+  ['Verso PNG', '-verso.png', (c) => fichierPng(c, 'verso')],
+  ['Recto JPG', '-recto.jpg', (c) => fichierJpg(c, 'recto')],
+  ['Verso JPG', '-verso.jpg', (c) => fichierJpg(c, 'verso')],
+  ['Recto SVG', '-recto.svg', (c) => fichierSvg(c, 'recto')],
+  ['Verso SVG', '-verso.svg', (c) => fichierSvg(c, 'verso')],
   ['PDF recto + verso', '.pdf', fichierPdf],
-  ['Planche A4 (10 cartes)', '-planche-a4.pdf', fichierPlanche],
+  ['Planche A4', '-planche-a4.pdf', fichierPlanche],
+  ['PDF imprimeur (fonds perdus)', '-imprimeur.pdf', fichierImprimeur],
   ['Contact (.vcf)', '.vcf', fichierVcf],
   ['Tout (ZIP)', '.zip', fichierZip],
 ];
@@ -41,7 +43,7 @@ export function monterPanneauExportCarte(conteneur) {
   }));
   contenu.append(grille, creerElement('p', {
     classe: 'Aide',
-    texte: 'Images en 300 dpi (85 × 55 mm). La planche A4 fait 2 pages : imprime en recto-verso « bord long », puis découpe le long des traits.',
+    texte: "Images en 300 dpi au format du modèle. Planche A4 : 2 pages, imprime en recto-verso « bord long » puis découpe le long des traits. PDF imprimeur : à envoyer à un imprimeur professionnel (3 mm de fond perdu et traits de coupe).",
   }));
   conteneur.append(section);
 

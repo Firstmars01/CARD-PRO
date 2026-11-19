@@ -5,7 +5,7 @@
 services:
   cardpro:
     build: .
-    image: cardpro:3.0.0
+    image: cardpro:3.1.0
     container_name: cardpro
     restart: unless-stopped
     ports:

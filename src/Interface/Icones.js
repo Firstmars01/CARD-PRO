@@ -32,6 +32,10 @@ const TRACES = {
   repartirH: 'M3 4v16 M21 4v16 M7 9h3v6H7z M14 9h3v6h-3z',
   repartirV: 'M4 3h16 M4 21h16 M9 7h6v3H9z M9 14h6v3H9z',
   autreFace: 'M4 8h13l-3-3 M20 16H7l3 3',
+  icone: 'M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z',
+  grouper: 'M3 3h8v8H3z M13 13h8v8h-8z M11 7h6v6 M7 11v6h6',
+  degrouper: 'M3 3h8v8H3z M13 13h8v8h-8z',
+  cadenas: 'M6 11h12v10H6z M8 11V7a4 4 0 0 1 8 0v4',
 };
 
 /**

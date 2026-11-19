@@ -113,3 +113,10 @@ textarea {
   overflow: hidden;
   clip-path: inset(50%);
 }
+
+/* Numéro de version affiché à côté du titre (vérifie que la mise à jour est bien chargée). */
+.EnTete-version {
+  font-size: 0.7em;
+  font-weight: 500;
+  opacity: 0.6;
+}

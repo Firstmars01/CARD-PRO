@@ -15,10 +15,10 @@ Application locale (Docker) pour créer les **cartes de visite de toute une équ
 - Choix du modèle pour chaque carte.
 - Aperçu en direct du **recto** et du **verso**, avec une alerte si le QR code risque d'être mal lu.
 - **Import d'une liste** (CSV exporté d'Excel) avec un fichier modèle à télécharger.
-- **Téléchargements** : recto/verso en PNG, JPG et SVG (300 dpi), PDF recto + verso (85 × 55 mm), planche A4 recto-verso de 10 cartes, contact `.vcf`, ZIP de la carte, et **ZIP de toutes les cartes** (un dossier par personne).
+- **Téléchargements** : recto/verso en PNG, JPG et SVG (300 dpi), PDF recto + verso au format de la carte, planche A4 recto-verso, **PDF imprimeur** (fonds perdus 3 mm + traits de coupe), contact `.vcf`, ZIP de la carte, et **ZIP de toutes les cartes** (un dossier par personne).
 
 ### Onglet « Modèles »
-- 7 modèles de base : Classique, Ardoise, Océan, Bandeau corail, Minimal (QR au verso), Réseaux (QR des liens au verso), Néon.
+- 8 modèles de base : Classique, Ardoise, Océan, Bandeau corail, Minimal (QR au verso), Réseaux (QR des liens au verso), Vertical (portrait, icônes), Néon.
 - **Éditeur visuel recto / verso** :
   - placement à la souris (glisser), redimensionnement avec la poignée, déplacement au clavier ;
   - **sélection multiple** : Ctrl + clic, ou cadre tracé à la souris sur une zone vide, puis déplacement du groupe ;
@@ -34,14 +34,20 @@ Application locale (Docker) pour créer les **cartes de visite de toute une équ
     - **QR code** : contact (vCard), site web ou **un lien précis** de la personne (lien n° 1 à 8) ;
     - **QR des liens** : un bouton ajoute 3 QR codes de liens avec le nom du lien en dessous ;
     - **image** : logo, photo… ;
-    - **formes** : rectangle, ellipse, ligne ;
+    - **formes** : rectangle, ellipse, ligne, triangle, losange, étoile, polygone, vague, flèche ;
+    - **icônes** : 20 pictogrammes génériques (téléphone, e-mail, web, adresse…) ;
   - réglages de chaque élément :
-    - position et taille en mm, opacité, visibilité ;
-    - police (12 au choix), taille, graisse, italique, majuscules, couleur, alignement, espacement des lettres, interligne, préfixe (ex. « Tél. ») ;
-    - couleurs, marge et arrondi du QR code ;
-    - remplissage, contour et arrondi des formes ;
-  - fond de chaque face : uni, dégradé ou image ;
-  - **calques** : ordre, masquer, supprimer ;
+    - position et taille en mm, **rotation**, opacité, visibilité, **ombre portée** ;
+    - police (12 au choix), taille, graisse, italique, majuscules, souligné, barré, texte vertical, couleur unie ou **dégradée**, contour, étiquette de fond, alignement, espacement, interligne, préfixe (ex. « Tél. ») ;
+    - QR code : couleurs, marge, arrondi, **points carrés / arrondis / ronds**, forme et couleur des coins, **logo au centre** (n'importe quelle image) ;
+    - images : cadrage rectangle, arrondi ou rond, bordure, noir et blanc ;
+    - formes : remplissage uni, dégradé linéaire ou radial, contour, arrondi global ou coin par coin ;
+  - fond de chaque face : uni, dégradé, radial ou image, **motif** (points, lignes, grille, vagues…) et **voile** de couleur ;
+  - **format de la carte** (standard 85 × 55, ISO 85,6 × 54, US, long, carré) en **paysage ou portrait** : les éléments sont replacés automatiquement, et revenir au format de départ redonne exactement la disposition d'origine ;
+  - **palette de 5 couleurs** : changer une couleur la remplace partout, et un nuancier apparaît dans chaque choix de couleur ;
+  - **verrouiller** et **grouper** des éléments ;
+  - **repères d'impression** (zone de sécurité et fond perdu) ;
+  - **calques** : ordre, masquer, verrouiller, supprimer ;
   - **annuler / rétablir**, dupliquer, copier une face sur l'autre ;
   - aperçu avec une personne d'exemple ou une vraie personne de la liste.
 - **Enregistrement des modèles** (nouveau, dupliquer, renommer, supprimer) et import / export en `.json`.
@@ -56,6 +62,7 @@ Application locale (Docker) pour créer les **cartes de visite de toute une équ
 | Copier / couper / coller | Ctrl + C / Ctrl + X / Ctrl + V |
 | Dupliquer | Ctrl + D |
 | Copier / coller le style | Ctrl + Maj + C / Ctrl + Maj + V |
+| Grouper / dissocier | Ctrl + G / Ctrl + Maj + G |
 | Supprimer | Suppr |
 | Annuler / rétablir | Ctrl + Z / Ctrl + Y |
 
@@ -84,10 +91,10 @@ CARD PRO/
 │   ├── Interface/
 │   │   ├── Cartes/            # Liste, formulaire, import, aperçu, exports
 │   │   ├── Modeles/           # Éditeur : zone, outils, raccourcis, propriétés, calques, modèles
-│   │   └── Rendu/             # Dessin des faces et du QR en SVG
-│   ├── Metier/                # Personne, éléments, modèles, alignement, polices, vCard, import, état
+│   │   └── Rendu/             # Dessin des faces, du QR, dégradés, ombres et motifs en SVG
+│   ├── Metier/                # Personne, éléments, modèles, formats, palette, icônes, alignement, polices, vCard, import, état
 │   ├── Donnees/               # Appels à l'API
-│   └── Utilitaires/           # QR, validation, schémas, images, CSV, ZIP, PDF
+│   └── Utilitaires/           # QR, formes, validation, schémas, images, CSV, ZIP, PDF
 ├── serveur/
 │   ├── Serveur.js             # Point d'entrée : API + fichiers
 │   ├── Configuration.js       # Variables d'environnement
@@ -119,6 +126,8 @@ docker compose cp cardpro:/donnees/cardpro.sqlite ./sauvegarde.sqlite   # sauveg
 ```
 
 > Si tu avais installé une ancienne version de Card Pro, recharge la page avec **Ctrl + F5** la première fois.
+>
+> Après une mise à jour du code, relance **`docker compose up -d --build`** (le `--build` est indispensable : sans lui, Docker garde l'ancienne version). Le numéro affiché à côté du titre (ex. « v3.1 ») confirme la version chargée.
 
 ## Développement sans Docker
 
@@ -126,7 +135,7 @@ Il faut Node.js 22.13 ou plus récent.
 
 ```bash
 npm start      # http://localhost:3000 (base dans ./donnees)
-npm test       # 21 tests
+npm test       # 27 tests
 ```
 
 ## QR codes des liens
@@ -135,6 +144,12 @@ npm test       # 21 tests
 - Dans un modèle, un QR code réglé sur « Un lien de la personne » + « Numéro du lien » ouvre ce lien quand on le scanne. Une légende « Lien N (nom) » affiche son nom (ex. « LinkedIn »).
 - Si une personne n'a pas ce lien, le QR code et sa légende n'apparaissent pas sur sa carte. L'éditeur les signale en pointillés.
 - Garde le même ordre de liens pour tout le monde (ex. lien 1 = LinkedIn, lien 2 = site du portfolio) pour que les cartes restent cohérentes.
+
+## Lisibilité des QR codes stylés
+
+- Le QR code principal contient toujours la **fiche contact** (vCard) : on le scanne et on ajoute le contact.
+- Avec un **logo**, le QR passe en correction d'erreur maximale (H). Il devient plus dense : agrandis-le, ou utilise un QR « lien » pour le logo.
+- Les coins **ronds ou arrondis** sont lus par les téléphones récents, mais pas par certains lecteurs anciens. L'aperçu affiche un avertissement : **teste toujours la lecture avec un téléphone avant d'imprimer**.
 
 ## Exemples d'utilisation
 
