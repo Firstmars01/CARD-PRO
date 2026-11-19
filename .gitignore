@@ -24,3 +24,6 @@ android/app/src/main/assets/www/
 android/local.properties
 *.jks
 *.keystore
+
+cardpro.jks
+mdp.txt
