@@ -8,8 +8,10 @@ node_modules/
 Thumbs.db
 *.log
 
-# Base de données locale (hors Docker)
-donnees/
+# Base de données locale (hors Docker) : seulement le dossier à la racine.
+# Le « / » initial est indispensable : sous Windows, Git ignore la casse et
+# « donnees/ » exclurait aussi les dossiers de code src/Donnees, serveur/Donnees…
+/donnees/
 
 # Lecteur QR du portefeuille : ajouté à la publication (voir portefeuille/vendor/LISEZMOI.md)
 portefeuille/vendor/jsQR.js
