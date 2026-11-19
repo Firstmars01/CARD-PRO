@@ -3,8 +3,7 @@
 #  - le portefeuille web (iPhone) et la page « contact » (NFC vers iPhone) ;
 #  - la page d'accueil du projet (accueil/, copiée à la racine) ;
 #  - la page de téléchargement de l'appli des RH (rh/, l'exe est dans « Releases ») ;
-#  - l'appli Android (APK signé, avec le NFC), construite ici, et sa fiche de
-#    version (telechargement/version.json) pour la mise à jour automatique.
+#  - l'appli Android (APK signé, avec le NFC), construite ici.
 # Seuls les fichiers nécessaires sont publiés : ni le serveur, ni la page des
 # RH, ni aucune donnée de personne.
 # Réglages uniques sur GitHub :
@@ -97,7 +96,6 @@ jobs:
           CARDPRO_KEYSTORE_MOT_DE_PASSE: ${{ secrets.ANDROID_KEYSTORE_MOT_DE_PASSE }}
           CARDPRO_CLE_ALIAS: ${{ secrets.ANDROID_CLE_ALIAS }}
           CARDPRO_CLE_MOT_DE_PASSE: ${{ secrets.ANDROID_CLE_MOT_DE_PASSE }}
-          CARDPRO_ADRESSE_SITE: ${{ steps.pages.outputs.base_url }}/
         run: |
           if [ -z "$CARDPRO_KEYSTORE_BASE64" ]; then
             echo "::error::Secret ANDROID_KEYSTORE_BASE64 manquant : voir la section « Appli Android » du README."
@@ -107,7 +105,7 @@ jobs:
           echo "$CARDPRO_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/cardpro.jks"
           export CARDPRO_KEYSTORE="$RUNNER_TEMP/cardpro.jks"
           # Numéro de version Android déduit de package.json (4.3.0 → 40300) :
-          # les téléphones ne se mettent à jour que si la version change.
+          # une nouvelle version s'installe par-dessus l'ancienne (cartes conservées).
           export CARDPRO_VERSION_NOM="$(node -p "require('./package.json').version")"
           export CARDPRO_VERSION_CODE="$(node -p "const [a,b,c]=require('./package.json').version.split('.').map(Number); a*10000+b*100+c")"
           # Le portefeuille (déjà préparé pour le site) est copié dans l'appli.
@@ -117,9 +115,6 @@ jobs:
           rm -f "$RUNNER_TEMP/cardpro.jks"
           mkdir -p _site/telechargement
           cp android/app/build/outputs/apk/release/app-release.apk _site/telechargement/CardPro.apk
-          # Fiche de version lue par l'appli Android pour se mettre à jour toute seule.
-          EMPREINTE="$(sha256sum _site/telechargement/CardPro.apk | cut -d' ' -f1)"
-          printf '{"versionCode":%s,"versionName":"%s","sha256":"%s"}\n' "$CARDPRO_VERSION_CODE" "$CARDPRO_VERSION_NOM" "$EMPREINTE" > _site/telechargement/version.json
 
       - name: Envoyer le site
         uses: actions/upload-pages-artifact@v4

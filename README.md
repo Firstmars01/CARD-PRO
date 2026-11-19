@@ -161,7 +161,7 @@ Puis, **Card Pro (exe) fermé**, copie ce fichier dans `%APPDATA%\CardPro\` (rem
 
 `.github/workflows/RH.yml` construit `CardPro-RH.exe` sur GitHub (Windows) à chaque `git push` qui touche l'appli, et le publie dans **Releases** sous le numéro de version de `package.json` (ex. `v4.3.0`), avec son empreinte SHA-256 (`CardPro-RH.exe.sha256`).
 
-> **Pour livrer une mise à jour** (PC et Android), augmente `version` dans `package.json` (ex. `4.3.0` → `4.3.1`) puis `git push`. Sans changement de version, les PC et les téléphones Android ne voient pas de nouveauté (l'appli web iPhone, elle, se met à jour à chaque publication).
+> **Pour livrer une mise à jour**, augmente `version` dans `package.json` (ex. `4.3.0` → `4.3.1`) puis `git push` : les PC se mettent à jour tout seuls, l'appli web iPhone aussi (à chaque publication) ; sur Android, il faut retélécharger l'APK.
 
 ## Développement
 
@@ -281,7 +281,7 @@ Android exige que chaque version soit signée avec **la même clé**. Garde-la p
 ### Installer et mettre à jour
 
 - **Installer** : sur Android, ouvre l'adresse du portefeuille → **Télécharger l'appli Card Pro** → ouvre `CardPro.apk` → autorise l'installation (« sources inconnues ») → **Installer**. Play Protect peut afficher un avertissement (appli hors Play Store) : « Plus de détails » → « Installer quand même ».
-- **Mise à jour automatique** : à l'ouverture (au plus toutes les 6 heures, si le téléphone est en ligne), l'appli vérifie s'il existe une nouvelle version, la télécharge, la vérifie et ouvre l'installateur : il suffit de toucher **« Mettre à jour »** (Android exige cette confirmation pour les applis hors Play Store ; la première fois, il demande d'autoriser Card Pro à installer des applis). Les cartes sont conservées.
+- **Mettre à jour** : retélécharge l'appli depuis la page du portefeuille et installe-la par-dessus. Les cartes sont conservées. (Pas de mise à jour automatique sur Android : le droit « installer des applis » qu'elle demande fait bloquer l'appli par Play Protect.)
 - Les cartes de l'appli Android et celles de l'appli web sont stockées séparément.
 
 ## Exemples d'utilisation
@@ -324,9 +324,8 @@ Android exige que chaque version soit signée avec **la même clé**. Garde-la p
   - les cartes lues depuis le stockage sont revalidées avant affichage ; les liens d'appel et d'e-mail sont construits à partir de valeurs déjà nettoyées ;
   - le QR animé est contrôlé par un **CRC-32** : une lecture incomplète ou erronée est rejetée ;
   - la page web n'a pas accès à la caméra (`Permissions-Policy: camera=()`), seul le portefeuille y a droit ;
-  - **appli Android** : la WebView n'affiche que les pages incluses dans l'appli (tout autre lien s'ouvre dans l'appli adaptée du téléphone) ; caméra et choix de fichiers réservés à ces pages ; les fonctions Android appelées par la page vérifient chaque paramètre (types de fichiers en liste blanche, tailles limitées, noms nettoyés) ; fichiers partagés uniquement via un dossier dédié (FileProvider) ;
-  - **mises à jour** : le nouvel exe n'est installé qu'après vérification de son empreinte SHA-256 (publiée avec la version), de son en-tête et de son numéro de version ; les téléchargements ne viennent que des « Releases » du dépôt, en HTTPS. L'APK n'est installé qu'après vérification de son empreinte (`telechargement/version.json`), de son nom de paquet et de sa version, et Android refuse toute mise à jour qui ne serait pas signée avec la même clé ;
-  - **appli Android et Internet** : la permission Internet sert uniquement à la mise à jour ; les pages de l'appli ne chargent toujours rien d'Internet (toute autre requête est bloquée) ;
+  - **appli Android** : aucune permission Internet ; la WebView n'affiche que les pages incluses dans l'appli (tout autre lien s'ouvre dans l'appli adaptée du téléphone) ; caméra et choix de fichiers réservés à ces pages ; les fonctions Android appelées par la page vérifient chaque paramètre (types de fichiers en liste blanche, tailles limitées, noms nettoyés) ; fichiers partagés uniquement via un dossier dédié (FileProvider) ;
+  - **mises à jour** : le nouvel exe n'est installé qu'après vérification de son empreinte SHA-256 (publiée avec la version), de son en-tête et de son numéro de version ; les téléchargements ne viennent que des « Releases » du dépôt, en HTTPS. Android refuse toute mise à jour de l'APK qui ne serait pas signée avec la même clé ;
   - **NFC** : puce émulée en **lecture seule**, active seulement quand la personne l'active sur une carte, coupée dès que l'appli passe en arrière-plan ;
   - **lien « contact »** (iPhone) : les données sont après le `#`, donc jamais envoyées au serveur ; la page les revalide comme le reste (liens `http`/`https` seulement…) ;
   - **clé de signature** : uniquement dans les secrets GitHub, écrite le temps de la compilation puis effacée ; `*.jks` est exclu de Git ;

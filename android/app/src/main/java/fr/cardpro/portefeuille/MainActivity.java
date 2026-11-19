@@ -6,7 +6,7 @@
  * JavaScript fonctionnent.
  * Sécurité : la WebView n'affiche que les pages de l'appli et ne charge rien
  * depuis Internet ; tout autre lien (site, téléphone, e-mail) s'ouvre dans
- * l'appli adaptée du téléphone. Internet ne sert qu'à la mise à jour.
+ * l'appli adaptée du téléphone.
  */
 package fr.cardpro.portefeuille;
 
@@ -75,13 +75,6 @@ public class MainActivity extends Activity {
 
         fichiersRecus.lireIntent(getIntent());
         vue.loadUrl(PAGE);
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        // Recherche de mise à jour (au plus toutes les 6 heures, si en ligne).
-        MiseAJourAndroid.verifier(this);
     }
 
     @Override

@@ -3,15 +3,12 @@
   AndroidManifest.xml
   Appli Card Pro : écran principal (portefeuille), service NFC (le téléphone
   se fait passer pour une puce NFC contenant le contact) et partage de fichiers.
-  Internet sert uniquement à la mise à jour automatique (version.json et APK
-  sur le site du projet) ; les pages de l'appli, elles, ne chargent rien d'Internet.
+  Aucune permission Internet : tout le contenu est dans l'appli.
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.NFC" />
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-feature android:name="android.hardware.nfc" android:required="false" />

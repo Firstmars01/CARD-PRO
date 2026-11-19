@@ -18,13 +18,6 @@ android {
         targetSdk = 35
         versionCode = (System.getenv("CARDPRO_VERSION_CODE") ?: "1").toInt()
         versionName = System.getenv("CARDPRO_VERSION_NOM") ?: "dev"
-        // Adresse du site (mise à jour automatique), fixée à la publication.
-        val adresseSite = System.getenv("CARDPRO_ADRESSE_SITE") ?: ""
-        buildConfigField("String", "ADRESSE_SITE", "\"$adresseSite\"")
-    }
-
-    buildFeatures {
-        buildConfig = true
     }
 
     signingConfigs {

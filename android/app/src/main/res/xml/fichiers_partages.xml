@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- fichiers_partages.xml : dossiers du cache partageables (fichiers .vcf, APK de mise à jour pour l'installateur). -->
+<!-- fichiers_partages.xml : seul le dossier « partage » du cache est partageable (fichiers .vcf). -->
 <paths>
     <cache-path name="partage" path="partage/" />
-    <cache-path name="maj" path="maj/" />
 </paths>
