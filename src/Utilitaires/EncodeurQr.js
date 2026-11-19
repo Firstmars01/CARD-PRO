@@ -1,7 +1,8 @@
 /**
  * EncodeurQr.js
  * Encodeur de QR code autonome (norme ISO/IEC 18004), sans dépendance externe.
- * Il encode un texte en mode « octets » (UTF-8), choisit automatiquement la plus
+ * Il encode un texte en mode « octets » (UTF-8) ou « alphanumérique » (chiffres,
+ * majuscules et  $%*+-./: — plus compact), choisit automatiquement la plus
  * petite version (1 à 40) et le meilleur masque, puis renvoie la grille de modules.
  * Algorithme inspiré de la référence publique de Project Nayuki (licence MIT).
  */
@@ -30,32 +31,72 @@ const NOMBRE_BLOCS = [
   [-1, 1, 1, 2, 4, 4, 4, 5, 6, 8, 8, 11, 11, 16, 16, 18, 16, 19, 21, 25, 25, 25, 34, 30, 32, 35, 37, 40, 42, 45, 48, 51, 54, 57, 60, 63, 66, 70, 74, 77, 81],
 ];
 
+// Jeu de caractères du mode alphanumérique (l'index = la valeur codée).
+const ALPHANUMERIQUE = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:';
+const EST_ALPHANUMERIQUE = /^[0-9A-Z $%*+\-./:]*$/;
+
 /**
  * Encode un texte en QR code.
  * @param {string} texte - Texte à encoder (UTF-8).
  * @param {"L"|"M"|"Q"|"H"} [niveau="M"] - Niveau minimal de correction d'erreur.
+ * @param {{versionMin?:number}} [options] - versionMin : version minimale (pour des QR de même taille).
  * @returns {{version:number, taille:number, modules:boolean[][]}} Grille (true = module sombre).
  * @throws {Error} Si le texte est trop long pour un QR code.
  */
-export function encoderTexteQr(texte, niveau = 'M') {
-  const octets = Array.from(new TextEncoder().encode(String(texte)));
+export function encoderTexteQr(texte, niveau = 'M', options = {}) {
+  const segment = creerSegment(String(texte));
   const niveauChoisi = NIVEAUX[niveau] ? niveau : 'M';
-  const version = choisirVersion(octets.length, NIVEAUX[niveauChoisi].index);
-  const donnees = construireCodewords(octets, version, NIVEAUX[niveauChoisi].index);
+  const versionMin = Math.min(40, Math.max(1, Math.floor(Number(options.versionMin) || 1)));
+  const version = choisirVersion(segment, NIVEAUX[niveauChoisi].index, versionMin);
+  const donnees = construireCodewords(segment, version, NIVEAUX[niveauChoisi].index);
   const matrice = construireMatrice(version, NIVEAUX[niveauChoisi], donnees);
   return { version, taille: matrice.taille, modules: matrice.modules };
 }
 
 /**
+ * Prépare le segment de données : mode alphanumérique si possible, sinon octets.
+ * @param {string} texte - Texte à encoder.
+ * @returns {{alphanumerique:boolean, longueur:number, valeurs:number[]}} Segment.
+ */
+function creerSegment(texte) {
+  if (texte.length && EST_ALPHANUMERIQUE.test(texte)) {
+    return { alphanumerique: true, longueur: texte.length, valeurs: [...texte].map((c) => ALPHANUMERIQUE.indexOf(c)) };
+  }
+  const octets = Array.from(new TextEncoder().encode(texte));
+  return { alphanumerique: false, longueur: octets.length, valeurs: octets };
+}
+
+/**
+ * Nombre de bits du compteur de caractères selon le mode et la version.
+ * @param {boolean} alphanumerique - Mode alphanumérique.
+ * @param {number} version - Version du QR.
+ * @returns {number} Nombre de bits.
+ */
+function bitsCompteur(alphanumerique, version) {
+  if (alphanumerique) return version <= 9 ? 9 : version <= 26 ? 11 : 13;
+  return version <= 9 ? 8 : 16;
+}
+
+/**
+ * Nombre de bits occupés par les données (2 caractères = 11 bits en alphanumérique).
+ * @param {{alphanumerique:boolean, longueur:number}} segment - Segment.
+ * @returns {number} Nombre de bits.
+ */
+function bitsDonnees(segment) {
+  if (!segment.alphanumerique) return segment.longueur * 8;
+  return Math.floor(segment.longueur / 2) * 11 + (segment.longueur % 2) * 6;
+}
+
+/**
  * Cherche la plus petite version capable de contenir les données.
- * @param {number} nbOctets - Nombre d'octets à encoder.
+ * @param {object} segment - Segment à encoder.
  * @param {number} indexNiveau - Index du niveau de correction.
+ * @param {number} [versionMin=1] - Version minimale.
  * @returns {number} Version (1 à 40).
  */
-function choisirVersion(nbOctets, indexNiveau) {
-  for (let version = 1; version <= 40; version++) {
-    const bitsCompteur = version <= 9 ? 8 : 16;
-    const bitsUtiles = 4 + bitsCompteur + nbOctets * 8;
+function choisirVersion(segment, indexNiveau, versionMin = 1) {
+  for (let version = versionMin; version <= 40; version++) {
+    const bitsUtiles = 4 + bitsCompteur(segment.alphanumerique, version) + bitsDonnees(segment);
     if (bitsUtiles <= nombreCodewordsDonnees(version, indexNiveau) * 8) return version;
   }
   throw new Error('Données trop longues pour un QR code.');
@@ -63,19 +104,26 @@ function choisirVersion(nbOctets, indexNiveau) {
 
 /**
  * Construit les codewords de données (en-tête + données + remplissage).
- * @param {number[]} octets - Données brutes.
+ * @param {object} segment - Segment (mode, longueur, valeurs).
  * @param {number} version - Version du QR.
  * @param {number} indexNiveau - Index du niveau de correction.
  * @returns {number[]} Codewords de données.
  */
-function construireCodewords(octets, version, indexNiveau) {
+function construireCodewords(segment, version, indexNiveau) {
   const bits = [];
   const ajouterBits = (valeur, longueur) => {
     for (let i = longueur - 1; i >= 0; i--) bits.push((valeur >>> i) & 1);
   };
-  ajouterBits(0b0100, 4); // Mode « octets »
-  ajouterBits(octets.length, version <= 9 ? 8 : 16);
-  octets.forEach((octet) => ajouterBits(octet, 8));
+  const { alphanumerique, longueur, valeurs } = segment;
+  ajouterBits(alphanumerique ? 0b0010 : 0b0100, 4); // Mode alphanumérique ou « octets »
+  ajouterBits(longueur, bitsCompteur(alphanumerique, version));
+  if (alphanumerique) {
+    // Les caractères sont codés par paires (45 × a + b sur 11 bits), le dernier seul sur 6 bits.
+    for (let i = 0; i + 1 < longueur; i += 2) ajouterBits(valeurs[i] * 45 + valeurs[i + 1], 11);
+    if (longueur % 2) ajouterBits(valeurs[longueur - 1], 6);
+  } else {
+    valeurs.forEach((octet) => ajouterBits(octet, 8));
+  }
 
   // Terminateur, alignement sur l'octet, puis octets de remplissage.
   const capacite = nombreCodewordsDonnees(version, indexNiveau) * 8;

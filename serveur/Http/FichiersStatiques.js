@@ -3,6 +3,8 @@
  * Sert les fichiers de l'application (HTML, CSS, JS, images).
  * Seuls quelques fichiers et dossiers sont autorisés : le code du serveur,
  * la base de données et les fichiers cachés ne sont jamais accessibles.
+ * Le portefeuille mobile (/portefeuille/) est aussi servi, pour l'essayer
+ * sur le PC (la caméra n'y est autorisée que pour lui).
  */
 
 import path from 'node:path';
@@ -18,9 +20,10 @@ const TYPES = {
   '.webmanifest': 'application/manifest+json',
 };
 const FICHIERS_RACINE = ['index.html', 'manifest.webmanifest', 'sw.js'];
-const DOSSIERS_AUTORISES = ['assets', 'src'];
-// Page d'accueil de l'application.
+const DOSSIERS_AUTORISES = ['assets', 'src', 'portefeuille'];
+// Page d'accueil de l'application et du portefeuille mobile.
 const PAGE_APPLICATION = /^\/$/;
+const PAGE_PORTEFEUILLE = /^\/portefeuille\/$/;
 
 /**
  * Convertit le chemin demandé en chemin relatif autorisé.
@@ -30,6 +33,7 @@ const PAGE_APPLICATION = /^\/$/;
  */
 function cheminAutorise(chemin) {
   if (PAGE_APPLICATION.test(chemin)) return 'index.html';
+  if (PAGE_PORTEFEUILLE.test(chemin)) return 'portefeuille/index.html';
   let relatif;
   try {
     relatif = decodeURIComponent(chemin).replace(/^\/+/, '');
@@ -54,6 +58,12 @@ function cheminAutorise(chemin) {
  */
 export async function servirFichier(req, res, chemin, racine) {
   if (req.method !== 'GET' && req.method !== 'HEAD') throw new ErreurHttp(405, 'Méthode non autorisée.');
+  // Le portefeuille utilise des chemins relatifs : il doit être ouvert avec le « / » final.
+  if (chemin === '/portefeuille') {
+    res.writeHead(301, { Location: '/portefeuille/' });
+    res.end();
+    return;
+  }
   const complet = path.resolve(racine, cheminAutorise(chemin));
   const type = TYPES[path.extname(complet)];
   if (!complet.startsWith(racine + path.sep) || !type) throw new ErreurHttp(404, 'Page introuvable.');
@@ -63,6 +73,10 @@ export async function servirFichier(req, res, chemin, racine) {
     contenu = await readFile(complet);
   } catch {
     throw new ErreurHttp(404, 'Page introuvable.');
+  }
+  // Le scanner du portefeuille a besoin de la caméra ; le reste de l'application non.
+  if (path.relative(racine, complet).startsWith(`portefeuille${path.sep}`)) {
+    res.setHeader('Permissions-Policy', 'camera=(self), microphone=(), geolocation=()');
   }
   res.writeHead(200, { 'Content-Type': type, 'Content-Length': contenu.length, 'Cache-Control': 'no-cache' });
   res.end(req.method === 'HEAD' ? undefined : contenu);

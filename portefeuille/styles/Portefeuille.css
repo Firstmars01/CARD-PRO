@@ -1,0 +1,311 @@
+/*
+ * Portefeuille.css
+ * Mise en page de Card Pro Portefeuille (téléphone d'abord).
+ * Les couleurs viennent de assets/styles/Themes.css (clair / sombre).
+ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--police);
+  font-size: 16px;
+  line-height: 1.45;
+  color: var(--texte);
+  background: var(--fond);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* En-tête (tient compte de l'encoche des téléphones). */
+.Entete {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: calc(10px + env(safe-area-inset-top)) 16px 10px;
+  background: var(--entete);
+  color: var(--entete-texte);
+}
+
+.Entete-titre {
+  flex: 1;
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.Entete-sous {
+  font-weight: 500;
+  opacity: 0.7;
+}
+
+.Principal {
+  width: min(100%, 720px);
+  margin: 0 auto;
+  padding: 16px 16px calc(24px + env(safe-area-inset-bottom));
+}
+
+.Titre-ecran {
+  margin: 18px 0 12px;
+  font-size: 1.15rem;
+}
+
+.Astuce {
+  margin: 8px 0;
+  color: var(--texte-doux);
+  font-size: 0.9rem;
+}
+
+/* Boutons */
+.Actions,
+.BarreEcran {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.BarreEcran {
+  margin-bottom: 12px;
+}
+
+.Actions {
+  margin-top: 16px;
+}
+
+.Actions .PBouton {
+  flex: 1 1 160px;
+}
+
+.PBouton {
+  min-height: 46px;
+  padding: 10px 16px;
+  border: 1px solid var(--bordure);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--texte);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.PBouton--principal {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+
+.PBouton--danger {
+  border-color: var(--danger-bordure);
+  color: var(--danger);
+}
+
+.PBouton:focus-visible,
+.Vignette:focus-visible,
+.Retournable:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Liste des cartes */
+.Grille {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+
+.Vignette {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px;
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon);
+  background: var(--surface);
+  color: var(--texte);
+  font: inherit;
+  text-align: left;
+  box-shadow: var(--ombre);
+  cursor: pointer;
+}
+
+.Vignette-nom {
+  margin-top: 6px;
+  font-weight: 700;
+}
+
+.Vignette-detail {
+  color: var(--texte-doux);
+  font-size: 0.88rem;
+}
+
+.Vide {
+  padding: 24px 16px;
+  border: 1px dashed var(--bordure-forte);
+  border-radius: var(--rayon);
+  text-align: center;
+}
+
+/* Faces de carte (SVG) : toute la largeur, proportions du modèle. */
+.Face {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 70vh;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+}
+
+/* Carte retournable (recto / verso) */
+.Retournable {
+  position: relative;
+  display: grid;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  perspective: 1400px;
+  cursor: pointer;
+}
+
+.Retournable-face {
+  grid-area: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transition: transform 0.5s ease;
+}
+
+.Retournable-face--verso {
+  transform: rotateY(180deg);
+}
+
+.Retournable[aria-pressed="true"] .Retournable-face--recto {
+  transform: rotateY(-180deg);
+}
+
+.Retournable[aria-pressed="true"] .Retournable-face--verso {
+  transform: rotateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .Retournable-face {
+    transition: none;
+  }
+}
+
+.Carte-nom {
+  margin: 14px 0 2px;
+  font-size: 1.3rem;
+}
+
+.Carte-poste {
+  margin: 0 0 12px;
+  color: var(--texte-doux);
+}
+
+/* Coordonnées cliquables */
+.Coordonnees {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon);
+  background: var(--surface);
+}
+
+.Coordonnee {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 14px;
+  border-top: 1px solid var(--bordure);
+}
+
+.Coordonnee:first-child {
+  border-top: 0;
+}
+
+.Coordonnee-libelle {
+  color: var(--texte-doux);
+  font-size: 0.8rem;
+}
+
+.Coordonnee-valeur {
+  color: var(--texte);
+  overflow-wrap: anywhere;
+}
+
+a.Coordonnee-valeur {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+/* Scanner */
+.Scanner-cadre {
+  overflow: hidden;
+  border-radius: var(--rayon);
+  background: #000;
+  aspect-ratio: 3 / 4;
+}
+
+.Scanner-video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.Scanner-progression {
+  width: 100%;
+  height: 12px;
+  margin-top: 12px;
+  accent-color: var(--accent);
+}
+
+.Scanner-etat {
+  margin: 6px 0;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Notifications */
+.Notifications {
+  position: fixed;
+  right: 12px;
+  bottom: calc(12px + env(safe-area-inset-bottom));
+  left: 12px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.Notification {
+  max-width: 520px;
+  padding: 11px 16px;
+  border-radius: 10px;
+  background: #14181f;
+  color: #fff;
+  box-shadow: var(--ombre);
+}
+
+.Notification--succes {
+  background: var(--succes);
+}
+
+.Notification--erreur {
+  background: var(--danger);
+}

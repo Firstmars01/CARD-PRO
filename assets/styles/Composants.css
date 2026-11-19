@@ -64,7 +64,8 @@ textarea {
   padding: 8px 10px;
   border: 1px solid var(--bordure);
   border-radius: 8px;
-  background: #fff;
+  background: var(--champ);
+  color: var(--texte);
 }
 
 textarea {
@@ -88,7 +89,7 @@ textarea {
   padding: 3px;
   border: 1px solid var(--bordure);
   border-radius: 8px;
-  background: #fff;
+  background: var(--champ);
   cursor: pointer;
 }
 
@@ -134,7 +135,7 @@ textarea {
   max-width: 90px;
   max-height: 50px;
   object-fit: contain;
-  background: repeating-conic-gradient(#eee 0 25%, #fff 0 50%) 0 0 / 10px 10px;
+  background: repeating-conic-gradient(var(--damier-1) 0 25%, var(--damier-2) 0 50%) 0 0 / 10px 10px;
   border-radius: 4px;
 }
 
@@ -175,7 +176,8 @@ textarea {
   padding: 4px 10px;
   border: 1px solid var(--bordure);
   border-radius: 999px;
-  background: #f7f8fa;
+  background: var(--surface-douce);
+  color: var(--texte);
   font-size: 0.82rem;
   cursor: pointer;
 }
@@ -210,13 +212,14 @@ textarea {
 
 .Bouton--secondaire,
 .Bouton--icone {
-  background: #fff;
+  background: var(--champ);
   border-color: var(--bordure);
+  color: var(--texte);
 }
 
 .Bouton--secondaire:hover:not(:disabled),
 .Bouton--icone:hover:not(:disabled) {
-  border-color: #aeb6c4;
+  border-color: var(--bordure-forte);
 }
 
 .Bouton--secondaire[aria-pressed="true"] {
@@ -226,8 +229,8 @@ textarea {
 }
 
 .Bouton--danger {
-  background: #fff;
-  border-color: #f0c4c4;
+  background: var(--champ);
+  border-color: var(--danger-bordure);
   color: var(--danger);
 }
 
@@ -360,9 +363,53 @@ textarea {
 }
 
 .Notification--succes {
-  background: #1d7a46;
+  background: var(--succes);
 }
 
 .Notification--erreur {
   background: var(--danger);
+}
+
+/* Fenêtre du QR animé (portefeuille mobile). */
+.Transfert {
+  width: min(96vw, 760px);
+  max-height: 96vh;
+  border: none;
+  border-radius: var(--rayon);
+  padding: 20px;
+  background: var(--surface);
+  color: var(--texte);
+  box-shadow: var(--ombre);
+  text-align: center;
+}
+
+.Transfert::backdrop {
+  background: var(--voile);
+}
+
+.Transfert-titre {
+  margin: 0 0 6px;
+  font-size: 1.15rem;
+}
+
+.Transfert-qr {
+  display: block;
+  width: min(100%, calc(96vh - 260px));
+  height: auto;
+  margin: 12px auto 6px;
+  border-radius: 8px;
+  image-rendering: pixelated;
+}
+
+.Transfert-compteur {
+  margin: 0 0 12px;
+  color: var(--texte-doux);
+  font-variant-numeric: tabular-nums;
+}
+
+.Transfert-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
 }

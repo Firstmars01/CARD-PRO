@@ -1,0 +1,72 @@
+# Portefeuille.yml
+# Publie l'application mobile « Card Pro Portefeuille » sur GitHub Pages (HTTPS).
+# Seuls les fichiers nécessaires au portefeuille sont publiés : ni le serveur,
+# ni la page des RH, ni aucune donnée de personne.
+# Réglage unique sur GitHub : Settings → Pages → Source : « GitHub Actions ».
+
+name: Publier le portefeuille
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "portefeuille/**"
+      - "src/**"
+      - "assets/**"
+      - ".github/workflows/Portefeuille.yml"
+  workflow_dispatch:
+
+# Droits minimaux : lecture du code, écriture sur Pages uniquement.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  publier:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploiement.outputs.page_url }}portefeuille/
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Installer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Lancer les tests
+        run: npm test
+
+      - name: Préparer le site
+        run: |
+          mkdir -p _site/src/Interface _site/assets
+          cp -r portefeuille _site/
+          cp -r assets/icons assets/styles _site/assets/
+          cp -r src/Metier src/Utilitaires _site/src/
+          cp -r src/Interface/Rendu src/Interface/Themes.js src/Interface/Notifications.js _site/src/Interface/
+          # Lecteur de QR code pour iPhone : jsQR 1.4.0 (licence Apache 2.0), version figée.
+          npm pack jsqr@1.4.0 --silent
+          tar -xzf jsqr-1.4.0.tgz
+          cp package/dist/jsQR.js _site/portefeuille/vendor/jsQR.js
+          cp package/LICENSE _site/portefeuille/vendor/jsQR.LICENSE
+          # La racine du site renvoie vers le portefeuille.
+          printf '<!DOCTYPE html><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=portefeuille/"><title>Card Pro</title><a href="portefeuille/">Card Pro Portefeuille</a>\n' > _site/index.html
+
+      - name: Configurer Pages
+        uses: actions/configure-pages@v5
+
+      - name: Envoyer le site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Publier
+        id: deploiement
+        uses: actions/deploy-pages@v4

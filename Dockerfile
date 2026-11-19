@@ -14,6 +14,7 @@ WORKDIR /app
 COPY --chown=node:node package.json index.html manifest.webmanifest sw.js ./
 COPY --chown=node:node assets ./assets
 COPY --chown=node:node src ./src
+COPY --chown=node:node portefeuille ./portefeuille
 COPY --chown=node:node serveur ./serveur
 
 # Dossier de la base de données (monté en volume).

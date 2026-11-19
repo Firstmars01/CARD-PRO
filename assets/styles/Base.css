@@ -1,24 +1,7 @@
 /*
  * Base.css
- * Variables de thème, remise à zéro, en-tête et mise en page générale.
+ * Remise à zéro, en-tête et mise en page générale (couleurs : Themes.css).
  */
-
-:root {
-  --fond: #f2f3f6;
-  --surface: #ffffff;
-  --texte: #14181f;
-  --texte-doux: #5d6675;
-  --bordure: #dfe2e8;
-  --accent: #2f5bea;
-  --accent-fonce: #2148c7;
-  --accent-clair: #eef2ff;
-  --danger: #c62f2f;
-  --alerte-fond: #fff6e0;
-  --alerte-texte: #7a5200;
-  --rayon: 12px;
-  --ombre: 0 1px 2px rgba(20, 24, 31, 0.06), 0 8px 24px rgba(20, 24, 31, 0.06);
-  --police: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-}
 
 *,
 *::before,
@@ -62,8 +45,8 @@ textarea {
   align-items: center;
   gap: 10px 14px;
   padding: 10px 20px;
-  background: #14181f;
-  color: #fff;
+  background: var(--entete);
+  color: var(--entete-texte);
 }
 
 .EnTete-titre {
@@ -96,7 +79,7 @@ textarea {
 }
 
 .Onglets [aria-selected="true"] {
-  background: #fff;
+  background: var(--surface);
   color: var(--texte);
 }
 

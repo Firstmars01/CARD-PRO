@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<!--
+  index.html (portefeuille)
+  Card Pro Portefeuille : application du téléphone qui garde les cartes de
+  visite reçues (recto et verso). Les cartes restent sur le téléphone.
+-->
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <!-- Politique de sécurité : seuls les fichiers de l'application sont autorisés (anti-XSS), aucun envoi vers Internet. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'">
+  <meta name="referrer" content="no-referrer">
+  <meta name="description" content="Portefeuille de cartes de visite Card Pro : scanne ou importe une carte et garde-la sur ton téléphone.">
+  <meta name="theme-color" content="#14181f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Card Pro">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Card Pro · Portefeuille</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="../assets/icons/Icone.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="../assets/icons/IconeApple.png">
+  <link rel="stylesheet" href="../assets/styles/Themes.css">
+  <link rel="stylesheet" href="styles/Portefeuille.css">
+  <script type="module" src="src/Main.js"></script>
+</head>
+<body>
+  <header id="entete" class="Entete">
+    <img src="../assets/icons/Icone.svg" alt="" width="30" height="30">
+    <h1 class="Entete-titre">Card Pro <span class="Entete-sous">Portefeuille</span></h1>
+  </header>
+
+  <main id="principal" class="Principal">
+    <p id="chargement" class="Astuce">Chargement…</p>
+  </main>
+
+  <div id="notifications" class="Notifications" aria-live="polite"></div>
+
+  <noscript><p class="Astuce">Card Pro Portefeuille a besoin de JavaScript.</p></noscript>
+</body>
+</html>

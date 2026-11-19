@@ -2,7 +2,8 @@
  * GenerateurFichiers.js
  * Produit les fichiers d'une carte (recto et verso), au format de son
  * modèle : SVG, PNG et JPG en 300 dpi, PDF, planche A4, PDF imprimeur
- * (fonds perdus), vCard, et archives ZIP.
+ * (fonds perdus), vCard, fichiers du portefeuille mobile (.cardpro et GIF
+ * du QR animé), et archives ZIP.
  */
 
 import { nomFichierSur } from '../../Utilitaires/Validation.js';
@@ -15,12 +16,18 @@ import { genererVCard } from '../../Metier/GenerateurVCard.js';
 import { genererQrPersonne } from '../../Metier/ContenuQr.js';
 import { trouverModele } from '../../Metier/EtatApplication.js';
 import { rendreFaceSvg } from '../Rendu/RenduFaceSvg.js';
+import { creerPaquet, IDENTIFIANT_GIF } from '../../Metier/PaquetCarte.js';
+import { decouperPaquet, encoderTrames } from '../../Metier/TransfertQr.js';
+import { creerGifAnime } from '../../Utilitaires/EncodeurGif.js';
+import { qrEnPixels } from '../../Utilitaires/ImageQr.js';
+
+const DELAI_GIF = 20; // 1/5 de seconde par QR code
 
 
 /**
  * Prépare le rendu d'une carte (les deux faces).
  * @param {{personne:object, modeleId:string}} entree - Personne et son modèle.
- * @returns {{nom:string, recto:SVGSVGElement, verso:SVGSVGElement, personne:object}} Carte prête à exporter.
+ * @returns {{nom:string, recto:SVGSVGElement, verso:SVGSVGElement, personne:object, modele:object}} Carte prête à exporter.
  */
 export function preparerCarte(entree) {
   const modele = trouverModele(entree.modeleId);
@@ -30,6 +37,7 @@ export function preparerCarte(entree) {
   return {
     nom: nomFichierSur(nomComplet(entree.personne), 'carte-de-visite'),
     personne: entree.personne,
+    modele,
     dimensions,
     pixels: enPixels(dimensions),
     pixelsPerdu: enPixels(perdu),
@@ -109,6 +117,36 @@ export function fichierVcf(carte) {
   return new Blob([genererVCard(carte.personne)], { type: 'text/vcard;charset=utf-8' });
 }
 
+/** @param {object} carte - Carte préparée. @returns {Promise<Blob>} Fichier .cardpro (carte complète pour le portefeuille). */
+export async function fichierCardpro(carte) {
+  return new Blob([await creerPaquet(carte.personne, carte.modele)], { type: 'application/octet-stream' });
+}
+
+/**
+ * Prépare les QR codes du transfert vers le portefeuille mobile.
+ * @param {object} carte - Carte préparée.
+ * @returns {Promise<{paquet:Uint8Array, qrs:object[]}>} Paquet et QR codes (même taille).
+ */
+export async function preparerTransfert(carte) {
+  const paquet = await creerPaquet(carte.personne, carte.modele);
+  return { paquet, qrs: encoderTrames(decouperPaquet(paquet)) };
+}
+
+/**
+ * GIF animé du QR code de transfert, à joindre à un e-mail. La carte complète
+ * y est aussi cachée : le portefeuille l'importe sans scanner.
+ * @param {object} carte - Carte préparée.
+ * @returns {Promise<Blob>} Fichier GIF.
+ */
+export async function fichierGifPortefeuille(carte) {
+  const { paquet, qrs } = await preparerTransfert(carte);
+  const gif = creerGifAnime(qrs.map((qr) => qrEnPixels(qr, 4)), {
+    delai: DELAI_GIF,
+    application: { identifiant: IDENTIFIANT_GIF, octets: paquet },
+  });
+  return new Blob([gif], { type: 'image/gif' });
+}
+
 /**
  * Liste tous les fichiers d'une carte, éventuellement dans un dossier.
  * @param {object} carte - Carte préparée.
@@ -128,6 +166,8 @@ async function fichiersCarte(carte, dossier = '') {
     { nom: `${dossier}${carte.nom}-planche-a4.pdf`, donnees: await octets(await creerPdfPlanche(rectoOctets, versoOctets, carte.dimensions)) },
     { nom: `${dossier}${carte.nom}-imprimeur.pdf`, donnees: await octets(await fichierImprimeur(carte)) },
     { nom: `${dossier}${carte.nom}.vcf`, donnees: await octets(fichierVcf(carte)) },
+    { nom: `${dossier}${carte.nom}.cardpro`, donnees: await octets(await fichierCardpro(carte)) },
+    { nom: `${dossier}${carte.nom}-portefeuille.gif`, donnees: await octets(await fichierGifPortefeuille(carte)) },
   ];
 }
 

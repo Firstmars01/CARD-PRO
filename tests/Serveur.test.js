@@ -88,3 +88,15 @@ test('protections : origine étrangère, mauvais format, fichiers sensibles', as
     assert.equal((await fetch(base + chemin)).status, 404, chemin);
   }
 });
+
+test('portefeuille : servi avec la caméra autorisée, redirection du « / » final', async () => {
+  const page = await fetch(`${base}/portefeuille/`);
+  assert.equal(page.status, 200);
+  assert.match(page.headers.get('permissions-policy'), /camera=\(self\)/);
+  const redirection = await fetch(`${base}/portefeuille`, { redirect: 'manual' });
+  assert.equal(redirection.status, 301);
+  assert.equal(redirection.headers.get('location'), '/portefeuille/');
+  // La page des RH n'a toujours pas accès à la caméra.
+  assert.match((await fetch(`${base}/`)).headers.get('permissions-policy'), /camera=\(\)/);
+  assert.equal((await fetch(`${base}/portefeuille/../serveur/Serveur.js`)).status, 404);
+});

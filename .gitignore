@@ -10,3 +10,6 @@ Thumbs.db
 
 # Base de données locale (hors Docker)
 donnees/
+
+# Lecteur QR du portefeuille : ajouté à la publication (voir portefeuille/vendor/LISEZMOI.md)
+portefeuille/vendor/jsQR.js

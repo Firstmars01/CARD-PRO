@@ -1,0 +1,28 @@
+{
+  "name": "Card Pro Portefeuille",
+  "short_name": "Card Pro",
+  "description": "Tes cartes de visite reçues, recto et verso, sur ton téléphone.",
+  "lang": "fr",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#14181f",
+  "theme_color": "#14181f",
+  "icons": [
+    { "src": "../assets/icons/Icone192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "../assets/icons/Icone512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "../assets/icons/Icone512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "share_target": {
+    "action": "./partage",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "files": [
+        { "name": "fichiers", "accept": [".cardpro", ".gif", "image/gif", "application/octet-stream"] }
+      ]
+    }
+  }
+}

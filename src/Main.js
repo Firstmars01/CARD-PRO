@@ -10,21 +10,26 @@ import { initialiserOnglets } from './Interface/Onglets.js';
 import { monterOngletCartes } from './Interface/Cartes/OngletCartes.js';
 import { monterEditeurModeles } from './Interface/Modeles/EditeurModeles.js';
 import { notifier } from './Interface/Notifications.js';
+import { initialiserTheme, creerBoutonTheme } from './Interface/Themes.js';
 
 /**
  * Supprime l'ancien service worker des versions précédentes de Card Pro
- * (il pouvait afficher d'anciens fichiers en cache).
+ * (il pouvait afficher d'anciens fichiers en cache). Celui du portefeuille
+ * mobile (/portefeuille/) est conservé.
  */
 async function retirerAncienServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
   const enregistrements = await navigator.serviceWorker.getRegistrations();
-  await Promise.all(enregistrements.map((e) => e.unregister()));
+  const racine = `${location.origin}/`;
+  await Promise.all(enregistrements.filter((e) => e.scope === racine).map((e) => e.unregister()));
 }
 
 /**
  * Démarre l'application.
  */
 async function demarrer() {
+  initialiserTheme();
+  obtenirElement('barreOnglets').before(creerBoutonTheme());
   retirerAncienServiceWorker().catch(() => {});
   await chargerDonnees(() => notifier('Sauvegarde impossible : vérifie que le serveur Card Pro tourne.', 'erreur'));
   monterOngletCartes(obtenirElement('ongletCartes'));

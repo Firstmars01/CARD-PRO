@@ -1,0 +1,83 @@
+/*
+ * Themes.css
+ * Couleurs des thèmes clair et sombre, partagées par la page web Card Pro et
+ * l'application Card Pro Portefeuille. Le thème est choisi par l'attribut
+ * data-theme de <html> (voir src/Interface/Themes.js) : il suit le réglage de
+ * l'appareil, sauf si la personne a forcé un thème avec le bouton.
+ */
+
+:root {
+  color-scheme: light;
+  --fond: #f2f3f6;
+  --surface: #ffffff;
+  --surface-douce: #f7f8fa;
+  --champ: #ffffff;
+  --texte: #14181f;
+  --texte-doux: #5d6675;
+  --bordure: #dfe2e8;
+  --bordure-forte: #aeb6c4;
+  --accent: #2f5bea;
+  --accent-fonce: #2148c7;
+  --accent-clair: #eef2ff;
+  --danger: #c62f2f;
+  --danger-bordure: #f0c4c4;
+  --succes: #1d7a46;
+  --alerte-fond: #fff6e0;
+  --alerte-texte: #7a5200;
+  --entete: #14181f;
+  --entete-texte: #ffffff;
+  --segments: #e8ebf0;
+  --damier-1: #e7e9ee;
+  --damier-2: #f4f5f7;
+  --voile: rgba(10, 12, 16, 0.7);
+  --rayon: 12px;
+  --ombre: 0 1px 2px rgba(20, 24, 31, 0.06), 0 8px 24px rgba(20, 24, 31, 0.06);
+  --police: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+:root[data-theme="sombre"] {
+  color-scheme: dark;
+  --fond: #0f1217;
+  --surface: #181c23;
+  --surface-douce: #1f242d;
+  --champ: #12161c;
+  --texte: #e8ebf0;
+  --texte-doux: #9aa3b2;
+  --bordure: #2d333e;
+  --bordure-forte: #46505f;
+  --accent: #5b82ff;
+  --accent-fonce: #7a9bff;
+  --accent-clair: #1c2540;
+  --danger: #f06a6a;
+  --danger-bordure: #5a2a2a;
+  --succes: #3fbf7a;
+  --alerte-fond: #3a2f12;
+  --alerte-texte: #f5d38a;
+  --entete: #0a0c10;
+  --entete-texte: #ffffff;
+  --segments: #232934;
+  --damier-1: #1b1f27;
+  --damier-2: #222731;
+  --voile: rgba(0, 0, 0, 0.75);
+  --ombre: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+/* Bouton de changement de thème (soleil / lune). */
+.BoutonTheme {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font-size: 1.05rem;
+  cursor: pointer;
+}
+
+.BoutonTheme:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
