@@ -4,8 +4,9 @@
  * web inclus dans l'appli) dans une WebView, servis en HTTPS local
  * (https://appassets.androidplatform.net) pour que la caméra et les modules
  * JavaScript fonctionnent.
- * Sécurité : la WebView n'affiche que les pages de l'appli ; tout autre lien
- * (site, téléphone, e-mail) s'ouvre dans l'appli adaptée du téléphone.
+ * Sécurité : la WebView n'affiche que les pages de l'appli et ne charge rien
+ * depuis Internet ; tout autre lien (site, téléphone, e-mail) s'ouvre dans
+ * l'appli adaptée du téléphone. Internet ne sert qu'à la mise à jour.
  */
 package fr.cardpro.portefeuille;
 
@@ -28,6 +29,7 @@ import android.webkit.WebViewClient;
 
 import androidx.webkit.WebViewAssetLoader;
 
+import java.io.ByteArrayInputStream;
 import java.util.Arrays;
 import java.util.List;
 
@@ -73,6 +75,13 @@ public class MainActivity extends Activity {
 
         fichiersRecus.lireIntent(getIntent());
         vue.loadUrl(PAGE);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Recherche de mise à jour (au plus toutes les 6 heures, si en ligne).
+        MiseAJourAndroid.verifier(this);
     }
 
     @Override
@@ -152,7 +161,9 @@ public class MainActivity extends Activity {
     private final class ClientPages extends WebViewClient {
         @Override
         public WebResourceResponse shouldInterceptRequest(WebView vueWeb, WebResourceRequest requete) {
-            return estPageAppli(requete.getUrl()) ? chargeur.shouldInterceptRequest(requete.getUrl()) : null;
+            // Les pages n'accèdent jamais à Internet : seuls les fichiers de l'appli sont servis.
+            if (estPageAppli(requete.getUrl())) return chargeur.shouldInterceptRequest(requete.getUrl());
+            return new WebResourceResponse("text/plain", "utf-8", 403, "Interdit", null, new ByteArrayInputStream(new byte[0]));
         }
 
         @Override

@@ -4,7 +4,9 @@
  *  - garde les fichiers de l'appli sur le téléphone (fonctionne hors ligne) ;
  *  - reçoit les fichiers partagés depuis une autre appli (« Partager → Card Pro »)
  *    et les dépose dans un cache temporaire lu par la page.
- * Change VERSION à chaque mise à jour pour renouveler les fichiers.
+ * VERSION est remplacée automatiquement à chaque publication (voir
+ * .github/workflows/Portefeuille.yml) : le téléphone voit qu'une nouvelle
+ * version existe, la télécharge et l'appli se recharge toute seule.
  */
 
 const VERSION = 'v6';
@@ -33,6 +35,7 @@ const FICHIERS = [
   './src/Interface/VueListe.js',
   './src/Interface/VueScanner.js',
   './src/Utilitaires/LecteurQr.js',
+  './src/Utilitaires/MiseAJourWeb.js',
   './src/Utilitaires/Plateforme.js',
   './src/Utilitaires/PontAndroid.js',
   './src/AdresseSite.js',

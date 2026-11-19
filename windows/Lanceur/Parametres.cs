@@ -69,12 +69,6 @@ namespace CardPro.Lanceur
             }
         }
 
-        /// <summary>Page GitHub des versions (téléchargement des mises à jour).</summary>
-        public static string PageVersions
-        {
-            get { return "https://github.com/" + DepotGithub + "/releases/latest"; }
-        }
-
         /// <summary>
         /// Lit le dépôt GitHub inscrit dans l'exe à la compilation, et vérifie son format.
         /// </summary>

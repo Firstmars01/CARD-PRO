@@ -146,7 +146,7 @@ Bon à savoir :
 - L'appli n'est accessible **que depuis ce PC** (adresse `http://localhost:48080`, ou le port libre suivant).
 - **Données** : `%APPDATA%\CardPro\cardpro.sqlite` (gardées d'une version à l'autre). Journal en cas de problème : `%APPDATA%\CardPro\journal.txt`.
 - **Sauvegarde** : onglet Cartes → « Sauvegarde des données » → **Sauvegarder** (un fichier `.json` avec toutes les cartes et tous les modèles) / **Restaurer…**. Les modèles seuls s'exportent aussi en `.json` depuis l'onglet Modèles.
-- **Mise à jour** : au lancement, Card Pro vérifie s'il existe une nouvelle version sur GitHub et l'annonce près de l'horloge (clic droit → « Télécharger la version… »). Quitte Card Pro, remplace l'exe par le nouveau et relance-le : les données sont conservées.
+- **Mise à jour automatique** : au lancement (si Internet répond), Card Pro télécharge la nouvelle version, la vérifie et **remplace l'exe tout seul**, puis redémarre (rien à désinstaller, données conservées). Pendant qu'il tourne, il vérifie toutes les 6 heures : une version trouvée est téléchargée en arrière-plan et s'installe au prochain lancement, ou tout de suite par clic droit → « Redémarrer et installer… ». L'exe doit être dans un dossier où tu peux écrire (Téléchargements, Bureau, Documents…).
 - Lancer l'exe une seconde fois rouvre simplement la page.
 
 ### Récupérer les données de l'ancienne version Docker
@@ -159,7 +159,9 @@ Puis, **Card Pro (exe) fermé**, copie ce fichier dans `%APPDATA%\CardPro\` (rem
 
 ### Publication de l'exe
 
-`.github/workflows/RH.yml` construit `CardPro-RH.exe` sur GitHub (Windows) à chaque `git push` qui touche l'appli, et le publie dans **Releases** sous le numéro de version de `package.json` (ex. `v4.1.0`). Pour publier une nouvelle version, augmente `version` dans `package.json`.
+`.github/workflows/RH.yml` construit `CardPro-RH.exe` sur GitHub (Windows) à chaque `git push` qui touche l'appli, et le publie dans **Releases** sous le numéro de version de `package.json` (ex. `v4.3.0`), avec son empreinte SHA-256 (`CardPro-RH.exe.sha256`).
+
+> **Pour livrer une mise à jour** (PC et Android), augmente `version` dans `package.json` (ex. `4.3.0` → `4.3.1`) puis `git push`. Sans changement de version, les PC et les téléphones Android ne voient pas de nouveauté (l'appli web iPhone, elle, se met à jour à chaque publication).
 
 ## Développement
 
@@ -219,6 +221,8 @@ La page web du portefeuille ne sert **qu'à installer l'appli** : les cartes, le
 
 L'icône Card Pro apparaît ensuite sur l'écran d'accueil comme une application. Elle fonctionne **hors ligne**.
 
+**Mise à jour automatique (iPhone)** : à chaque ouverture et à chaque retour dans l'appli, si le téléphone est en ligne, elle vérifie s'il existe une nouvelle version, la télécharge et se recharge toute seule (jamais pendant un scan). Un message « Card Pro a été mis à jour » s'affiche.
+
 ### Adresse de l'appli dans la page des RH
 
 `CardPro-RH.exe` connaît l'adresse de l'appli mobile (déduite du dépôt GitHub à la compilation) et l'affiche en **QR code d'installation** à côté du QR animé : la personne installe l'appli, puis scanne sa carte dans la foulée. En développement, la variable d'environnement `LIEN_PORTEFEUILLE` (HTTPS obligatoire) fait la même chose.
@@ -277,7 +281,7 @@ Android exige que chaque version soit signée avec **la même clé**. Garde-la p
 ### Installer et mettre à jour
 
 - **Installer** : sur Android, ouvre l'adresse du portefeuille → **Télécharger l'appli Card Pro** → ouvre `CardPro.apk` → autorise l'installation (« sources inconnues ») → **Installer**. Play Protect peut afficher un avertissement (appli hors Play Store) : « Plus de détails » → « Installer quand même ».
-- **Mettre à jour** : télécharge la nouvelle version et installe-la par-dessus. Les cartes sont conservées.
+- **Mise à jour automatique** : à l'ouverture (au plus toutes les 6 heures, si le téléphone est en ligne), l'appli vérifie s'il existe une nouvelle version, la télécharge, la vérifie et ouvre l'installateur : il suffit de toucher **« Mettre à jour »** (Android exige cette confirmation pour les applis hors Play Store ; la première fois, il demande d'autoriser Card Pro à installer des applis). Les cartes sont conservées.
 - Les cartes de l'appli Android et celles de l'appli web sont stockées séparément.
 
 ## Exemples d'utilisation
@@ -320,7 +324,9 @@ Android exige que chaque version soit signée avec **la même clé**. Garde-la p
   - les cartes lues depuis le stockage sont revalidées avant affichage ; les liens d'appel et d'e-mail sont construits à partir de valeurs déjà nettoyées ;
   - le QR animé est contrôlé par un **CRC-32** : une lecture incomplète ou erronée est rejetée ;
   - la page web n'a pas accès à la caméra (`Permissions-Policy: camera=()`), seul le portefeuille y a droit ;
-  - **appli Android** : aucune permission Internet ; la WebView n'affiche que les pages incluses dans l'appli (tout autre lien s'ouvre dans l'appli adaptée du téléphone) ; caméra et choix de fichiers réservés à ces pages ; les fonctions Android appelées par la page vérifient chaque paramètre (types de fichiers en liste blanche, tailles limitées, noms nettoyés) ; fichiers partagés uniquement via un dossier dédié (FileProvider) ;
+  - **appli Android** : la WebView n'affiche que les pages incluses dans l'appli (tout autre lien s'ouvre dans l'appli adaptée du téléphone) ; caméra et choix de fichiers réservés à ces pages ; les fonctions Android appelées par la page vérifient chaque paramètre (types de fichiers en liste blanche, tailles limitées, noms nettoyés) ; fichiers partagés uniquement via un dossier dédié (FileProvider) ;
+  - **mises à jour** : le nouvel exe n'est installé qu'après vérification de son empreinte SHA-256 (publiée avec la version), de son en-tête et de son numéro de version ; les téléchargements ne viennent que des « Releases » du dépôt, en HTTPS. L'APK n'est installé qu'après vérification de son empreinte (`telechargement/version.json`), de son nom de paquet et de sa version, et Android refuse toute mise à jour qui ne serait pas signée avec la même clé ;
+  - **appli Android et Internet** : la permission Internet sert uniquement à la mise à jour ; les pages de l'appli ne chargent toujours rien d'Internet (toute autre requête est bloquée) ;
   - **NFC** : puce émulée en **lecture seule**, active seulement quand la personne l'active sur une carte, coupée dès que l'appli passe en arrière-plan ;
   - **lien « contact »** (iPhone) : les données sont après le `#`, donc jamais envoyées au serveur ; la page les revalide comme le reste (liens `http`/`https` seulement…) ;
   - **clé de signature** : uniquement dans les secrets GitHub, écrite le temps de la compilation puis effacée ; `*.jks` est exclu de Git ;

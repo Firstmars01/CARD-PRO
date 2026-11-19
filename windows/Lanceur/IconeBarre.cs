@@ -2,6 +2,8 @@
  * IconeBarre.cs
  * Icône Card Pro près de l'horloge, avec son menu :
  * ouvrir l'appli, dossier des données, mise à jour, quitter.
+ * Toutes les 6 heures, elle cherche une nouvelle version, la télécharge en
+ * arrière-plan et propose de redémarrer ; sinon elle s'installe au prochain lancement.
  */
 using System;
 using System.Diagnostics;
@@ -19,6 +21,8 @@ namespace CardPro.Lanceur
         private readonly NotifyIcon icone;
         private readonly ToolStripMenuItem elementMiseAJour;
         private readonly SynchronizationContext contexte;
+        private readonly System.Windows.Forms.Timer minuterie = new System.Windows.Forms.Timer { Interval = 6 * 60 * 60 * 1000 };
+        private bool rechercheEnCours;
 
         /// <summary>Crée l'icône et son menu.</summary>
         /// <param name="serveur">Serveur Card Pro en cours.</param>
@@ -28,7 +32,7 @@ namespace CardPro.Lanceur
             ContextMenuStrip menu = new ContextMenuStrip();
             ToolStripMenuItem ouvrir = new ToolStripMenuItem("Ouvrir Card Pro", null, (s, e) => OuvrirAppli());
             ouvrir.Font = new Font(ouvrir.Font, FontStyle.Bold);
-            elementMiseAJour = new ToolStripMenuItem("", null, (s, e) => Navigateur.Ouvrir(Parametres.PageVersions)) { Available = false };
+            elementMiseAJour = new ToolStripMenuItem("", null, (s, e) => RedemarrerPourMettreAJour()) { Available = false };
             menu.Items.Add(ouvrir);
             menu.Items.Add(new ToolStripMenuItem("Dossier des données", null, (s, e) => OuvrirDossierDonnees()));
             menu.Items.Add(new ToolStripSeparator());
@@ -52,6 +56,15 @@ namespace CardPro.Lanceur
                 if (e.Button == MouseButtons.Left) OuvrirAppli();
             };
             serveur.ArretInattendu += (s, e) => contexte.Post(_ => SignalerArret(), null);
+            minuterie.Tick += (s, e) => VerifierMiseAJour(false);
+        }
+
+        /// <summary>Lance les vérifications périodiques (et signale une version déjà prête).</summary>
+        public void DemarrerVerificationsMiseAJour()
+        {
+            Version prete = MiseAJour.VersionPrete();
+            if (prete != null) SignalerVersionPrete(prete);
+            minuterie.Start();
         }
 
         /// <summary>Affiche une bulle d'information près de l'horloge.</summary>
@@ -63,38 +76,43 @@ namespace CardPro.Lanceur
             icone.ShowBalloonTip(5000, titre, texte, type);
         }
 
-        /// <summary>Cherche une mise à jour et la signale.</summary>
+        /// <summary>Cherche une mise à jour, la télécharge et la signale.</summary>
         /// <param name="manuelle">true si demandée par la personne (elle reçoit toujours une réponse).</param>
         public async void VerifierMiseAJour(bool manuelle)
         {
-            Version nouvelle = null;
-            bool erreur = false;
+            if (rechercheEnCours) return;
+            rechercheEnCours = true;
+            string message = null;
+            Version prete = MiseAJour.VersionPrete();
             try
             {
-                nouvelle = await MiseAJour.ChercherAsync();
+                if (prete == null)
+                {
+                    InfoVersion info = await MiseAJour.ChercherAsync(TimeSpan.FromSeconds(10));
+                    if (info == null) message = "Card Pro est à jour.";
+                    else if (await MiseAJour.TelechargerAsync(info)) prete = info.Version;
+                    else message = "La mise à jour téléchargée est invalide : elle a été ignorée.";
+                }
             }
             catch (Exception)
             {
-                erreur = true; // Pas d'Internet, GitHub indisponible…
+                message = "Impossible de vérifier : pas de connexion à GitHub.";
+            }
+            finally
+            {
+                rechercheEnCours = false;
             }
             contexte.Post(_ =>
             {
-                if (nouvelle != null)
-                {
-                    elementMiseAJour.Text = "Télécharger la version " + nouvelle;
-                    elementMiseAJour.Available = true;
-                    Bulle("Mise à jour disponible", "Card Pro " + nouvelle + " est disponible. Clic droit sur l'icône → Télécharger.", ToolTipIcon.Info);
-                }
-                else if (manuelle)
-                {
-                    Bulle("Card Pro", erreur ? "Impossible de vérifier : pas de connexion à GitHub." : "Card Pro est à jour.", ToolTipIcon.Info);
-                }
+                if (prete != null) SignalerVersionPrete(prete);
+                else if (manuelle) Bulle("Card Pro", message, ToolTipIcon.Info);
             }, null);
         }
 
         /// <summary>Retire l'icône.</summary>
         public void Dispose()
         {
+            minuterie.Dispose();
             icone.Visible = false;
             icone.Dispose();
         }
@@ -119,6 +137,32 @@ namespace CardPro.Lanceur
             Application.Exit();
         }
 
+        /// <summary>Annonce une version téléchargée, prête à installer.</summary>
+        /// <param name="version">Version prête.</param>
+        private void SignalerVersionPrete(Version version)
+        {
+            elementMiseAJour.Text = "Redémarrer et installer la version " + version;
+            elementMiseAJour.Available = true;
+            Bulle("Mise à jour prête", "Card Pro " + version + " s'installera au prochain lancement. Clic droit sur l'icône pour l'installer maintenant.", ToolTipIcon.Info);
+        }
+
+        /// <summary>Arrête Card Pro, installe la nouvelle version et la relance.</summary>
+        private void RedemarrerPourMettreAJour()
+        {
+            serveur.Arreter();
+            if (MiseAJour.Installer())
+            {
+                icone.Visible = false;
+                Application.Exit();
+                return;
+            }
+            MessageBox.Show(
+                "La mise à jour n'a pas pu être installée (dossier de l'exe protégé ?). Card Pro va se fermer : relance-le.",
+                "Card Pro RH", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            icone.Visible = false;
+            Application.Exit();
+        }
+
         /// <summary>Le serveur s'est arrêté seul : on prévient et on ferme.</summary>
         private void SignalerArret()
         {
@@ -131,7 +175,7 @@ namespace CardPro.Lanceur
 
         /// <summary>Icône intégrée à l'exe.</summary>
         /// <returns>Icône Card Pro.</returns>
-        private static Icon ChargerIcone()
+        public static Icon ChargerIcone()
         {
             using (System.IO.Stream flux = Assembly.GetExecutingAssembly().GetManifestResourceStream("icone.ico"))
             {

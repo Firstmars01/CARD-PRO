@@ -21,17 +21,16 @@ import { creerVueScanner } from './Interface/VueScanner.js';
 import { afficherEcranInstallation } from './Interface/EcranInstallation.js';
 import { estInstalle, systeme } from './Utilitaires/Plateforme.js';
 import { estAppliAndroid, fichiersRecus } from './Utilitaires/PontAndroid.js';
+import { activerMisesAJourWeb } from './Utilitaires/MiseAJourWeb.js';
 
 const CACHE_PARTAGE = 'cardpro-partage';
 
 /**
- * Enregistre le service worker (application installable et hors ligne).
+ * Enregistre le service worker (hors ligne et mises à jour automatiques).
  */
 function enregistrerServiceWorker() {
-  // Dans l'appli Android, les fichiers sont déjà dans l'APK : pas besoin de cache.
-  if ('serviceWorker' in navigator && !estAppliAndroid()) {
-    navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(() => {});
-  }
+  // Dans l'appli Android, les fichiers sont dans l'APK, mise à jour par Android lui-même.
+  if (!estAppliAndroid()) activerMisesAJourWeb((message) => notifier(message, 'succes'));
 }
 
 /**

@@ -1,7 +1,7 @@
 /*
  * Navigateur.cs
- * Ouvre une adresse dans le navigateur par défaut. Seules les adresses de
- * l'appli locale et de GitHub sont acceptées.
+ * Ouvre une adresse dans le navigateur par défaut. Seule l'appli locale
+ * (http://localhost:…) est acceptée.
  */
 using System;
 using System.Diagnostics;
@@ -13,12 +13,10 @@ namespace CardPro.Lanceur
     internal static class Navigateur
     {
         /// <summary>Ouvre une adresse autorisée.</summary>
-        /// <param name="adresse">http://localhost:… ou https://github.com/…</param>
+        /// <param name="adresse">http://localhost:…</param>
         public static void Ouvrir(string adresse)
         {
-            bool autorisee = adresse.StartsWith("http://localhost:", StringComparison.Ordinal)
-                || adresse.StartsWith("https://github.com/", StringComparison.Ordinal);
-            if (!autorisee) return;
+            if (!adresse.StartsWith("http://localhost:", StringComparison.Ordinal)) return;
             try
             {
                 Process.Start(new ProcessStartInfo(adresse) { UseShellExecute = true });

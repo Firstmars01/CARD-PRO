@@ -3,6 +3,9 @@
 # « Releases » du dépôt (vX.Y.Z, d'après package.json).
 # L'exe contient : node.exe officiel (empreinte SHA-256 vérifiée), le serveur
 # et la page web. Aucune donnée de personne, aucun secret.
+# L'empreinte SHA-256 de l'exe est publiée à côté (CardPro-RH.exe.sha256) :
+# la mise à jour automatique la vérifie avant d'installer.
+# Une nouvelle version n'est proposée aux PC que si « version » change dans package.json.
 
 name: Construire Card Pro RH (Windows)
 
@@ -70,14 +73,19 @@ jobs:
           dotnet build windows/Lanceur/Lanceur.csproj -c Release -o _sortie `
             "-p:Version=$env:VERSION" "-p:DepotGithub=$env:GITHUB_REPOSITORY" "-p:PaquetAppli=$PWD/_paquet/app.zip"
 
+      - name: Calculer l'empreinte (vérifiée par la mise à jour automatique)
+        run: |
+          (Get-FileHash _sortie/CardPro-RH.exe -Algorithm SHA256).Hash.ToLower() | Out-File -FilePath _sortie/CardPro-RH.exe.sha256 -Encoding ascii -NoNewline
+
       - name: Publier dans « Releases »
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           $tag = "v$env:VERSION"
+          $fichiers = @("_sortie/CardPro-RH.exe", "_sortie/CardPro-RH.exe.sha256")
           $existantes = gh release list --limit 100 --json tagName --jq '.[].tagName'
           if ($existantes -contains $tag) {
-            gh release upload $tag _sortie/CardPro-RH.exe --clobber
+            gh release upload $tag @fichiers --clobber
           } else {
-            gh release create $tag _sortie/CardPro-RH.exe --title "Card Pro $tag" --notes "Appli des RH pour Windows : télécharge CardPro-RH.exe et double-clique dessus. Si Windows affiche « Windows a protégé votre ordinateur » : Informations complémentaires → Exécuter quand même."
+            gh release create $tag @fichiers --title "Card Pro $tag" --notes "Appli des RH pour Windows : télécharge CardPro-RH.exe et double-clique dessus. Si Windows affiche « Windows a protégé votre ordinateur » : Informations complémentaires → Exécuter quand même."
           }
