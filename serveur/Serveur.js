@@ -13,11 +13,12 @@ import { creerDepotModeles } from './Donnees/DepotModeles.js';
 import { creerDepotPersonnes } from './Donnees/DepotPersonnes.js';
 import { ErreurHttp } from './Http/ErreurHttp.js';
 import { envoyerJson } from './Http/Reponse.js';
-import { appliquerEntetesSecurite, verifierOrigine } from './Http/Securite.js';
+import { appliquerEntetesSecurite, verifierOrigine, estHoteLocal, verifierHoteLocal } from './Http/Securite.js';
 import { Routeur } from './Http/Routeur.js';
 import { servirFichier } from './Http/FichiersStatiques.js';
 import { enregistrerRoutesModeles } from './Routes/RoutesModeles.js';
 import { enregistrerRoutesPersonnes } from './Routes/RoutesPersonnes.js';
+import { enregistrerRoutesSauvegarde } from './Routes/RoutesSauvegarde.js';
 
 /**
  * Crée le serveur HTTP (sans le démarrer).
@@ -33,6 +34,7 @@ export function creerServeur(config) {
   routeur.ajouter('GET', '/api/configuration', (ctx) => envoyerJson(ctx.res, 200, { lienPortefeuille: config.lienPortefeuille }));
   enregistrerRoutesModeles(routeur);
   enregistrerRoutesPersonnes(routeur);
+  enregistrerRoutesSauvegarde(routeur);
 
   const application = { config, base, depots, routeur };
   const serveur = http.createServer((req, res) => { traiterRequete(req, res, application); });
@@ -49,6 +51,7 @@ export function creerServeur(config) {
 async function traiterRequete(req, res, application) {
   appliquerEntetesSecurite(res);
   try {
+    if (estHoteLocal(application.config.hote) && !verifierHoteLocal(req)) throw new ErreurHttp(421, 'Adresse non autorisée.');
     const { pathname } = new URL(req.url, 'http://localhost');
     if (pathname.startsWith('/api/')) await traiterApi(req, res, pathname, application);
     else await servirFichier(req, res, pathname, application.config.racineStatique);
@@ -81,10 +84,28 @@ async function traiterApi(req, res, chemin, application) {
   await route.gestionnaire({ ...application, req, res, params: route.params });
 }
 
-// Démarrage uniquement si le fichier est lancé directement (pas dans les tests).
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
+/**
+ * Démarre le serveur. Lancé par CardPro-RH.exe (CARDPRO_LANCEUR=1), il
+ * s'arrête proprement quand le lanceur ferme son entrée standard (« Quitter »).
+ */
+function demarrer() {
   const config = lireConfiguration();
-  creerServeur(config).listen(config.port, () => {
-    console.log(`[CardPro] Serveur démarré sur le port ${config.port}`);
+  const serveur = creerServeur(config);
+  serveur.listen(config.port, config.hote, () => {
+    console.log(`[CardPro] Serveur démarré sur http://${config.hote}:${config.port}`);
   });
+  const arreter = () => {
+    serveur.close(() => process.exit(0));
+    serveur.closeAllConnections();
+    setTimeout(() => process.exit(0), 3000).unref();
+  };
+  process.on('SIGINT', arreter);
+  process.on('SIGTERM', arreter);
+  if (process.env.CARDPRO_LANCEUR === '1') {
+    process.stdin.on('end', arreter);
+    process.stdin.resume();
+  }
 }
+
+// Démarrage uniquement si le fichier est lancé directement (pas dans les tests).
+if (process.argv[1] === fileURLToPath(import.meta.url)) demarrer();

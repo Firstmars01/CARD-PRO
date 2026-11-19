@@ -107,3 +107,36 @@ test("configuration : adresse de l'appli mobile en HTTPS uniquement", async () =
   assert.equal(lireConfiguration({ LIEN_PORTEFEUILLE: 'javascript:alert(1)' }).lienPortefeuille, '');
   assert.deepEqual((await appeler('GET', '/api/configuration')).donnees, { lienPortefeuille: '' });
 });
+
+test('sécurité : un autre nom d’hôte (DNS rebinding) est refusé', async () => {
+  const { port } = new URL(base);
+  const http = await import('node:http');
+  const statut = await new Promise((resoudre, rejeter) => {
+    http.get({ host: '127.0.0.1', port, path: '/api/personnes', headers: { Host: `site-malveillant.fr:${port}` } }, (r) => { r.resume(); resoudre(r.statusCode); }).on('error', rejeter);
+  });
+  assert.equal(statut, 421);
+  assert.equal((await fetch(`http://localhost:${port}/api/sante`)).status, 200);
+});
+
+test('sauvegarde : export, restauration complète et validation', async () => {
+  await appeler('POST', '/api/personnes', { personne: { prenom: 'Zoé' } });
+  const modele = (await appeler('POST', '/api/modeles', { modele: { nom: 'Sauvegardé' } })).donnees.modele;
+  const sauvegarde = (await appeler('GET', '/api/sauvegarde')).donnees;
+  assert.equal(sauvegarde.format, 'cardpro-sauvegarde');
+  assert.ok(sauvegarde.personnes.some((p) => p.personne.prenom === 'Zoé'));
+
+  // Restauration : remplace tout, valide chaque entrée, ignore les modèles de base.
+  const restauree = {
+    ...sauvegarde,
+    modeles: [...sauvegarde.modeles, MODELES_DE_BASE[0]],
+    personnes: [{ id: 'p-restaure', modeleId: modele.id, personne: { prenom: 'Léa', siteWeb: 'javascript:alert(1)' } }, { modeleId: 'inconnu', personne: {} }],
+  };
+  assert.deepEqual((await appeler('POST', '/api/sauvegarde', restauree)).donnees, { modeles: sauvegarde.modeles.length, personnes: 2 });
+  const personnes = (await appeler('GET', '/api/personnes')).donnees.personnes;
+  assert.equal(personnes.length, 2);
+  assert.equal(personnes.find((p) => p.id === 'p-restaure').personne.siteWeb, '');
+  assert.equal(personnes.find((p) => p.id !== 'p-restaure').modeleId, MODELES_DE_BASE[0].id);
+
+  assert.equal((await appeler('POST', '/api/sauvegarde', { format: 'autre', modeles: [], personnes: [] })).statut, 400);
+  assert.equal((await appeler('POST', '/api/sauvegarde', sauvegarde, { Origin: 'https://site-malveillant.fr' })).statut, 403);
+});

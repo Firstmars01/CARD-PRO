@@ -24,12 +24,14 @@ function lienHttps(valeur) {
 /**
  * Construit la configuration du serveur.
  * @param {object} [env=process.env] - Variables d'environnement.
- * @returns {{port:number, cheminBase:string, racineStatique:string, lienPortefeuille:string}} Configuration.
+ * @returns {{port:number, hote:string, cheminBase:string, racineStatique:string, lienPortefeuille:string}} Configuration.
+ *   hote : adresse d'écoute (HOTE) ; par défaut 127.0.0.1, l'appli n'est joignable que depuis ce PC.
  *   lienPortefeuille : adresse HTTPS de l'appli mobile (LIEN_PORTEFEUILLE), vide si absente ou invalide.
  */
 export function lireConfiguration(env = process.env) {
   return {
     port: Number(env.PORT) || 3000,
+    hote: env.HOTE || '127.0.0.1',
     cheminBase: env.CHEMIN_BASE || path.join(RACINE_PROJET, 'donnees', 'cardpro.sqlite'),
     racineStatique: RACINE_PROJET,
     lienPortefeuille: lienHttps(env.LIEN_PORTEFEUILLE),

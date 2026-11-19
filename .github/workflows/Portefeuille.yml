@@ -1,6 +1,7 @@
 # Portefeuille.yml
 # Publie l'appli mobile « Card Pro » sur GitHub Pages (HTTPS) :
 #  - le portefeuille web (iPhone) et la page « contact » (NFC vers iPhone) ;
+#  - la page de téléchargement de l'appli des RH (rh/, l'exe est dans « Releases ») ;
 #  - l'appli Android (APK signé, avec le NFC), construite ici.
 # Seuls les fichiers nécessaires sont publiés : ni le serveur, ni la page des
 # RH, ni aucune donnée de personne.
@@ -18,6 +19,7 @@ on:
       - "src/**"
       - "assets/**"
       - "contact/**"
+      - "rh/**"
       - "android/**"
       - ".github/workflows/Portefeuille.yml"
   workflow_dispatch:
@@ -57,7 +59,7 @@ jobs:
       - name: Préparer le site
         run: |
           mkdir -p _site/src/Interface _site/assets
-          cp -r portefeuille contact _site/
+          cp -r portefeuille contact rh _site/
           cp -r assets/icons assets/styles _site/assets/
           cp -r src/Metier src/Utilitaires _site/src/
           cp -r src/Interface/Rendu src/Interface/Themes.js src/Interface/Notifications.js _site/src/Interface/

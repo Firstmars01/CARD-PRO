@@ -25,5 +25,8 @@ android/local.properties
 *.jks
 *.keystore
 
-cardpro.jks
-mdp.txt
+# Lanceur Windows : fichiers de compilation
+_paquet/
+_sortie/
+windows/Lanceur/bin/
+windows/Lanceur/obj/

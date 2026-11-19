@@ -15,7 +15,7 @@ import { transaction } from '../Donnees/BaseDeDonnees.js';
 const LIMITE_CORPS = 32 * 1024;
 const LIMITE_IMPORT = 2 * 1024 * 1024;
 const IMPORT_MAX = 500;
-const PERSONNES_MAX = 5000;
+export const PERSONNES_MAX = 5000;
 
 /**
  * Vérifie l'identifiant de modèle demandé (modèle de base ou enregistré).

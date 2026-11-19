@@ -15,6 +15,7 @@ export function creerDepotPersonnes(base) {
   const inserer = base.prepare('INSERT INTO personnes (id, modele_id, donnees) VALUES (?, ?, ?)');
   const maj = base.prepare("UPDATE personnes SET modele_id = ?, donnees = ?, modifie_le = datetime('now') WHERE id = ?");
   const supprimer = base.prepare('DELETE FROM personnes WHERE id = ?');
+  const toutSupprimer = base.prepare('DELETE FROM personnes');
   const remplacerModele = base.prepare('UPDATE personnes SET modele_id = ? WHERE modele_id = ?');
 
   return {
@@ -38,6 +39,8 @@ export function creerDepotPersonnes(base) {
     modifier: (id, modeleId, personne) => { maj.run(modeleId, JSON.stringify(personne), id); },
     /** @param {string} id - Identifiant. */
     supprimer: (id) => { supprimer.run(id); },
+    /** Supprime toutes les personnes (restauration d'une sauvegarde). */
+    toutSupprimer: () => { toutSupprimer.run(); },
     /**
      * Fait passer toutes les cartes d'un modèle supprimé sur un autre modèle.
      * @param {string} ancien - Modèle supprimé.

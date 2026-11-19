@@ -1,6 +1,6 @@
 /**
  * OngletCartes.js
- * Onglet « Cartes » : liste des personnes et import à gauche ; formulaire,
+ * Onglet « Cartes » : liste des personnes, import et sauvegarde à gauche ; formulaire,
  * aperçu recto / verso et téléchargements de la personne sélectionnée à droite.
  */
 
@@ -8,6 +8,7 @@ import { creerElement } from '../../Utilitaires/Dom.js';
 import { obtenirEtat } from '../../Metier/EtatApplication.js';
 import { monterListePersonnes } from './ListePersonnes.js';
 import { monterImportPersonnes } from './SectionImport.js';
+import { monterSectionSauvegarde } from './SectionSauvegarde.js';
 import { monterFormulairePersonne } from './FormulairePersonne.js';
 import { monterApercuPersonne } from './ApercuPersonne.js';
 import { monterPanneauExportCarte } from './PanneauExportCarte.js';
@@ -31,6 +32,7 @@ export function monterOngletCartes(conteneur) {
 
   monterListePersonnes(colonneListe);
   monterImportPersonnes(colonneListe);
+  monterSectionSauvegarde(colonneListe);
   monterFormulairePersonne(formulaire);
   monterApercuPersonne(apercu);
   monterPanneauExportCarte(exports);

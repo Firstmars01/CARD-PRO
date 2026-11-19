@@ -1,6 +1,6 @@
 # Card Pro
 
-Application locale (Docker) pour créer les **cartes de visite de toute une équipe** :
+Application Windows (**CardPro-RH.exe**, sans installation) pour créer les **cartes de visite de toute une équipe** :
 - des **modèles** recto / verso entièrement personnalisables, créés dans un éditeur visuel ;
 - une **liste de personnes** (saisie ou import Excel/CSV) ;
 - pour chaque personne, une carte avec un **QR code** qui contient ses coordonnées : un scan permet de l'ajouter aux contacts, même sans internet ;
@@ -72,7 +72,7 @@ Application locale (Docker) pour créer les **cartes de visite de toute une équ
 
 - **Navigateur** : HTML, CSS, JavaScript (modules ES), sans framework. Encodeur QR (modes octets et alphanumérique), ZIP, CSV, GIF animé et Base45 intégrés. [pdf-lib](https://pdf-lib.js.org/) 1.17.1 (MIT) embarquée.
 - **Serveur** : Node.js 22, **sans aucune dépendance npm**, avec la base **SQLite** intégrée à Node.
-- **Docker** : un conteneur Node non-root.
+- **Windows** : lanceur `CardPro-RH.exe` en C# (.NET Framework 4.8, déjà présent sur Windows) avec icône près de l'horloge ; il contient Node.js officiel et l'appli.
 - **Portefeuille mobile** : application web installable (PWA), hors ligne, publiée sur **GitHub Pages** (HTTPS). Lecture des QR : lecteur intégré du navigateur (Android) ou [jsQR](https://github.com/cozmo/jsQR) 1.4.0 (Apache 2.0, iPhone), ajouté à la publication.
 - **Tests** : `node:test`.
 
@@ -83,9 +83,9 @@ CARD PRO/
 ├── index.html                 # Page unique (onglets Cartes et Modèles)
 ├── manifest.webmanifest       # Icône et nom de l'application
 ├── sw.js                      # Désactive l'ancien cache des versions précédentes
-├── Dockerfile                 # Image du serveur
-├── docker-compose.yml         # Lancement en une commande
-├── .github/workflows/         # Portefeuille.yml : tests, APK Android signé et publication sur GitHub Pages
+├── windows/Lanceur/           # CardPro-RH.exe : démarrage, icône près de l'horloge, mises à jour (C#)
+├── rh/                        # Page GitHub Pages de téléchargement de l'exe
+├── .github/workflows/         # Portefeuille.yml : APK + GitHub Pages ; RH.yml : CardPro-RH.exe dans Releases
 ├── android/                   # Appli Android (APK) : WebView du portefeuille + NFC
 │   └── app/src/main/java/fr/cardpro/portefeuille/
 │       ├── MainActivity.java  # Écran : portefeuille en HTTPS local, caméra, fichiers, liens externes
@@ -128,38 +128,43 @@ CARD PRO/
 └── tests/                     # Tests unitaires, de l'API et du portefeuille
 ```
 
-## Installation et lancement
+## Installation et lancement (Windows)
 
-Prérequis : [Docker Desktop](https://www.docker.com/products/docker-desktop/).
+1. Télécharge **CardPro-RH.exe** :
+   - depuis la page **https://firstmars01.github.io/CARD-PRO/rh/** ;
+   - ou depuis la page **Releases** du dépôt GitHub.
+2. Double-clique dessus. Rien à installer (Windows 10 ou 11).
+   Si Windows affiche « Windows a protégé votre ordinateur » : **Informations complémentaires → Exécuter quand même** (l'exe n'est pas signé par un certificat payant).
+3. La page Card Pro s'ouvre dans le navigateur, et une **icône Card Pro** apparaît près de l'horloge :
+   - **clic** : rouvrir la page ;
+   - **clic droit** : dossier des données, rechercher une mise à jour, version, **Quitter Card Pro**.
 
-```bash
-docker compose up -d --build
+Bon à savoir :
+- L'appli n'est accessible **que depuis ce PC** (adresse `http://localhost:48080`, ou le port libre suivant).
+- **Données** : `%APPDATA%\CardPro\cardpro.sqlite` (gardées d'une version à l'autre). Journal en cas de problème : `%APPDATA%\CardPro\journal.txt`.
+- **Sauvegarde** : onglet Cartes → « Sauvegarde des données » → **Sauvegarder** (un fichier `.json` avec toutes les cartes et tous les modèles) / **Restaurer…**. Les modèles seuls s'exportent aussi en `.json` depuis l'onglet Modèles.
+- **Mise à jour** : au lancement, Card Pro vérifie s'il existe une nouvelle version sur GitHub et l'annonce près de l'horloge (clic droit → « Télécharger la version… »). Quitte Card Pro, remplace l'exe par le nouveau et relance-le : les données sont conservées.
+- Lancer l'exe une seconde fois rouvre simplement la page.
+
+### Récupérer les données de l'ancienne version Docker
+
+Avant de supprimer le conteneur Docker (il doit exister, même arrêté) :
+```cmd
+docker cp cardpro:/donnees/cardpro.sqlite cardpro.sqlite
 ```
+Puis, **Card Pro (exe) fermé**, copie ce fichier dans `%APPDATA%\CardPro\` (remplace celui qui existe) et lance l'exe.
 
-Ouvre ensuite **http://localhost:8080**.
+### Publication de l'exe
 
-Les autres appareils du réseau (PC des collègues, téléphones) utilisent `http://<adresse-IP-du-PC>:8080`. Pour trouver l'adresse, lance `ipconfig` sous Windows et lis la ligne « Adresse IPv4 ». Si Windows le demande, autorise Docker dans le pare-feu.
+`.github/workflows/RH.yml` construit `CardPro-RH.exe` sur GitHub (Windows) à chaque `git push` qui touche l'appli, et le publie dans **Releases** sous le numéro de version de `package.json` (ex. `v4.1.0`). Pour publier une nouvelle version, augmente `version` dans `package.json`.
 
-Commandes utiles :
-
-```bash
-docker compose logs -f              # journaux
-docker compose down                 # arrêt (les données sont conservées)
-docker compose down -v              # arrêt ET suppression de toutes les données
-docker compose cp cardpro:/donnees/cardpro.sqlite ./sauvegarde.sqlite   # sauvegarde
-```
-
-> Si tu avais installé une ancienne version de Card Pro, recharge la page avec **Ctrl + F5** la première fois.
->
-> Après une mise à jour du code, relance **`docker compose up -d --build`** (le `--build` est indispensable : sans lui, Docker garde l'ancienne version). Le numéro affiché à côté du titre (ex. « v4.0 ») confirme la version chargée.
-
-## Développement sans Docker
+## Développement
 
 Il faut Node.js 22.13 ou plus récent.
 
 ```bash
 npm start      # http://localhost:3000 (base dans ./donnees)
-npm test       # 38 tests
+npm test       # 40 tests
 ```
 
 ## QR codes des liens
@@ -213,7 +218,7 @@ L'icône Card Pro apparaît ensuite sur l'écran d'accueil comme une application
 
 ### Adresse de l'appli dans la page des RH
 
-Dans `docker-compose.yml`, la variable `LIEN_PORTEFEUILLE` contient l'adresse de l'appli (HTTPS obligatoire). Elle est affichée en **QR code d'installation** à côté du QR animé : la personne installe l'appli, puis scanne sa carte dans la foulée. Si tu changes d'adresse, modifie cette ligne puis relance `docker compose up -d --build`.
+`CardPro-RH.exe` connaît l'adresse de l'appli mobile (déduite du dépôt GitHub à la compilation) et l'affiche en **QR code d'installation** à côté du QR animé : la personne installe l'appli, puis scanne sa carte dans la foulée. En développement, la variable d'environnement `LIEN_PORTEFEUILLE` (HTTPS obligatoire) fait la même chose.
 
 ### Donner une carte à quelqu'un
 
@@ -234,7 +239,7 @@ Pratique : dans l'e-mail, mets le lien du portefeuille (pour l'installer) **et**
 
 ### Essayer en local
 
-Le serveur Docker sert aussi le portefeuille : **http://localhost:8080/portefeuille/**. Sur PC, il n'affiche que l'écran « Installe Card Pro sur ton téléphone » (c'est voulu). Pour tester l'appli elle-même, utilise l'adresse GitHub Pages sur un téléphone.
+L'appli des RH sert aussi le portefeuille : **http://localhost:48080/portefeuille/**. Sur PC, il n'affiche que l'écran « Installe Card Pro sur ton téléphone » (c'est voulu). Pour tester l'appli elle-même, utilise l'adresse GitHub Pages sur un téléphone.
 
 ## Appli Android (APK avec NFC)
 
@@ -244,14 +249,14 @@ L'appli Android contient tout le portefeuille, plus le NFC. Elle est **construit
 
 Android exige que chaque version soit signée avec **la même clé**. Garde-la précieusement **hors du dépôt** : sans elle, impossible de publier une mise à jour (il faudrait désinstaller l'appli et perdre les cartes).
 
-1. Dans le dossier du projet (PowerShell), crée la clé avec Docker (Java n'est pas nécessaire) :
-   ```powershell
-   docker run --rm -it -v "${PWD}:/travail" -w /travail eclipse-temurin:17 keytool -genkeypair -v -keystore cardpro.jks -alias cardpro -keyalg RSA -keysize 4096 -validity 10000
+1. Dans le dossier du projet (invite de commandes), crée la clé avec Docker ou Java (`keytool`) :
+   ```cmd
+   docker run --rm -it -v "%cd%:/travail" -w /travail eclipse-temurin:17 keytool -genkeypair -v -keystore cardpro.jks -alias cardpro -keyalg RSA -keysize 4096 -validity 10000
    ```
    Choisis un mot de passe solide et réponds aux questions (nom, organisation…).
 2. Copie la clé en Base64 dans le presse-papiers :
-   ```powershell
-   [Convert]::ToBase64String([IO.File]::ReadAllBytes("cardpro.jks")) | Set-Clipboard
+   ```cmd
+   powershell -NoProfile -Command "[Convert]::ToBase64String([IO.File]::ReadAllBytes('cardpro.jks')) | Set-Clipboard"
    ```
 3. Sur GitHub : **Settings → Secrets and variables → Actions → New repository secret**, crée 4 secrets :
 
@@ -285,7 +290,9 @@ Android exige que chaque version soit signée avec **la même clé**. Garde-la p
 
 ## Sécurité
 
-- **Usage local** : pas de comptes. Toute personne qui accède à `http://<pc>:8080` peut voir et modifier les cartes. N'expose pas ce port sur internet.
+- **Usage local** : pas de comptes. Le serveur n'écoute que sur **127.0.0.1** : il est inaccessible depuis le réseau.
+- **DNS rebinding** : le nom d'hôte de chaque requête doit être `localhost` / `127.0.0.1` / `[::1]` avec le bon port ; un site malveillant qui ferait pointer son propre nom vers ce PC est refusé (code 421).
+- **Sauvegarde** : la restauration revalide chaque modèle et chaque personne (mêmes règles que le reste), dans une seule transaction (tout ou rien), après confirmation ; taille limitée à 64 Mo.
 - **Anti-CSRF** : toute requête qui modifie des données doit venir de l'application elle-même (contrôle de l'en-tête `Origin`). Un site malveillant ouvert dans le navigateur ne peut donc rien modifier.
 - **Injection SQL** : uniquement des **requêtes préparées**.
 - **Validation** : toutes les données (formulaire, import CSV, modèles JSON, API) sont **revalidées par le serveur** avec le même code que le navigateur, à partir de schémas :
@@ -302,7 +309,7 @@ Android exige que chaque version soit signée avec **la même clé**. Garde-la p
 - **Fichiers** : seule une liste blanche est servie (`index.html`, `assets/`, `src/`…). Le code du serveur, la base et les fichiers cachés sont inaccessibles, et la traversée de dossiers est bloquée.
 - **Erreurs** : messages génériques côté client, détails uniquement dans les journaux du serveur.
 - **En-têtes HTTP** : CSP, `X-Content-Type-Options`, `X-Frame-Options: DENY`, `Referrer-Policy`, `Permissions-Policy`, COOP/CORP.
-- **Docker** : utilisateur non-root, système de fichiers en lecture seule, capacités Linux retirées, `no-new-privileges`.
+- **CardPro-RH.exe** : contient le `node.exe` officiel (empreinte SHA-256 vérifiée à la compilation) ; aucune permission administrateur ; extraction dans `%LOCALAPPDATA%` (les chemins qui sortiraient du dossier sont refusés) ; n'ouvre dans le navigateur que l'appli locale et GitHub ; la recherche de mise à jour lit seulement le numéro de la dernière version publique (rien n'est envoyé) ; arrêt propre du serveur à la fermeture.
 - **Secrets** : aucun n'est nécessaire. `.env` est exclu de Git et de l'image.
 - **Portefeuille mobile** :
   - les cartes restent sur le téléphone (IndexedDB) ; l'application ne contacte aucun serveur (CSP `connect-src 'self'`) ;

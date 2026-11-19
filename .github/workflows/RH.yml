@@ -1,0 +1,83 @@
+# RH.yml
+# Construit CardPro-RH.exe (appli des RH pour Windows) et le publie dans les
+# « Releases » du dépôt (vX.Y.Z, d'après package.json).
+# L'exe contient : node.exe officiel (empreinte SHA-256 vérifiée), le serveur
+# et la page web. Aucune donnée de personne, aucun secret.
+
+name: Construire Card Pro RH (Windows)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "serveur/**"
+      - "src/**"
+      - "assets/**"
+      - "index.html"
+      - "manifest.webmanifest"
+      - "sw.js"
+      - "package.json"
+      - "windows/**"
+      - ".github/workflows/RH.yml"
+  workflow_dispatch:
+
+# Écriture uniquement pour créer la version dans « Releases ».
+permissions:
+  contents: write
+
+concurrency:
+  group: rh
+  cancel-in-progress: false
+
+jobs:
+  construire:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v5
+
+      - name: Installer Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: Lancer les tests
+        run: npm test
+
+      - name: Préparer le paquet de l'appli
+        run: |
+          $versionNode = node -p "process.version"
+          $source = "https://nodejs.org/dist/$versionNode"
+          New-Item -ItemType Directory -Force _paquet/app | Out-Null
+          Invoke-WebRequest "$source/win-x64/node.exe" -OutFile _paquet/app/node.exe
+          Invoke-WebRequest "$source/SHASUMS256.txt" -OutFile _paquet/SHASUMS256.txt
+          # Vérifie que node.exe est bien celui publié par Node.js.
+          $ligne = Get-Content _paquet/SHASUMS256.txt | Where-Object { $_ -match '\swin-x64/node\.exe$' }
+          $attendu = ($ligne -split '\s+')[0]
+          $obtenu = (Get-FileHash _paquet/app/node.exe -Algorithm SHA256).Hash.ToLower()
+          if (-not $attendu -or $attendu -ne $obtenu) { throw "Empreinte de node.exe invalide." }
+          Copy-Item -Recurse serveur, src, assets _paquet/app/
+          Copy-Item index.html, manifest.webmanifest, sw.js, package.json _paquet/app/
+          Compress-Archive -Path _paquet/app/* -DestinationPath _paquet/app.zip
+          $version = node -p "require('./package.json').version"
+          "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Compiler CardPro-RH.exe
+        run: |
+          dotnet build windows/Lanceur/Lanceur.csproj -c Release -o _sortie `
+            "-p:Version=$env:VERSION" "-p:DepotGithub=$env:GITHUB_REPOSITORY" "-p:PaquetAppli=$PWD/_paquet/app.zip"
+
+      - name: Publier dans « Releases »
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = "v$env:VERSION"
+          $existantes = gh release list --limit 100 --json tagName --jq '.[].tagName'
+          if ($existantes -contains $tag) {
+            gh release upload $tag _sortie/CardPro-RH.exe --clobber
+          } else {
+            gh release create $tag _sortie/CardPro-RH.exe --title "Card Pro $tag" --notes "Appli des RH pour Windows : télécharge CardPro-RH.exe et double-clique dessus. Si Windows affiche « Windows a protégé votre ordinateur » : Informations complémentaires → Exécuter quand même."
+          }

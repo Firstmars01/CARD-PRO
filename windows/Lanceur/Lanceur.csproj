@@ -1,0 +1,46 @@
+<!--
+  Lanceur.csproj
+  CardPro-RH.exe : lanceur Windows de l'appli des RH. Il contient l'appli
+  (Node.js + serveur + page web) dans un paquet ZIP intégré, la démarre en
+  local, ouvre le navigateur et affiche une icône près de l'horloge.
+  Cible .NET Framework 4.8, présent sur tous les Windows 10 et 11 : rien à installer.
+-->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <LangVersion>7.3</LangVersion>
+    <AssemblyName>CardPro-RH</AssemblyName>
+    <RootNamespace>CardPro.Lanceur</RootNamespace>
+    <ApplicationIcon>icone.ico</ApplicationIcon>
+    <Product>Card Pro RH</Product>
+    <Company>Card Pro</Company>
+    <Description>Card Pro : création des cartes de visite</Description>
+    <Version Condition="'$(Version)' == ''">0.0.0</Version>
+    <!-- Paquet de l'appli (préparé par .github/workflows/RH.yml). -->
+    <PaquetAppli Condition="'$(PaquetAppli)' == ''">..\..\_paquet\app.zip</PaquetAppli>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="System.Net.Http" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Permet de compiler pour .NET Framework sans Visual Studio. -->
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="$(PaquetAppli)" LogicalName="app.zip" />
+    <EmbeddedResource Include="icone.ico" LogicalName="icone.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Dépôt GitHub (« compte/depot ») : mises à jour et adresse de l'appli mobile. -->
+    <AssemblyMetadata Include="DepotGithub" Value="$(DepotGithub)" />
+  </ItemGroup>
+</Project>

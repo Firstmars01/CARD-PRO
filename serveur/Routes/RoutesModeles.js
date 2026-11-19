@@ -14,7 +14,7 @@ import { transaction } from '../Donnees/BaseDeDonnees.js';
 
 // Un modèle peut contenir plusieurs images (logo, fond…).
 const LIMITE_CORPS = 8 * 1024 * 1024;
-const MODELES_MAX = 200;
+export const MODELES_MAX = 200;
 
 /**
  * Lit et valide le modèle envoyé par le client.

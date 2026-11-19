@@ -15,6 +15,7 @@ export function creerDepotModeles(base) {
   const inserer = base.prepare('INSERT INTO modeles (id, nom, donnees) VALUES (?, ?, ?)');
   const maj = base.prepare("UPDATE modeles SET nom = ?, donnees = ?, modifie_le = datetime('now') WHERE id = ?");
   const supprimer = base.prepare('DELETE FROM modeles WHERE id = ?');
+  const toutSupprimer = base.prepare('DELETE FROM modeles');
 
   return {
     /** @returns {object[]} Tous les modèles enregistrés. */
@@ -32,5 +33,7 @@ export function creerDepotModeles(base) {
     modifier: (modele) => { maj.run(modele.nom, JSON.stringify(modele), modele.id); },
     /** @param {string} id - Identifiant. */
     supprimer: (id) => { supprimer.run(id); },
+    /** Supprime tous les modèles (restauration d'une sauvegarde). */
+    toutSupprimer: () => { toutSupprimer.run(); },
   };
 }
