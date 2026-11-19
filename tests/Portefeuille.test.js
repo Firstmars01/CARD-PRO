@@ -20,6 +20,8 @@ import { compresser } from '../src/Utilitaires/Compression.js';
 import { encoderTexteQr } from '../src/Utilitaires/EncodeurQr.js';
 import { MODELES_DE_BASE } from '../src/Metier/ModelesDeBase.js';
 import { PERSONNE_EXEMPLE } from '../src/Metier/Personne.js';
+import { creerLienContact, lireLienContact } from '../src/Metier/LienContact.js';
+import { encoderBase64Url, decoderBase64Url } from '../src/Utilitaires/Base64Url.js';
 
 const RACINE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PNG = `data:image/png;base64,${readFileSync(path.join(RACINE, 'assets/icons/Icone192.png')).toString('base64')}`;
@@ -128,4 +130,27 @@ test('portefeuille : tous les fichiers nécessaires sont gardés hors ligne', ()
   }
   modules.forEach((m) => assert.ok(listes.includes(m), `${path.relative(RACINE, m)} manque dans sw.js`));
   listes.filter((f) => !f.endsWith('jsQR.js') && !f.endsWith(`portefeuille${path.sep}`)).forEach((f) => assert.ok(existsSync(f), `${f} introuvable`));
+});
+
+test('lien contact (NFC iPhone) : aller-retour, validation et refus', async () => {
+  const octets = Uint8Array.from({ length: 300 }, (_, i) => (i * 91) % 256);
+  assert.deepEqual(decoderBase64Url(encoderBase64Url(octets)), octets);
+  assert.throws(() => decoderBase64Url('abc+/='));
+
+  assert.equal(await creerLienContact('', PERSONNE_EXEMPLE), '', 'pas de lien sans adresse du site');
+  assert.equal(await creerLienContact('http://exemple.fr/', PERSONNE_EXEMPLE), '', 'HTTPS obligatoire');
+  const lien = await creerLienContact('https://compte.github.io/depot/', PERSONNE_EXEMPLE);
+  assert.match(lien, /^https:\/\/compte\.github\.io\/depot\/contact\/#[A-Za-z0-9_-]+$/);
+  assert.ok(lien.length < 1500, 'lien assez court pour le NFC');
+  assert.deepEqual(await lireLienContact(lien.slice(lien.indexOf('#'))), PERSONNE_EXEMPLE);
+
+  // Un lien fabriqué à la main passe par les mêmes validations.
+  const { compresser: comp } = await import('../src/Utilitaires/Compression.js');
+  const piege = encoderBase64Url(await comp(new TextEncoder().encode(JSON.stringify({ prenom: 'Eve', siteWeb: 'javascript:alert(1)', liens: [{ libelle: 'x', url: 'data:text/html,1' }] }))));
+  const lue = await lireLienContact(piege);
+  assert.equal(lue.prenom, 'Eve');
+  assert.equal(lue.siteWeb, '');
+  assert.equal(lue.liens.length, 0);
+  await assert.rejects(lireLienContact('#%%%'), /invalide/);
+  await assert.rejects(lireLienContact(''), /invalide/);
 });

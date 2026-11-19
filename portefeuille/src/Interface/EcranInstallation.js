@@ -5,15 +5,16 @@
  * import) ne sont disponibles qu'une fois l'appli installée.
  *  - PC : « ouvre ce lien sur ton téléphone » + QR code ;
  *  - iPhone : étapes Safari (Partager → Sur l'écran d'accueil → Ajouter) ;
- *  - Android : bouton « Installer l'application » (ou étapes du menu).
+ *  - Android : téléchargement de l'appli (APK, avec le NFC).
  */
 
-import { creerElement, vider } from '../../../src/Utilitaires/Dom.js';
+import { creerElement } from '../../../src/Utilitaires/Dom.js';
 import { creerQrLien } from '../../../src/Interface/Rendu/QrLien.js';
 import { notifier } from '../../../src/Interface/Notifications.js';
-import {
-  systeme, navigateurCompatible, invitationInstallation, lancerInstallation, abonnerInstallation,
-} from '../Utilitaires/Plateforme.js';
+import { systeme, navigateurCompatible } from '../Utilitaires/Plateforme.js';
+
+// Appli Android, publiée avec le site (voir .github/workflows/Portefeuille.yml).
+const ADRESSE_APK = '../telechargement/CardPro.apk';
 
 /**
  * Adresse de l'appli, sans paramètres (celle à installer).
@@ -87,35 +88,33 @@ function contenuIos() {
 }
 
 /**
- * Contenu pour Android : bouton d'installation si le navigateur le permet, sinon les étapes.
- * @param {() => void} redessiner - Redessine l'écran (quand l'invitation arrive).
+ * Contenu pour Android : téléchargement de l'APK (appli complète avec NFC).
  * @returns {HTMLElement[]} Éléments.
  */
-function contenuAndroid(redessiner) {
+function contenuAndroid() {
   if (!navigateurCompatible()) {
     return [
       creerElement('h2', { classe: 'Titre-ecran', texte: 'Ouvre ce lien dans Chrome' }),
-      creerElement('p', { texte: "Ce navigateur intégré ne peut pas installer d'appli. Touche ⋮ puis « Ouvrir dans Chrome », ou copie le lien et colle-le dans Chrome." }),
+      creerElement('p', { texte: "Ce navigateur intégré ne peut pas télécharger l'appli. Touche ⋮ puis « Ouvrir dans Chrome », ou copie le lien et colle-le dans Chrome." }),
       creerElement('div', { classe: 'Actions' }, [boutonCopier()]),
     ];
   }
-  const titre = creerElement('h2', { classe: 'Titre-ecran', texte: "Installe l'appli Card Pro" });
-  if (invitationInstallation()) {
-    const installer = creerElement('button', { classe: 'PBouton PBouton--principal PBouton--grand', texte: "Installer l'application", attributs: { type: 'button' } });
-    installer.addEventListener('click', async () => {
-      if (!(await lancerInstallation())) redessiner();
-    });
-    return [titre, creerElement('p', { texte: "Toutes les fonctions (cartes, scan, import) s'ouvrent dans l'appli installée." }), creerElement('div', { classe: 'Actions' }, [installer])];
-  }
+  const telecharger = creerElement('a', {
+    classe: 'PBouton PBouton--principal PBouton--grand',
+    texte: "Télécharger l'appli Card Pro",
+    attributs: { href: ADRESSE_APK, download: 'CardPro.apk', type: 'application/vnd.android.package-archive' },
+  });
   return [
-    titre,
+    creerElement('h2', { classe: 'Titre-ecran', texte: "Installe l'appli Card Pro" }),
+    creerElement('div', { classe: 'Actions' }, [telecharger]),
     listeEtapes([
-      'Touche le menu ⋮ en haut à droite de Chrome.',
-      '« Installer l’application » (ou « Ajouter à l’écran d’accueil »).',
-      "Ouvre Card Pro depuis ton écran d'accueil.",
+      "Touche « Télécharger l'appli Card Pro ».",
+      'Ouvre le fichier CardPro.apk (notification de téléchargement).',
+      "Si Android le demande, autorise Chrome à installer des applis (« Sources inconnues »), puis reviens en arrière.",
+      "Touche « Installer ». Si Play Protect affiche un avertissement : « Plus de détails » → « Installer quand même ».",
+      "Ouvre Card Pro depuis l'écran d'accueil.",
     ]),
-    creerElement('p', { classe: 'Astuce', texte: 'Tu ne vois pas ce choix ? Ouvre ce lien dans Chrome.' }),
-    creerElement('div', { classe: 'Actions' }, [boutonCopier()]),
+    creerElement('p', { classe: 'Astuce', texte: "Mise à jour : télécharge et installe la nouvelle version par-dessus, tes cartes sont conservées." }),
   ];
 }
 
@@ -125,19 +124,7 @@ function contenuAndroid(redessiner) {
  */
 export function afficherEcranInstallation(conteneur) {
   const ecran = creerElement('section', { classe: 'Ecran Installation', attributs: { 'aria-label': "Installation de l'appli" } });
-  const dessiner = (installee = false) => {
-    vider(ecran);
-    if (installee) {
-      ecran.append(
-        creerElement('h2', { classe: 'Titre-ecran', texte: 'Card Pro est installée' }),
-        creerElement('p', { texte: "Ouvre l'appli Card Pro depuis ton écran d'accueil pour ajouter tes cartes." }),
-      );
-      return;
-    }
-    const contenus = { pc: contenuPc, ios: contenuIos, android: () => contenuAndroid(() => dessiner()) };
-    ecran.append(...contenus[systeme()]());
-  };
-  abonnerInstallation((type) => dessiner(type === 'installee'));
-  dessiner();
+  const contenus = { pc: contenuPc, ios: contenuIos, android: contenuAndroid };
+  ecran.append(...contenus[systeme()]());
   conteneur.append(ecran);
 }

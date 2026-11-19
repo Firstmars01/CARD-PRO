@@ -17,6 +17,7 @@ import { creerVueCarte } from './Interface/VueCarte.js';
 import { creerVueScanner } from './Interface/VueScanner.js';
 import { afficherEcranInstallation } from './Interface/EcranInstallation.js';
 import { estInstalle, systeme } from './Utilitaires/Plateforme.js';
+import { estAppliAndroid, fichiersRecus } from './Utilitaires/PontAndroid.js';
 
 const CACHE_PARTAGE = 'cardpro-partage';
 
@@ -24,7 +25,8 @@ const CACHE_PARTAGE = 'cardpro-partage';
  * Enregistre le service worker (application installable et hors ligne).
  */
 function enregistrerServiceWorker() {
-  if ('serviceWorker' in navigator) {
+  // Dans l'appli Android, les fichiers sont déjà dans l'APK : pas besoin de cache.
+  if ('serviceWorker' in navigator && !estAppliAndroid()) {
     navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(() => {});
   }
 }
@@ -43,6 +45,14 @@ async function importerFichiersPartages() {
     await cache.delete(requete);
     return new File([await reponse.blob()], 'partage', { type: reponse.headers.get('Content-Type') || '' });
   }));
+  if (fichiers.length) await importerFichiers(fichiers);
+}
+
+/**
+ * Importe les fichiers reçus par l'appli Android (« Ouvrir avec » / « Partager »).
+ */
+async function importerFichiersAndroid() {
+  const fichiers = fichiersRecus();
   if (fichiers.length) await importerFichiers(fichiers);
 }
 
@@ -71,6 +81,11 @@ async function demarrer() {
   obtenirElement('chargement').hidden = true;
   demarrerNavigation();
   await importerFichiersPartages();
+  if (estAppliAndroid()) {
+    // L'appli Android prévient quand un fichier arrive alors qu'elle est déjà ouverte.
+    window.addEventListener('cardpro-fichiers', () => importerFichiersAndroid());
+    await importerFichiersAndroid();
+  }
 }
 
 demarrer().catch((erreur) => {

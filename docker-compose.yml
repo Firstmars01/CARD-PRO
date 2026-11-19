@@ -5,7 +5,7 @@
 services:
   cardpro:
     build: .
-    image: cardpro:3.3.0
+    image: cardpro:4.0.0
     container_name: cardpro
     restart: unless-stopped
     environment:

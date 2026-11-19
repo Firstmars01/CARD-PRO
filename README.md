@@ -6,7 +6,7 @@ Application locale (Docker) pour créer les **cartes de visite de toute une équ
 - pour chaque personne, une carte avec un **QR code** qui contient ses coordonnées : un scan permet de l'ajouter aux contacts, même sans internet ;
 - en option, **un QR code par lien** (LinkedIn, GitHub, portfolio…) qui ouvre directement la page ;
 - des **exports** prêts à envoyer par e-mail ou à imprimer ;
-- une application mobile, **Card Pro Portefeuille** (Android et iPhone), qui garde les cartes reçues, recto et verso compris, à la place du papier ;
+- une application mobile, **Card Pro** (APK Android avec **NFC**, appli web sur iPhone), qui garde les cartes reçues, recto et verso compris, à la place du papier ;
 - des thèmes **clair et sombre** (bouton soleil / lune), sur la page web comme sur l'application mobile.
 
 ## Fonctionnalités
@@ -85,7 +85,15 @@ CARD PRO/
 ├── sw.js                      # Désactive l'ancien cache des versions précédentes
 ├── Dockerfile                 # Image du serveur
 ├── docker-compose.yml         # Lancement en une commande
-├── .github/workflows/         # Portefeuille.yml : publication du portefeuille sur GitHub Pages
+├── .github/workflows/         # Portefeuille.yml : tests, APK Android signé et publication sur GitHub Pages
+├── android/                   # Appli Android (APK) : WebView du portefeuille + NFC
+│   └── app/src/main/java/fr/cardpro/portefeuille/
+│       ├── MainActivity.java  # Écran : portefeuille en HTTPS local, caméra, fichiers, liens externes
+│       ├── PontJavascript.java# Fonctions appelées par le portefeuille (NFC, partage, fichiers reçus)
+│       ├── ServiceNfc.java    # Émulation de puce NFC Type 4 (HCE), lecture seule
+│       ├── NdefCarte.java     # Contenu NFC : fiche contact + lien pour iPhone
+│       └── FichiersRecus.java # Fichiers « Ouvrir avec » / « Partager »
+├── contact/                   # Page ouverte par un iPhone qui lit le NFC (fiche contact dans le lien)
 ├── assets/
 │   ├── icons/                 # Icônes
 │   ├── styles/                # Themes.css (clair / sombre, partagé), Base.css, Composants.css, Editeur.css
@@ -98,7 +106,7 @@ CARD PRO/
 │   │   ├── Modeles/           # Éditeur : zone, outils, raccourcis, propriétés, calques, modèles
 │   │   └── Rendu/             # Dessin des faces, du QR, dégradés, ombres et motifs en SVG ; QR d'un lien
 │   ├── Metier/                # Personne, éléments, modèles, formats, palette, icônes, alignement, polices, vCard, import, état,
-│   │                          # PaquetCarte (carte complète compressée), TransfertQr (découpage en QR animé)
+│   │                          # PaquetCarte (carte complète compressée), TransfertQr (QR animé), LienContact (lien NFC iPhone)
 │   ├── Donnees/               # Appels à l'API
 │   └── Utilitaires/           # QR, formes, validation, schémas, images, CSV, ZIP, PDF, GIF, Base45, compression
 ├── serveur/
@@ -116,7 +124,7 @@ CARD PRO/
 │       ├── Interface/         # Écrans : installation, liste, carte (recto / verso), scanner ; navigation ; partage du contact
 │       ├── Metier/            # Portefeuille : import, liste, suppression
 │       ├── Donnees/           # Stockage sur le téléphone (IndexedDB)
-│       └── Utilitaires/       # Lecture des QR par la caméra, détection de l'appareil et de l'installation
+│       └── Utilitaires/       # Lecture des QR, détection de l'appareil, pont avec l'appli Android
 └── tests/                     # Tests unitaires, de l'API et du portefeuille
 ```
 
@@ -143,7 +151,7 @@ docker compose cp cardpro:/donnees/cardpro.sqlite ./sauvegarde.sqlite   # sauveg
 
 > Si tu avais installé une ancienne version de Card Pro, recharge la page avec **Ctrl + F5** la première fois.
 >
-> Après une mise à jour du code, relance **`docker compose up -d --build`** (le `--build` est indispensable : sans lui, Docker garde l'ancienne version). Le numéro affiché à côté du titre (ex. « v3.3 ») confirme la version chargée.
+> Après une mise à jour du code, relance **`docker compose up -d --build`** (le `--build` est indispensable : sans lui, Docker garde l'ancienne version). Le numéro affiché à côté du titre (ex. « v4.0 ») confirme la version chargée.
 
 ## Développement sans Docker
 
@@ -151,7 +159,7 @@ Il faut Node.js 22.13 ou plus récent.
 
 ```bash
 npm start      # http://localhost:3000 (base dans ./donnees)
-npm test       # 37 tests
+npm test       # 38 tests
 ```
 
 ## QR codes des liens
@@ -175,7 +183,10 @@ Depuis une carte ouverte, on peut aussi **transmettre le contact** à quelqu'un 
 - **Montrer le contact** : le QR code de la fiche contact complète s'affiche en plein écran (noir sur blanc, écran maintenu allumé). L'autre personne le scanne avec l'appareil photo, sans appli.
 - **Envoyer le contact** : ouvre le menu de partage du téléphone (Quick Share, AirDrop, WhatsApp, SMS, e-mail…) avec le fichier `.vcf`.
 
-> Le NFC entre deux téléphones n'est pas possible depuis une appli web (navigateurs et Apple ne le permettent pas) : ces deux options le remplacent.
+- **Partager par NFC** (appli Android uniquement) : le téléphone se fait passer pour une puce NFC. On approche le dos d'un autre téléphone :
+  - **Android** : la fiche contact s'ouvre directement ;
+  - **iPhone** : une notification apparaît ; en la touchant, la page « contact » s'ouvre avec **Ajouter aux contacts**.
+  - Le partage s'arrête en quittant la carte ou l'appli. Envoyer depuis un iPhone est impossible (Apple réserve le NFC aux paiements).
 
 ### Mise en ligne (une seule fois)
 
@@ -193,7 +204,7 @@ La page web du portefeuille ne sert **qu'à installer l'appli** : les cartes, le
 
 | Ouvert depuis | Ce que la page affiche |
 | --- | --- |
-| **Android** (Chrome, Edge, Samsung…) | Un bouton **Installer l'application** (ou les étapes du menu ⋮ si le navigateur ne le propose pas). |
+| **Android** (Chrome, Edge, Samsung…) | Un bouton **Télécharger l'appli Card Pro** (APK, avec le NFC) et les étapes d'installation. |
 | **iPhone / iPad** (Safari) | Les étapes : **Partager → Sur l'écran d'accueil → Ajouter**. |
 | Autre navigateur sur iPhone, navigateur intégré (Gmail, Outlook, Facebook…) | « Ouvre ce lien dans Safari / dans Chrome » + **Copier le lien**. |
 | **PC** | « Installe Card Pro sur ton téléphone » + un **QR code** du lien à scanner. |
@@ -224,6 +235,42 @@ Pratique : dans l'e-mail, mets le lien du portefeuille (pour l'installer) **et**
 ### Essayer en local
 
 Le serveur Docker sert aussi le portefeuille : **http://localhost:8080/portefeuille/**. Sur PC, il n'affiche que l'écran « Installe Card Pro sur ton téléphone » (c'est voulu). Pour tester l'appli elle-même, utilise l'adresse GitHub Pages sur un téléphone.
+
+## Appli Android (APK avec NFC)
+
+L'appli Android contient tout le portefeuille, plus le NFC. Elle est **construite et signée automatiquement** par GitHub à chaque `git push`, puis proposée sur la page d'installation Android (`…/telechargement/CardPro.apk`).
+
+### Clé de signature (une seule fois)
+
+Android exige que chaque version soit signée avec **la même clé**. Garde-la précieusement **hors du dépôt** : sans elle, impossible de publier une mise à jour (il faudrait désinstaller l'appli et perdre les cartes).
+
+1. Dans le dossier du projet (PowerShell), crée la clé avec Docker (Java n'est pas nécessaire) :
+   ```powershell
+   docker run --rm -it -v "${PWD}:/travail" -w /travail eclipse-temurin:17 keytool -genkeypair -v -keystore cardpro.jks -alias cardpro -keyalg RSA -keysize 4096 -validity 10000
+   ```
+   Choisis un mot de passe solide et réponds aux questions (nom, organisation…).
+2. Copie la clé en Base64 dans le presse-papiers :
+   ```powershell
+   [Convert]::ToBase64String([IO.File]::ReadAllBytes("cardpro.jks")) | Set-Clipboard
+   ```
+3. Sur GitHub : **Settings → Secrets and variables → Actions → New repository secret**, crée 4 secrets :
+
+   | Nom | Valeur |
+   | --- | --- |
+   | `ANDROID_KEYSTORE_BASE64` | le texte copié à l'étape 2 |
+   | `ANDROID_KEYSTORE_MOT_DE_PASSE` | le mot de passe choisi |
+   | `ANDROID_CLE_ALIAS` | `cardpro` |
+   | `ANDROID_CLE_MOT_DE_PASSE` | le même mot de passe |
+
+4. Range `cardpro.jks` en lieu sûr (clé USB, gestionnaire de mots de passe) puis supprime-le du dossier. `.gitignore` empêche de toute façon de l'envoyer sur GitHub.
+
+> Sans ces secrets, la publication s'arrête avec le message « Secret ANDROID_KEYSTORE_BASE64 manquant ».
+
+### Installer et mettre à jour
+
+- **Installer** : sur Android, ouvre l'adresse du portefeuille → **Télécharger l'appli Card Pro** → ouvre `CardPro.apk` → autorise l'installation (« sources inconnues ») → **Installer**. Play Protect peut afficher un avertissement (appli hors Play Store) : « Plus de détails » → « Installer quand même ».
+- **Mettre à jour** : télécharge la nouvelle version et installe-la par-dessus. Les cartes sont conservées.
+- Les cartes de l'appli Android et celles de l'appli web sont stockées séparément.
 
 ## Exemples d'utilisation
 
@@ -263,6 +310,10 @@ Le serveur Docker sert aussi le portefeuille : **http://localhost:8080/portefeui
   - les cartes lues depuis le stockage sont revalidées avant affichage ; les liens d'appel et d'e-mail sont construits à partir de valeurs déjà nettoyées ;
   - le QR animé est contrôlé par un **CRC-32** : une lecture incomplète ou erronée est rejetée ;
   - la page web n'a pas accès à la caméra (`Permissions-Policy: camera=()`), seul le portefeuille y a droit ;
+  - **appli Android** : aucune permission Internet ; la WebView n'affiche que les pages incluses dans l'appli (tout autre lien s'ouvre dans l'appli adaptée du téléphone) ; caméra et choix de fichiers réservés à ces pages ; les fonctions Android appelées par la page vérifient chaque paramètre (types de fichiers en liste blanche, tailles limitées, noms nettoyés) ; fichiers partagés uniquement via un dossier dédié (FileProvider) ;
+  - **NFC** : puce émulée en **lecture seule**, active seulement quand la personne l'active sur une carte, coupée dès que l'appli passe en arrière-plan ;
+  - **lien « contact »** (iPhone) : les données sont après le `#`, donc jamais envoyées au serveur ; la page les revalide comme le reste (liens `http`/`https` seulement…) ;
+  - **clé de signature** : uniquement dans les secrets GitHub, écrite le temps de la compilation puis effacée ; `*.jks` est exclu de Git ;
   - l'appli ne s'ouvre qu'installée sur un téléphone : c'est une règle d'usage, pas une protection (le code est public et ne contient aucune donnée) ;
   - l'adresse de l'appli (`LIEN_PORTEFEUILLE`) est validée par le serveur : HTTPS uniquement ;
   - la publication GitHub n'a que les droits nécessaires (lecture du code, écriture sur Pages), lance les tests avant de publier, et fige la version de jsQR.

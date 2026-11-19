@@ -15,3 +15,12 @@ Thumbs.db
 
 # Lecteur QR du portefeuille : ajouté à la publication (voir portefeuille/vendor/LISEZMOI.md)
 portefeuille/vendor/jsQR.js
+
+# Appli Android : fichiers générés et clé de signature (à garder hors du dépôt !)
+android/.gradle/
+android/build/
+android/app/build/
+android/app/src/main/assets/www/
+android/local.properties
+*.jks
+*.keystore

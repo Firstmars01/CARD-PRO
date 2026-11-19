@@ -6,6 +6,7 @@
  *  - « Envoyer le contact » : menu de partage du téléphone (Quick Share,
  *    AirDrop, WhatsApp, SMS, e-mail…) avec le fichier .vcf ;
  *  - « Ajouter à mes contacts » : enregistre la fiche sur ce téléphone.
+ * Dans l'appli Android, le partage passe par Android (pont natif).
  */
 
 import { creerElement } from '../../../src/Utilitaires/Dom.js';
@@ -16,6 +17,9 @@ import { creerQrSvgAutonome } from '../../../src/Interface/Rendu/RenduQrSvg.js';
 import { notifier } from '../../../src/Interface/Notifications.js';
 import { titreCarte } from '../Metier/Portefeuille.js';
 import { qrContact } from './RenduCarte.js';
+import { estAppliAndroid, partagerFichier as partagerAndroid, ouvrirFichier } from '../Utilitaires/PontAndroid.js';
+
+const TYPE_VCARD = 'text/x-vcard';
 
 /**
  * Crée le fichier .vcf de la carte.
@@ -48,6 +52,11 @@ async function partagerFichier(carte) {
  * @param {object} carte - Carte du portefeuille.
  */
 export async function envoyerContact(carte) {
+  if (estAppliAndroid()) {
+    const fichier = fichierContact(carte);
+    partagerAndroid(fichier.name, TYPE_VCARD, genererVCard(carte.personne));
+    return;
+  }
   if (await partagerFichier(carte) === 'indisponible') {
     notifier("Le partage n'est pas disponible sur ce téléphone : utilise « Montrer le contact ».", 'erreur');
   }
@@ -58,6 +67,10 @@ export async function envoyerContact(carte) {
  * @param {object} carte - Carte du portefeuille.
  */
 export async function ajouterAuxContacts(carte) {
+  if (estAppliAndroid()) {
+    ouvrirFichier(fichierContact(carte).name, TYPE_VCARD, genererVCard(carte.personne));
+    return;
+  }
   if (await partagerFichier(carte) === 'indisponible') {
     const fichier = fichierContact(carte);
     telechargerBlob(fichier, fichier.name);

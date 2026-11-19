@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<!--
+  index.html (contact)
+  Page ouverte quand un iPhone lit le NFC d'un téléphone Card Pro : elle
+  affiche la fiche contact contenue dans le lien et propose de l'ajouter.
+  Les informations sont après le « # » du lien : elles ne quittent jamais le téléphone.
+-->
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#14181f">
+  <title>Card Pro · Contact</title>
+  <link rel="icon" href="../assets/icons/Icone.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/styles/Themes.css">
+  <link rel="stylesheet" href="../portefeuille/styles/Portefeuille.css">
+  <script type="module" src="src/Main.js"></script>
+</head>
+<body>
+  <header id="entete" class="Entete">
+    <img src="../assets/icons/Icone.svg" alt="" width="30" height="30">
+    <h1 class="Entete-titre">Card Pro <span class="Entete-sous">Contact</span></h1>
+  </header>
+  <main id="principal" class="Principal">
+    <p id="chargement" class="Astuce">Chargement…</p>
+  </main>
+  <div id="notifications" class="Notifications" aria-live="polite"></div>
+</body>
+</html>

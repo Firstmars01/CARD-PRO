@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  service_nfc.xml
+  Le service répond à l'application NFC « NDEF Tag » (norme NFC Forum Type 4,
+  AID D2760000850101) : tout téléphone qui lit une puce NFC lit le contact.
+-->
+<host-apdu-service xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/description_nfc"
+    android:requireDeviceUnlock="false">
+    <aid-group android:category="other" android:description="@string/description_nfc">
+        <aid-filter android:name="D2760000850101" />
+    </aid-group>
+</host-apdu-service>

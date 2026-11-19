@@ -3,8 +3,9 @@
  * Sert les fichiers de l'application (HTML, CSS, JS, images).
  * Seuls quelques fichiers et dossiers sont autorisés : le code du serveur,
  * la base de données et les fichiers cachés ne sont jamais accessibles.
- * Le portefeuille mobile (/portefeuille/) est aussi servi, pour l'essayer
- * sur le PC (la caméra n'y est autorisée que pour lui).
+ * Le portefeuille mobile (/portefeuille/) et la page « contact » (/contact/)
+ * sont aussi servis, pour les essayer sur le PC (la caméra n'est autorisée
+ * que pour le portefeuille).
  */
 
 import path from 'node:path';
@@ -20,10 +21,11 @@ const TYPES = {
   '.webmanifest': 'application/manifest+json',
 };
 const FICHIERS_RACINE = ['index.html', 'manifest.webmanifest', 'sw.js'];
-const DOSSIERS_AUTORISES = ['assets', 'src', 'portefeuille'];
+const DOSSIERS_AUTORISES = ['assets', 'src', 'portefeuille', 'contact'];
 // Page d'accueil de l'application et du portefeuille mobile.
 const PAGE_APPLICATION = /^\/$/;
 const PAGE_PORTEFEUILLE = /^\/portefeuille\/$/;
+const PAGE_CONTACT = /^\/contact\/$/;
 
 /**
  * Convertit le chemin demandé en chemin relatif autorisé.
@@ -34,6 +36,7 @@ const PAGE_PORTEFEUILLE = /^\/portefeuille\/$/;
 function cheminAutorise(chemin) {
   if (PAGE_APPLICATION.test(chemin)) return 'index.html';
   if (PAGE_PORTEFEUILLE.test(chemin)) return 'portefeuille/index.html';
+  if (PAGE_CONTACT.test(chemin)) return 'contact/index.html';
   let relatif;
   try {
     relatif = decodeURIComponent(chemin).replace(/^\/+/, '');

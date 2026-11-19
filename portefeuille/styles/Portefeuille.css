@@ -425,3 +425,34 @@ a.Coordonnee-valeur {
   background: #ffffff;
   color: #14181f;
 }
+
+/* Lien présenté comme un bouton (téléchargement de l'APK). */
+a.PBouton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+/* Partage NFC (appli Android) */
+.Nfc {
+  margin-top: 16px;
+  padding: 14px;
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon);
+  background: var(--surface);
+}
+
+.Nfc[data-actif="true"] {
+  border-color: var(--accent);
+  background: var(--accent-clair);
+}
+
+.Nfc-titre {
+  margin: 0 0 4px;
+  font-size: 1rem;
+}
+
+.Nfc .Actions {
+  margin-top: 10px;
+}

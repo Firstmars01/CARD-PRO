@@ -7,7 +7,7 @@
  * Change VERSION à chaque mise à jour pour renouveler les fichiers.
  */
 
-const VERSION = 'v3';
+const VERSION = 'v4';
 const CACHE_APPLI = `cardpro-portefeuille-${VERSION}`;
 const CACHE_PARTAGE = 'cardpro-partage';
 const TAILLE_MAX_PARTAGE = 20 * 1024 * 1024;
@@ -23,15 +23,19 @@ const FICHIERS = [
   './src/Main.js',
   './src/Donnees/StockageCartes.js',
   './src/Metier/Portefeuille.js',
+  './src/Interface/Coordonnees.js',
   './src/Interface/EcranInstallation.js',
   './src/Interface/Navigation.js',
   './src/Interface/PartageContact.js',
+  './src/Interface/PartageNfc.js',
   './src/Interface/RenduCarte.js',
   './src/Interface/VueCarte.js',
   './src/Interface/VueListe.js',
   './src/Interface/VueScanner.js',
   './src/Utilitaires/LecteurQr.js',
   './src/Utilitaires/Plateforme.js',
+  './src/Utilitaires/PontAndroid.js',
+  './src/AdresseSite.js',
   '../assets/styles/Themes.css',
   '../assets/icons/Icone.svg',
   '../assets/icons/Icone192.png',
@@ -48,6 +52,7 @@ const FICHIERS = [
   '../src/Metier/Formats.js',
   '../src/Metier/GenerateurVCard.js',
   '../src/Metier/IconesCarte.js',
+  '../src/Metier/LienContact.js',
   '../src/Metier/ModeleCarte.js',
   '../src/Metier/PaquetCarte.js',
   '../src/Metier/Palette.js',
@@ -55,6 +60,7 @@ const FICHIERS = [
   '../src/Metier/Polices.js',
   '../src/Metier/TransfertQr.js',
   '../src/Utilitaires/Base45.js',
+  '../src/Utilitaires/Base64Url.js',
   '../src/Utilitaires/Compression.js',
   '../src/Utilitaires/DataUrl.js',
   '../src/Utilitaires/Dom.js',
