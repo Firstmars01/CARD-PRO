@@ -14,6 +14,7 @@ import { creerLienContact } from '../../../src/Metier/LienContact.js';
 import { notifier } from '../../../src/Interface/Notifications.js';
 import { ADRESSE_SITE } from '../AdresseSite.js';
 import { systeme } from '../Utilitaires/Plateforme.js';
+import { creerAnimationNfc } from './AnimationNfc.js';
 import {
   estAppliAndroid, etatNfc, activerNfc, desactiverNfc, ouvrirReglagesNfc, nfcActif,
 } from '../Utilitaires/PontAndroid.js';
@@ -78,7 +79,9 @@ export function creerSectionNfc(carte) {
     }
     if (actif) {
       element.append(
-        creerElement('p', { texte: "NFC actif : approche le dos d'un autre téléphone (écran allumé et déverrouillé). Android ouvre la fiche contact, iPhone affiche une notification à toucher." }),
+        creerElement('p', { classe: 'Nfc-etat', texte: 'NFC actif' }),
+        creerAnimationNfc(),
+        creerElement('p', { classe: 'Astuce', texte: "L'autre téléphone doit être allumé et déverrouillé. Android ouvre la fiche contact ; iPhone affiche une notification à toucher." }),
         creerElement('div', { classe: 'Actions' }, [bouton('Arrêter', 'PBouton', () => { arreter(); dessiner(); })]),
       );
       return;

@@ -7,7 +7,6 @@
  */
 package fr.cardpro.portefeuille;
 
-import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -32,14 +31,14 @@ final class PontJavascript {
     private static final List<String> TYPES_AUTORISES = Arrays.asList("text/x-vcard", "text/vcard");
     private static final int CONTENU_MAX = 64 * 1024;
 
-    private final Activity activite;
+    private final MainActivity activite;
     private final FichiersRecus fichiersRecus;
 
     /**
      * @param activite      écran principal
      * @param fichiersRecus fichiers reçus en attente
      */
-    PontJavascript(Activity activite, FichiersRecus fichiersRecus) {
+    PontJavascript(MainActivity activite, FichiersRecus fichiersRecus) {
         this.activite = activite;
         this.fichiersRecus = fichiersRecus;
     }
@@ -65,7 +64,10 @@ final class PontJavascript {
     @JavascriptInterface
     public boolean activerNfc(String vcard, String lien) {
         if (!"pret".equals(etatNfc()) || !NdefCarte.definir(vcard, lien)) return false;
-        activite.runOnUiThread(() -> choisirServicePrefere(true));
+        activite.runOnUiThread(() -> {
+            choisirServicePrefere(true);
+            activite.bloquerLectureNfc(true);
+        });
         return true;
     }
 
@@ -73,7 +75,10 @@ final class PontJavascript {
     @JavascriptInterface
     public void desactiverNfc() {
         NdefCarte.vider();
-        activite.runOnUiThread(() -> choisirServicePrefere(false));
+        activite.runOnUiThread(() -> {
+            choisirServicePrefere(false);
+            activite.bloquerLectureNfc(false);
+        });
     }
 
     /**

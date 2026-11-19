@@ -196,6 +196,8 @@ Depuis une carte ouverte, on peut aussi **transmettre le contact** à quelqu'un 
 - **Partager par NFC** (appli Android uniquement) : le téléphone se fait passer pour une puce NFC. On approche le dos d'un autre téléphone :
   - **Android** : la fiche contact s'ouvre directement ;
   - **iPhone** : une notification apparaît ; en la touchant, la page « contact » s'ouvre avec **Ajouter aux contacts**.
+  - Une **animation** montre le geste : glisser son téléphone **sous** celui de l'autre personne, dos contre dos, le haut des deux téléphones l'un sur l'autre.
+  - Pendant le partage, ton téléphone ne « lit » pas l'autre : aucune autre appli (paiement, lecteur NFC…) ne s'ouvre chez toi.
   - Le partage s'arrête en quittant la carte ou l'appli. Envoyer depuis un iPhone est impossible (Apple réserve le NFC aux paiements).
 
 ### Mise en ligne (une seule fois)

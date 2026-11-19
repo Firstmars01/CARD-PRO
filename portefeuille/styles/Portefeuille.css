@@ -456,3 +456,96 @@ a.PBouton {
 .Nfc .Actions {
   margin-top: 10px;
 }
+
+/* Animation « comment partager par NFC » : ton téléphone glisse sous l'autre. */
+.Nfc-etat {
+  margin: 0;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.AnimationNfc {
+  margin: 8px 0 0;
+  text-align: center;
+}
+
+.AnimationNfc-dessin {
+  display: block;
+  width: min(100%, 240px);
+  margin: 0 auto;
+}
+
+.AnimationNfc-legende {
+  margin-top: 6px;
+  font-weight: 600;
+}
+
+.AnimationNfc-coque {
+  fill: var(--texte-doux);
+  stroke: var(--surface);
+  stroke-width: 2;
+}
+
+.AnimationNfc-ecran {
+  fill: var(--surface);
+}
+
+.AnimationNfc-camera {
+  fill: var(--surface);
+}
+
+.AnimationNfc-libelle {
+  fill: var(--texte);
+  font: 600 13px var(--police);
+}
+
+.AnimationNfc-tienTelephone .AnimationNfc-coque {
+  fill: var(--accent);
+}
+
+/* Ton téléphone glisse sous l'autre (il dépasse légèrement en bas à gauche). */
+.AnimationNfc-tien {
+  animation: AnimationNfc-glisser 3.2s ease-in-out infinite;
+}
+
+.AnimationNfc-onde {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 3;
+  opacity: 0;
+  animation: AnimationNfc-onde 3.2s ease-out infinite;
+}
+
+.AnimationNfc-onde--2 {
+  animation-delay: 0.2s;
+}
+
+.AnimationNfc-onde--3 {
+  animation-delay: 0.4s;
+}
+
+/* Départ en bas à gauche, arrivée sous le haut de l'autre téléphone, pause, retour. */
+@keyframes AnimationNfc-glisser {
+  0%, 10% { transform: translate(0, 58px); }
+  45%, 80% { transform: translate(52px, 24px); }
+  100% { transform: translate(0, 58px); }
+}
+
+@keyframes AnimationNfc-onde {
+  0%, 45% { opacity: 0; }
+  55% { opacity: 0.9; }
+  80% { opacity: 0; }
+  100% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .AnimationNfc-tien {
+    animation: none;
+    transform: translate(52px, 24px);
+  }
+
+  .AnimationNfc-onde {
+    animation: none;
+    opacity: 0.6;
+  }
+}

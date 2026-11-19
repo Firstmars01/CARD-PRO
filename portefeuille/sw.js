@@ -25,6 +25,7 @@ const FICHIERS = [
   './src/Main.js',
   './src/Donnees/StockageCartes.js',
   './src/Metier/Portefeuille.js',
+  './src/Interface/AnimationNfc.js',
   './src/Interface/Coordonnees.js',
   './src/Interface/EcranInstallation.js',
   './src/Interface/Navigation.js',

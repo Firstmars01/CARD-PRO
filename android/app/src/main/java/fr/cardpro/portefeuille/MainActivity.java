@@ -12,11 +12,14 @@ package fr.cardpro.portefeuille;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.PendingIntent;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.nfc.NfcAdapter;
+import android.os.Build;
 import android.os.Bundle;
 import android.webkit.PermissionRequest;
 import android.webkit.ValueCallback;
@@ -75,6 +78,42 @@ public class MainActivity extends Activity {
 
         fichiersRecus.lireIntent(getIntent());
         vue.loadUrl(PAGE);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (NdefCarte.estActif()) bloquerLectureNfc(true);
+    }
+
+    @Override
+    protected void onPause() {
+        bloquerLectureNfc(false);
+        super.onPause();
+    }
+
+    /**
+     * Pendant le partage NFC, ce téléphone ne doit pas « lire » l'autre :
+     * tout ce qu'il détecte est envoyé à Card Pro (et ignoré) au lieu
+     * d'ouvrir une autre appli (portefeuille de paiement, lecteur NFC…).
+     *
+     * @param bloquer true pour bloquer, false pour revenir au fonctionnement normal
+     */
+    void bloquerLectureNfc(boolean bloquer) {
+        NfcAdapter nfc = NfcAdapter.getDefaultAdapter(this);
+        if (nfc == null) return;
+        try {
+            if (bloquer) {
+                int options = PendingIntent.FLAG_UPDATE_CURRENT
+                    | (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ? PendingIntent.FLAG_MUTABLE : 0);
+                Intent retour = new Intent(this, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                nfc.enableForegroundDispatch(this, PendingIntent.getActivity(this, 0, retour, options), null, null);
+            } else {
+                nfc.disableForegroundDispatch(this);
+            }
+        } catch (IllegalStateException erreur) {
+            // Écran pas au premier plan : réessayé au prochain retour dans l'appli.
+        }
     }
 
     @Override
