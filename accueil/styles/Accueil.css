@@ -1,0 +1,130 @@
+/*
+ * Accueil.css
+ * Mise en page de la page d'accueil du projet (GitHub Pages).
+ * Couleurs : assets/styles/Themes.css ; boutons et listes : Portefeuille.css.
+ */
+
+.Accueil {
+  width: min(100%, 1080px);
+  margin: 0 auto;
+  padding: 24px 20px 40px;
+}
+
+.Bandeau {
+  padding: 40px 0 24px;
+  text-align: center;
+}
+
+.Bandeau-titre {
+  max-width: 760px;
+  margin: 0 auto 14px;
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+  line-height: 1.2;
+}
+
+.Bandeau-texte {
+  max-width: 640px;
+  margin: 0 auto;
+  color: var(--texte-doux);
+  font-size: 1.08rem;
+}
+
+.Bandeau .Actions {
+  justify-content: center;
+  margin-top: 24px;
+}
+
+.Bandeau .Actions .PBouton,
+.Appli .Actions .PBouton {
+  flex: 0 1 auto;
+  padding-inline: 22px;
+}
+
+.Bloc {
+  margin-top: 40px;
+}
+
+.Bloc-titre {
+  margin: 0 0 16px;
+  font-size: 1.35rem;
+  text-align: center;
+}
+
+/* Étapes « Comment ça marche » côte à côte sur grand écran. */
+.Etapes--grille {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+  max-width: none;
+}
+
+.Etapes--grille li {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+}
+
+.Applis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 18px;
+}
+
+.Appli {
+  scroll-margin-top: 80px;
+  padding: 20px;
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon);
+  background: var(--surface);
+  box-shadow: var(--ombre);
+}
+
+.Appli-titre {
+  margin: 0 0 6px;
+  font-size: 1.15rem;
+}
+
+.Liste {
+  margin: 12px 0;
+  padding-left: 20px;
+}
+
+.Liste li {
+  margin: 6px 0;
+}
+
+.Appli-qr {
+  margin-top: 12px;
+  text-align: center;
+}
+
+.Appli-qr .QrLien {
+  width: 160px;
+  margin: 8px auto 4px;
+}
+
+/* Le QR de l'appli mobile n'est utile que sur PC. */
+@media (max-width: 700px) {
+  .Appli-qr {
+    display: none;
+  }
+}
+
+.Pied {
+  padding: 20px;
+  border-top: 1px solid var(--bordure);
+  color: var(--texte-doux);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.Pied a,
+.Appli a:not(.PBouton) {
+  color: var(--accent);
+}
+
+.Bloc > .Liste {
+  max-width: 760px;
+  margin-inline: auto;
+}

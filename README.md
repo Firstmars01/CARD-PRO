@@ -84,6 +84,7 @@ CARD PRO/
 ├── manifest.webmanifest       # Icône et nom de l'application
 ├── sw.js                      # Désactive l'ancien cache des versions précédentes
 ├── windows/Lanceur/           # CardPro-RH.exe : démarrage, icône près de l'horloge, mises à jour (C#)
+├── accueil/                   # Page d'accueil du projet (racine du site GitHub Pages)
 ├── rh/                        # Page GitHub Pages de téléchargement de l'exe
 ├── .github/workflows/         # Portefeuille.yml : APK + GitHub Pages ; RH.yml : CardPro-RH.exe dans Releases
 ├── android/                   # Appli Android (APK) : WebView du portefeuille + NFC
@@ -131,7 +132,8 @@ CARD PRO/
 ## Installation et lancement (Windows)
 
 1. Télécharge **CardPro-RH.exe** :
-   - depuis la page **https://firstmars01.github.io/CARD-PRO/rh/** ;
+   - depuis la page d'accueil du projet **https://firstmars01.github.io/CARD-PRO/** (bouton « Télécharger » sur PC ; sur téléphone, le même bouton ouvre l'appli mobile) ;
+   - ou depuis **https://firstmars01.github.io/CARD-PRO/rh/** ;
    - ou depuis la page **Releases** du dépôt GitHub.
 2. Double-clique dessus. Rien à installer (Windows 10 ou 11).
    Si Windows affiche « Windows a protégé votre ordinateur » : **Informations complémentaires → Exécuter quand même** (l'exe n'est pas signé par un certificat payant).

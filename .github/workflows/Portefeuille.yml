@@ -1,6 +1,7 @@
 # Portefeuille.yml
 # Publie l'appli mobile « Card Pro » sur GitHub Pages (HTTPS) :
 #  - le portefeuille web (iPhone) et la page « contact » (NFC vers iPhone) ;
+#  - la page d'accueil du projet (accueil/, copiée à la racine) ;
 #  - la page de téléchargement de l'appli des RH (rh/, l'exe est dans « Releases ») ;
 #  - l'appli Android (APK signé, avec le NFC), construite ici.
 # Seuls les fichiers nécessaires sont publiés : ni le serveur, ni la page des
@@ -20,6 +21,7 @@ on:
       - "assets/**"
       - "contact/**"
       - "rh/**"
+      - "accueil/**"
       - "android/**"
       - ".github/workflows/Portefeuille.yml"
   workflow_dispatch:
@@ -70,8 +72,10 @@ jobs:
           cp package/LICENSE _site/portefeuille/vendor/jsQR.LICENSE
           # Adresse publique du site (lien « contact » envoyé par NFC aux iPhone).
           printf "// Généré à la publication : adresse publique du site.\nexport const ADRESSE_SITE = '%s/';\n" "${{ steps.pages.outputs.base_url }}" > _site/portefeuille/src/AdresseSite.js
-          # La racine du site renvoie vers le portefeuille.
-          printf '<!DOCTYPE html><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=portefeuille/"><title>Card Pro</title><a href="portefeuille/">Card Pro Portefeuille</a>\n' > _site/index.html
+          # Page d'accueil du projet à la racine du site.
+          mkdir -p _site/accueil
+          cp accueil/index.html _site/index.html
+          cp -r accueil/src accueil/styles _site/accueil/
 
       - name: Installer Java
         uses: actions/setup-java@v5
