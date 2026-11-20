@@ -270,3 +270,19 @@ test('contrôle avant export : nom vide, contact manquant, doublons, texte coup�
   assert.ok(de('d').some((p) => p.startsWith('Texte coupé')));
   assert.deepEqual(de('e'), []);
 });
+
+test('identité visuelle : couleur d’accent, logo et texte lisible', async () => {
+  const { couleurAccent, logoCarte, couleurTexteSur } = await import('../src/Metier/IdentiteVisuelle.js');
+  const { normaliserModele } = await import('../src/Metier/ModeleCarte.js');
+  const logo = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+  const modele = normaliserModele({ nom: 'M', recto: { elements: [
+    { type: 'texte', source: 'champ', champ: 'poste', couleur: '#ffffff' },
+    { type: 'texte', source: 'champ', champ: 'entreprise', couleur: '#c2410c' },
+    { type: 'image', image: logo, logoEntreprise: false },
+  ] } });
+  assert.equal(couleurAccent(modele), '#c2410c'); // Le blanc (poste) est trop clair : couleur suivante.
+  assert.equal(couleurAccent(normaliserModele({ nom: 'Vide' })), '#2563eb');
+  assert.equal(logoCarte(modele), logo);
+  assert.equal(couleurTexteSur('#101820'), '#ffffff');
+  assert.equal(couleurTexteSur('#f5f5f5'), '#14181f');
+});

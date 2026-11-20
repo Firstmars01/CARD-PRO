@@ -25,6 +25,8 @@ Application Windows (**CardPro-Configurateur.exe**, sans installation) pour cré
 - QR codes possibles : contact (vCard), site web, LinkedIn, LinkedIn de l'entreprise, **WhatsApp** (ouvre la discussion), **prise de rendez-vous**, **itinéraire** vers l'adresse (Google Maps / Plans), ou un lien de la personne.
 - **Import d'une liste** (CSV exporté d'Excel) avec un fichier modèle à télécharger.
 - **Import d'une carte** (`.cardpro` ou GIF de portefeuille) : la personne est ajoutée avec, au choix, un **nouveau modèle** créé à partir du design de la carte ou un **modèle existant** ; si elle est déjà dans la liste (même prénom, nom et e-mail), Card Pro demande s'il faut **mettre à jour** sa fiche ou en **créer une nouvelle**.
+- **Signature Outlook** : aux couleurs de la carte (couleur d'accent modifiable, logo de la carte ou de l'entreprise), avec nom, poste, entreprise, téléphones, e-mail, site, LinkedIn, WhatsApp, prise de rendez-vous et adresse. Bouton **Copier la signature**, puis collage dans Outlook (guide affiché pour le nouvel Outlook, Outlook sur le web et Outlook classique). Police Arial pour un rendu identique chez tous les destinataires.
+- **Fond Teams / Zoom** : image PNG 1920 × 1080 aux couleurs du recto, avec logo, nom, poste, entreprise et QR « contact » à gauche ; le centre reste libre pour la personne filmée (Teams affiche ton propre fond en miroir, mais les autres le voient à l'endroit).
 - **Téléchargements** : recto/verso en PNG, JPG et SVG (300 dpi), PDF recto + verso au format de la carte, planche A4 recto-verso, **PDF imprimeur** (fonds perdus 3 mm + traits de coupe), contact `.vcf`, ZIP de la carte, et **ZIP de toutes les cartes** (un dossier par personne).
 
 ### Onglet « Modèles »
@@ -111,12 +113,12 @@ CARD PRO/
 ├── src/                       # Code du navigateur (en partie partagé avec le serveur)
 │   ├── Main.js                # Point d'entrée
 │   ├── Interface/
-│   │   ├── Cartes/            # Liste, formulaire, import, aperçu, exports, QR animé du portefeuille
+│   │   ├── Cartes/            # Liste, formulaire, entreprises, import, aperçu, exports, signature Outlook, QR animé du portefeuille
 │   │   ├── Themes.js          # Thème clair / sombre (partagé avec le portefeuille)
 │   │   ├── Modeles/           # Éditeur : zone, outils, raccourcis, propriétés, calques, modèles
-│   │   └── Rendu/             # Dessin des faces, du QR, dégradés, ombres et motifs en SVG ; QR d'un lien
+│   │   └── Rendu/             # Dessin des faces, du QR, dégradés, ombres et motifs en SVG ; QR d'un lien ; fond Teams / Zoom
 │   ├── Metier/                # Personne, entreprise, éléments, modèles, formats, palette, icônes, alignement, polices, vCard,
-│   │                          # import, contrôle avant export (ControleCartes), état,
+│   │                          # import, contrôle avant export (ControleCartes), identité visuelle (couleur, logo), état,
 │   │                          # PaquetCarte (carte complète compressée), TransfertQr (QR animé), LienContact (lien NFC iPhone)
 │   ├── Donnees/               # Appels à l'API
 │   └── Utilitaires/           # QR, formes, validation, schémas, images, CSV, ZIP, PDF, GIF, Base45, compression
@@ -331,6 +333,7 @@ Android exige que chaque version soit signée avec **la même clé**. Garde-la p
 - **XSS** : aucun `innerHTML`. Le texte est inséré via `textContent`, et une **CSP stricte** (`script-src 'self'`) est appliquée par une balise et un en-tête HTTP.
 - **Polices** : chargées uniquement depuis les fichiers de l'appli (même origine, jamais depuis Internet) ; dans les exports, elles sont copiées dans le fichier en Base64.
 - **Entreprises** : revalidées par le serveur comme les personnes (téléphone, liens `http`/`https`, logo = image vérifiée) ; l'identifiant est toujours donné par le serveur ; une carte ne peut être reliée qu'à une entreprise qui existe ; suppression refusée (409) tant que des cartes y sont reliées.
+- **Signature e-mail** : construite avec le DOM (aucun texte interprété comme du HTML) ; liens uniquement à partir de valeurs déjà validées (`http`/`https`, `tel:`, `mailto:`) ; styles posés via le CSSOM, sans assouplir la CSP (`style-src 'self'`).
 - **Images** : PNG, JPEG ou WebP uniquement (signature vérifiée, 8 Mo maximum), **redessinées dans un canvas** pour supprimer tout contenu caché. Le SVG est refusé.
 - **Injection vCard** : valeurs échappées (`\ ; ,` et retours à la ligne).
 - **CSV** : à l'export, les cellules qui commencent par `= + - @` sont neutralisées (pas de formule exécutée dans Excel). À l'import, le fichier est limité à 1 Mo et 500 personnes.

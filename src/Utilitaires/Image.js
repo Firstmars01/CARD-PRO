@@ -81,3 +81,22 @@ async function decoderImage(fichier) {
     URL.revokeObjectURL(url);
   }
 }
+
+/**
+ * Réduit une image (data URL déjà validée) à une hauteur maximale, en PNG.
+ * Sert au logo de la signature e-mail (fichier léger).
+ * @param {string} dataUrl - Image source.
+ * @param {number} hauteurMax - Hauteur maximale en pixels.
+ * @returns {Promise<string>} Data URL PNG réduite.
+ */
+export async function reduireImage(dataUrl, hauteurMax) {
+  const image = new Image();
+  image.src = dataUrl;
+  await image.decode();
+  const echelle = Math.min(1, hauteurMax / image.naturalHeight);
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.max(1, Math.round(image.naturalWidth * echelle));
+  canvas.height = Math.max(1, Math.round(image.naturalHeight * echelle));
+  canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
+  return canvas.toDataURL('image/png');
+}

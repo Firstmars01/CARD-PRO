@@ -2,7 +2,8 @@
  * PanneauExportCarte.js
  * Boutons de téléchargement de la carte sélectionnée : images (PNG, JPG,
  * SVG) du recto et du verso, PDF, planche A4 recto-verso, PDF imprimeur
- * (fonds perdus), contact et ZIP ; et section « Portefeuille mobile » (QR
+ * (fonds perdus), contact et ZIP ; section « Signature et visio » (signature
+ * Outlook, fond Teams / Zoom) ; et section « Portefeuille mobile » (QR
  * animé à scanner, GIF pour e-mail, fichier .cardpro).
  */
 
@@ -15,6 +16,8 @@ import {
   fichierCardpro, fichierGifPortefeuille,
 } from './GenerateurFichiers.js';
 import { ouvrirAffichageTransfert } from './AffichageTransfert.js';
+import { ouvrirDialogueSignature } from './DialogueSignature.js';
+import { fichierFondVisio } from '../Rendu/RenduFondVisio.js';
 import { creerSection } from '../Champs.js';
 import { notifier } from '../Notifications.js';
 
@@ -64,15 +67,41 @@ export function monterPanneauExportCarte(conteneur) {
     texte: "Images en 300 dpi au format du modèle. Planche A4 : 2 pages, imprime en recto-verso « bord long » puis découpe le long des traits. PDF imprimeur : à envoyer à un imprimeur professionnel (3 mm de fond perdu et traits de coupe).",
   }));
   const portefeuille = creerSectionPortefeuille();
-  conteneur.append(section, portefeuille);
+  const visio = creerSectionSignatureVisio();
+  conteneur.append(section, visio, portefeuille);
 
   const actualiser = () => {
     const absente = !trouverPersonne(personneSelectionnee());
-    section.hidden = absente;
-    portefeuille.hidden = absente;
+    [section, visio, portefeuille].forEach((s) => { s.hidden = absente; });
   };
   abonnerSelection(actualiser);
   actualiser();
+}
+
+/**
+ * Crée la section « Signature et visio » (signature Outlook, fond Teams / Zoom).
+ * @returns {HTMLElement} Section.
+ */
+function creerSectionSignatureVisio() {
+  const { section, contenu } = creerSection('Signature e-mail et visio');
+  const signature = creerElement('button', { classe: 'Bouton Bouton--secondaire', texte: 'Signature Outlook…', attributs: { type: 'button' } });
+  signature.addEventListener('click', async () => {
+    const entree = trouverPersonne(personneSelectionnee());
+    if (!entree) return;
+    try {
+      await ouvrirDialogueSignature(preparerCarte(entree));
+    } catch (erreur) {
+      notifier(erreur.message || 'Signature impossible.', 'erreur');
+    }
+  });
+  contenu.append(
+    creerElement('div', { classe: 'GrilleBoutons' }, [signature, ...creerBoutons([['Fond Teams / Zoom (PNG)', '-fond-visio.png', fichierFondVisio]])]),
+    creerElement('p', {
+      classe: 'Aide',
+      texte: "Signature : aux couleurs de la carte, à coller dans Outlook. Fond Teams / Zoom : image 1920 × 1080 (Teams : Effets d'arrière-plan → Ajouter nouveau ; Zoom : Arrière-plan virtuel → +).",
+    }),
+  );
+  return section;
 }
 
 /**

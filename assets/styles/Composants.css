@@ -508,3 +508,24 @@ textarea {
   border-style: dashed;
   cursor: not-allowed;
 }
+
+/* Signature e-mail : aperçu sur fond blanc, comme dans Outlook. */
+.Signature-apercu {
+  background: #ffffff;
+  border: 1px solid var(--bordure);
+  border-radius: 8px;
+  padding: 16px;
+  margin: 12px 0;
+  overflow-x: auto;
+}
+
+.Signature-guide {
+  font-size: 0.9rem;
+  color: var(--texte-doux);
+  padding-left: 1.2em;
+  margin: 12px 0;
+}
+
+.Signature-guide li + li {
+  margin-top: 6px;
+}
