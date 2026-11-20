@@ -34,7 +34,7 @@ const DELAI_ENREGISTREMENT = 600;
 const GUIDE = [
   ['Nouvel Outlook / Outlook sur le web', '⚙ Paramètres → Comptes → Signatures → « + Nouvelle signature » → donne un nom → colle (Ctrl + V) → Enregistrer, puis choisis-la comme signature par défaut.'],
   ['Outlook classique (Windows)', 'Fichier → Options → Courrier → Signatures… → Nouveau → donne un nom → clique dans la zone du bas et colle (Ctrl + V) → OK.'],
-  ['Si une image n’apparaît pas', 'Dans l’éditeur de signature, clique sur le bouton Image et choisis l’image téléchargée avec « Télécharger l’image ».'],
+  ['Si une image n’apparaît pas', 'Dans l’éditeur de signature, clique sur le bouton Image et choisis l’image téléchargée avec « Télécharger les images ».'],
 ];
 
 /**
@@ -78,6 +78,18 @@ async function preparerImages(carte, entreprise) {
 }
 
 /**
+ * Images à gauche et à droite selon le réglage « Image ».
+ * Automatique : photo à gauche et logo à droite, ou logo à gauche sans photo.
+ * @param {string} choix - auto, logo, photo ou aucune.
+ * @param {{photo:string, logo:string}} images - Images disponibles.
+ * @returns {{image:string, imageDroite:string}} Data URL ('' : pas d'image).
+ */
+function imagesSignature(choix, images) {
+  if (choix === 'auto') return images.photo ? { image: images.photo, imageDroite: images.logo } : { image: images.logo, imageDroite: '' };
+  return { image: choix === 'aucune' ? '' : images[choix] || '', imageDroite: '' };
+}
+
+/**
  * Réglages de signature de la carte : ceux de son entreprise, sinon les siens.
  * @param {object} entree - Carte.
  * @returns {object} Réglages.
@@ -118,7 +130,7 @@ export function monterSectionSignature(conteneur) {
       couleurTexte: r.couleursCarte ? couleurNomCarte(carte.modele) : r.couleurTexte,
       police: policeSignature(r.police),
       tailles: tailleSignature(r.taille),
-      image: r.image === 'aucune' ? '' : etat.images[r.image] || '',
+      ...imagesSignature(r.image, etat.images),
       icones: r.icones ? icones : Object.fromEntries(Object.entries(icones).filter(([cle]) => !['entreprise', 'mobile', 'telephone', 'email', 'web', 'adresse'].includes(cle))),
     });
     vider(etat.apercu);
@@ -155,7 +167,7 @@ export function monterSectionSignature(conteneur) {
     const apercu = creerElement('div', { classe: 'Signature-apercu', attributs: { 'aria-label': 'Aperçu de la signature' } });
     const images = await preparerImages(preparerCarte(entree), entreprise);
     if (trouverPersonne(personneSelectionnee()) !== entree) return; // Sélection changée entre-temps.
-    etat = { id: entree.id, entrepriseId: entree.entrepriseId, reglages: reglagesDe(entree), images, apercu };
+    etat = { id: entree.id, entrepriseId: entree.entrepriseId, photo: entree.personne.photo, reglages: reglagesDe(entree), images, apercu };
 
     const formulaire = creerFormulaireSchema(SCHEMA_SIGNATURE, etat.reglages, {
       surChangement: (cle, valeur) => {
@@ -178,11 +190,13 @@ export function monterSectionSignature(conteneur) {
       },
     });
     const telechargerImage = creerElement('button', {
-      classe: 'Bouton Bouton--secondaire', texte: "Télécharger l'image", attributs: { type: 'button' },
+      classe: 'Bouton Bouton--secondaire', texte: 'Télécharger les images', attributs: { type: 'button' },
       surClic: () => {
-        const image = etat.images[etat.reglages.image];
-        if (!image) return;
-        telechargerBlob(new Blob([dataUrlVersOctets(image).octets], { type: 'image/png' }), `signature-${etat.reglages.image}.png`);
+        // Télécharge chaque image affichée (photo et / ou logo).
+        const { image, imageDroite } = imagesSignature(etat.reglages.image, etat.images);
+        [image, imageDroite].filter(Boolean).forEach((source, i) => {
+          telechargerBlob(new Blob([dataUrlVersOctets(source).octets], { type: 'image/png' }), `signature-image-${i + 1}.png`);
+        });
       },
     });
     const guide = creerElement('details', { classe: 'Signature-guide' }, [
@@ -204,6 +218,15 @@ export function monterSectionSignature(conteneur) {
     await dessiner();
   };
 
+  // Photo de profil changée : on prépare de nouveau les images, puis on redessine.
+  const actualiserImages = async (entree) => {
+    etat.photo = entree.personne.photo;
+    const images = await preparerImages(preparerCarte(entree), trouverEntreprise(entree.entrepriseId));
+    if (!etat || etat.id !== entree.id) return;
+    etat.images = images;
+    dessiner();
+  };
+
   abonnerSelection(construire);
   abonner((type, id) => {
     if (!etat) return;
@@ -211,6 +234,7 @@ export function monterSectionSignature(conteneur) {
     // Carte reliée / détachée, ou entreprise modifiée ailleurs : on reconstruit.
     if (type === 'entreprises' && !enregistrementEnCours) construire();
     else if (type === 'personne' && id === etat.id && entree && entree.entrepriseId !== etat.entrepriseId) construire();
+    else if (type === 'personne' && id === etat.id && entree && entree.personne.photo !== etat.photo) actualiserImages(entree);
     else if ((type === 'personne' && id === etat.id) || type === 'personnes') dessiner();
   });
   construire();

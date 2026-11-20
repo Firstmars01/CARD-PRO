@@ -89,7 +89,7 @@ function liensReseaux(personne) {
  * Crée la signature d'une personne.
  * @param {object} personne - Personne à afficher (infos d'entreprise appliquées).
  * @param {object} reglages - Réglages résolus : couleur, couleurTexte, police (pile CSS),
- *   tailles {nom, infos}, image (data URL, '' sans image), tailleImage, icones (clé → PNG, vide sans icônes),
+ *   tailles {nom, infos}, image et imageDroite (data URL, '' sans image), tailleImage, icones (clé → PNG, vide sans icônes),
  *   afficherEntreprise…afficherAdresse, reseaux, texteLibre.
  * @returns {HTMLTableElement} Signature.
  */
@@ -125,6 +125,12 @@ export function creerSignature(personne, reglages) {
   if (avecImage) {
     cellules.unshift(styler('td', 'vertical-align:middle;padding-right:16px;', {}, [
       styler('img', `display:block;height:${r.tailleImage}px;width:auto;border:0;`, { attributs: { src: r.image, alt: '', height: r.tailleImage } }),
+    ]));
+  }
+  // Logo à droite (quand la photo est à gauche).
+  if (r.imageDroite) {
+    cellules.push(styler('td', 'vertical-align:middle;padding-left:20px;', {}, [
+      styler('img', `display:block;height:${r.tailleImage}px;width:auto;border:0;`, { attributs: { src: r.imageDroite, alt: '', height: r.tailleImage } }),
     ]));
   }
   return styler('table', 'border-collapse:collapse;', { attributs: { cellpadding: 0, cellspacing: 0, border: 0, role: 'presentation' } }, [

@@ -28,7 +28,7 @@ Application Windows (**CardPro-Configurateur.exe**, sans installation) pour cré
 - **Photo de profil** (fiche de la personne → « Photo de profil ») : recadrée en carré et allégée. Sur la carte, une image du modèle réglée sur « Image affichée : Photo de la personne » l'affiche (cadrage « Rond » conseillé) ; elle est aussi dans la signature et dans le fichier `.vcf`, mais pas dans le QR ni le NFC (trop lourde).
 - **Signature e-mail (Outlook)** : section du volet de droite, sous l'aperçu de la carte. Aperçu en direct, bouton **Copier la signature** et guide pour Outlook. Réglages simples, **communs à toutes les cartes d'une entreprise** (ou propres à la carte en réglage personnalisé) et enregistrés tout seuls :
   - couleurs de la carte, ou couleur principale et couleur du nom au choix ; police (Arial, Verdana, Tahoma, Trebuchet, Georgia) et taille du texte ;
-  - image à gauche : logo (celui de l'entreprise en priorité), photo de profil ronde ou aucune, et sa hauteur ;
+  - images : **automatique** par défaut (photo ronde à gauche et logo à droite, ou logo à gauche s'il n'y a pas de photo), logo seul, photo seule ou aucune, et leur hauteur (le logo de l'entreprise passe en priorité) ;
   - infos affichées, avec ou sans icônes : entreprise (masquée par défaut), mobile, support, e-mail, site, adresse ;
   - réseaux (LinkedIn, WhatsApp, rendez-vous, liens) en petites icônes cliquables ;
   - texte libre en bas (slogan, mention légale…).

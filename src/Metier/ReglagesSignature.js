@@ -34,8 +34,11 @@ export const SCHEMA_SIGNATURE = [
   { cle: 'couleurTexte', type: 'couleur', libelle: 'Couleur du nom', groupe: 'Couleurs et texte', visibleSi: COULEURS_LIBRES },
   { cle: 'police', type: 'choix', libelle: 'Police', groupe: 'Couleurs et texte', options: POLICES_SIGNATURE.map(([c, l]) => [c, l]) },
   { cle: 'taille', type: 'choix', libelle: 'Taille du texte', groupe: 'Couleurs et texte', options: TAILLES_SIGNATURE.map(([c, l]) => [c, l]) },
-  { cle: 'image', type: 'choix', libelle: 'Image à gauche', groupe: 'Image', options: [['logo', 'Logo'], ['photo', 'Photo de profil (ronde)'], ['aucune', 'Aucune']] },
-  { cle: 'tailleImage', type: 'plage', libelle: "Hauteur de l'image (px)", groupe: 'Image', min: 40, max: 140, visibleSi: AVEC_IMAGE },
+  { cle: 'image', type: 'choix', libelle: 'Image à gauche', groupe: 'Image', options: [
+    ['auto', 'Automatique : photo à gauche et logo à droite (logo à gauche sans photo)'],
+    ['logo', 'Logo seul'], ['photo', 'Photo de profil seule (ronde)'], ['aucune', 'Aucune'],
+  ] },
+  { cle: 'tailleImage', type: 'plage', libelle: 'Hauteur des images (px)', groupe: 'Image', min: 40, max: 140, visibleSi: AVEC_IMAGE },
   { cle: 'icones', type: 'booleen', libelle: 'Icônes devant les infos', groupe: 'Infos affichées' },
   { cle: 'afficherEntreprise', type: 'booleen', libelle: 'Entreprise', groupe: 'Infos affichées' },
   { cle: 'afficherMobile', type: 'booleen', libelle: 'Mobile', groupe: 'Infos affichées' },
@@ -49,7 +52,7 @@ export const SCHEMA_SIGNATURE = [
 
 export const SIGNATURE_PAR_DEFAUT = Object.freeze({
   couleursCarte: true, couleur: '#2563eb', couleurTexte: '#14181f', police: 'arial', taille: 'normale',
-  image: 'logo', tailleImage: 72, icones: true,
+  image: 'auto', tailleImage: 72, icones: true,
   afficherEntreprise: false, afficherMobile: true, afficherSupport: true, afficherEmail: true, afficherSite: true, afficherAdresse: true,
   reseaux: true, texteLibre: '',
 });
