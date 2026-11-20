@@ -5,6 +5,7 @@
  * (WhatsApp, itinéraire) et personne d'exemple utilisée dans l'éditeur.
  */
 
+import { normaliserReglagesSignature } from './ReglagesSignature.js';
 import {
   nettoyerTexte, nettoyerTexteMultiligne, normaliserEmail, normaliserTelephone, normaliserUrl, normaliserImageDataUrl,
 } from '../Utilitaires/Validation.js';
@@ -113,6 +114,8 @@ export function normaliserPersonne(brut) {
   CHAMPS_PERSONNE.forEach((champ) => { personne[champ.cle] = normaliserChamp(champ, source[champ.cle]); });
   personne.liens = (Array.isArray(source.liens) ? source.liens : []).map(normaliserLien).filter(Boolean).slice(0, LIENS_MAX);
   personne.photo = source.photo ? normaliserImageDataUrl(source.photo, PHOTO_MAX) || '' : '';
+  // Réglages de la signature e-mail d'une carte en réglage personnalisé.
+  personne.signature = normaliserReglagesSignature(source.signature);
   return personne;
 }
 
@@ -161,7 +164,7 @@ export function valeurChamp(personne, champ) {
 export const PERSONNE_EXEMPLE = Object.freeze(normaliserPersonne({
   prenom: 'Camille', nom: 'Durand', poste: 'Responsable commerciale', entreprise: 'Entreprise Exemple',
   telephoneMobile: '06 12 34 56 78', telephoneSupport: '01 23 45 67 89', email: 'camille.durand@exemple.fr',
-  whatsapp: '06 12 34 56 78',
+  whatsapp: '06 12 34 56 78', note: 'Disponible du lundi au vendredi, 9 h – 18 h',
   siteWeb: 'exemple.fr', linkedin: 'https://linkedin.com/in/camille-durand',
   linkedinEntreprise: 'https://linkedin.com/company/exemple', rendezVous: 'https://calendly.com/camille-durand', rue: '12 rue des Lilas', codePostal: '75011', ville: 'Paris', pays: 'France',
   liens: [

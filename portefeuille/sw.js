@@ -127,6 +127,7 @@ const FICHIERS = [
   '../src/Metier/PaquetCarte.js',
   '../src/Metier/Palette.js',
   '../src/Metier/Personne.js',
+  '../src/Metier/ReglagesSignature.js',
   '../src/Metier/Polices.js',
   '../src/Metier/TransfertQr.js',
   '../src/Utilitaires/Base45.js',

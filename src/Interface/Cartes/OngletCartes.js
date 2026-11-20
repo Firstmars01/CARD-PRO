@@ -17,6 +17,7 @@ import { monterSectionImportCarte } from './SectionImportCarte.js';
 import { monterFormulairePersonne } from './FormulairePersonne.js';
 import { monterApercuPersonne } from './ApercuPersonne.js';
 import { monterPanneauExportCarte } from './PanneauExportCarte.js';
+import { monterSectionSignature } from './SectionSignature.js';
 import { selectionnerPersonne } from './SelectionCarte.js';
 
 /**
@@ -27,12 +28,13 @@ export function monterOngletCartes(conteneur) {
   const colonneListe = creerElement('div', { classe: 'Cartes-liste' });
   const formulaire = creerElement('div', { classe: 'Cartes-formulaire' });
   const apercu = creerElement('div', { classe: 'Cartes-apercu' });
+  const signature = creerElement('div');
   const exports = creerElement('div');
 
   conteneur.append(creerElement('div', { classe: 'Cartes' }, [
     colonneListe,
     formulaire,
-    creerElement('div', { classe: 'Cartes-droite' }, [apercu, exports]),
+    creerElement('div', { classe: 'Cartes-droite' }, [apercu, signature, exports]),
   ]));
 
   monterListePersonnes(colonneListe);
@@ -44,6 +46,7 @@ export function monterOngletCartes(conteneur) {
   monterSectionSauvegarde(colonneListe);
   monterFormulairePersonne(formulaire);
   monterApercuPersonne(apercu);
+  monterSectionSignature(signature);
   monterPanneauExportCarte(exports);
 
   // Sélectionne la première personne s'il y en a.

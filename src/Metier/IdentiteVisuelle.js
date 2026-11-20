@@ -54,3 +54,14 @@ export function logoCarte(modele) {
 export function couleurTexteSur(fond) {
   return luminance(fond) < 0.35 ? '#ffffff' : '#14181f';
 }
+
+/**
+ * Couleur du nom sur la carte, si elle est assez foncée pour un fond blanc
+ * (signature e-mail), sinon un quasi-noir.
+ * @param {object} modele - Modèle normalisé.
+ * @returns {string} Couleur #rrggbb.
+ */
+export function couleurNomCarte(modele) {
+  const nom = elementsVisibles(modele).find((e) => e.type === 'texte' && e.source === 'champ' && e.champ === 'nomComplet');
+  return nom && luminance(nom.couleur) < 0.3 ? nom.couleur : '#14181f';
+}

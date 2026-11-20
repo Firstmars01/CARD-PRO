@@ -7,7 +7,7 @@
  */
 
 import { creerElement, vider } from '../../Utilitaires/Dom.js';
-import { CHAMPS_PERSONNE, LIENS_MAX, normaliserChamp, nomComplet } from '../../Metier/Personne.js';
+import { CHAMPS_PERSONNE, LIENS_MAX, PERSONNE_EXEMPLE, normaliserChamp, nomComplet } from '../../Metier/Personne.js';
 import { MODELES_DE_BASE } from '../../Metier/ModelesDeBase.js';
 import { CHAMPS_PERSONNE_ENTREPRISE, appliquerEntreprisePersonne } from '../../Metier/Entreprise.js';
 import {
@@ -86,7 +86,8 @@ function construireFormulaire(conteneur, entree) {
     const { section, contenu } = creerSection(titre, !fermee);
     cles.forEach((cle) => {
       const champ = CHAMPS_PERSONNE.find((c) => c.cle === cle);
-      const attributs = { id: `champ-${cle}`, name: cle, maxlength: champ.max, autocomplete: 'off' };
+      // Exemple en gris clair (placeholder) : n'est jamais enregistré.
+      const attributs = { id: `champ-${cle}`, name: cle, maxlength: champ.max, autocomplete: 'off', placeholder: exemple(cle) };
       const element = champ.type === 'multiligne'
         ? creerElement('textarea', { attributs: { ...attributs, rows: 3 } })
         : creerElement('input', { attributs: { ...attributs, type: TYPES_INPUT[champ.type], inputmode: champ.type === 'tel' ? 'tel' : undefined } });
@@ -153,6 +154,16 @@ function creerChoixModele(entree) {
   liste.addEventListener('change', () => modifierPersonne(entree.id, { modeleId: liste.value }));
   remplir();
   return { bloc: creerChamp('Modèle de la carte', liste, 'Champ--large Champ--modele').bloc, remplir };
+}
+
+/**
+ * Exemple affiché en gris dans un champ vide.
+ * @param {string} cle - Champ de la personne.
+ * @returns {string} Exemple ('' si aucun).
+ */
+function exemple(cle) {
+  const valeur = PERSONNE_EXEMPLE[cle];
+  return typeof valeur === 'string' && valeur ? `Ex. : ${valeur}` : undefined;
 }
 
 /**

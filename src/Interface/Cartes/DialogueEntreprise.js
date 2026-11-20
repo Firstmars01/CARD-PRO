@@ -6,7 +6,7 @@
  */
 
 import { creerElement } from '../../Utilitaires/Dom.js';
-import { CHAMPS_ENTREPRISE, normaliserEntreprise } from '../../Metier/Entreprise.js';
+import { CHAMPS_ENTREPRISE, EXEMPLE_ENTREPRISE, normaliserEntreprise } from '../../Metier/Entreprise.js';
 import { normaliserChamp } from '../../Metier/Personne.js';
 import { obtenirEtat, enregistrerEntreprise, supprimerEntreprise } from '../../Metier/EtatApplication.js';
 import { creerChamp, afficherErreur } from '../Champs.js';
@@ -31,7 +31,9 @@ export function cartesReliees(id) {
  * @returns {{bloc:HTMLElement, element:HTMLInputElement, valide:Function}} Champ.
  */
 function creerChampEntreprise(champ, valeur) {
-  const element = creerElement('input', { attributs: { id: `entreprise-${champ.cle}`, type: TYPES_INPUT[champ.type], maxlength: champ.max, autocomplete: 'off' } });
+  const element = creerElement('input', {
+    attributs: { id: `entreprise-${champ.cle}`, type: TYPES_INPUT[champ.type], maxlength: champ.max, autocomplete: 'off', placeholder: `Ex. : ${EXEMPLE_ENTREPRISE[champ.cle]}` },
+  });
   element.value = valeur;
   const { bloc, erreur } = creerChamp(champ.libelle, element);
   const valide = () => {

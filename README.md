@@ -12,7 +12,7 @@ Application Windows (**CardPro-Configurateur.exe**, sans installation) pour cré
 ## Fonctionnalités
 
 ### Onglet « Cartes »
-- Ajout, modification et suppression des personnes, avec sauvegarde automatique.
+- Ajout, modification et suppression des personnes, avec sauvegarde automatique. Les champs vides montrent un **exemple en gris clair** (jamais enregistré).
 - Informations : identité, téléphones (mobile, support), WhatsApp, e-mail, site, LinkedIn, LinkedIn de l'entreprise, lien de prise de rendez-vous, adresse, note et jusqu'à 8 liens.
 - **Entreprises** : nom, support (téléphone), site, LinkedIn, adresse et **logo** saisis une seule fois. Chaque carte est reliée à une entreprise **ou** en « réglage personnalisé » :
   - carte reliée : elle prend toutes les infos de l'entreprise (champs grisés, non modifiables) ; modifier l'entreprise met à jour toutes ses cartes ;
@@ -26,11 +26,17 @@ Application Windows (**CardPro-Configurateur.exe**, sans installation) pour cré
 - **Import d'une liste** (CSV exporté d'Excel) avec un fichier modèle à télécharger.
 - **Import d'une carte** (`.cardpro` ou GIF de portefeuille) : la personne est ajoutée avec, au choix, un **nouveau modèle** créé à partir du design de la carte ou un **modèle existant** ; si elle est déjà dans la liste (même prénom, nom et e-mail), Card Pro demande s'il faut **mettre à jour** sa fiche ou en **créer une nouvelle**.
 - **Photo de profil** (fiche de la personne → « Photo de profil ») : recadrée en carré et allégée. Sur la carte, une image du modèle réglée sur « Image affichée : Photo de la personne » l'affiche (cadrage « Rond » conseillé) ; elle est aussi dans la signature et dans le fichier `.vcf`, mais pas dans le QR ni le NFC (trop lourde).
-- **Signature Outlook** : aux couleurs de la carte (couleur d'accent modifiable), avec à gauche la **photo de profil** (ronde), le logo ou rien, et des **icônes** devant chaque info (sauf nom et poste) : entreprise, mobile, support, e-mail, site, LinkedIn, WhatsApp, prise de rendez-vous et adresse. Bouton **Copier la signature**, puis collage dans Outlook (guide affiché pour le nouvel Outlook, Outlook sur le web et Outlook classique). Police Arial pour un rendu identique chez tous les destinataires.
+- **Signature e-mail (Outlook)** : section du volet de droite, sous l'aperçu de la carte. Aperçu en direct, bouton **Copier la signature** et guide pour Outlook. Réglages simples, **communs à toutes les cartes d'une entreprise** (ou propres à la carte en réglage personnalisé) et enregistrés tout seuls :
+  - couleurs de la carte, ou couleur principale et couleur du nom au choix ; police (Arial, Verdana, Tahoma, Trebuchet, Georgia) et taille du texte ;
+  - image à gauche : logo (celui de l'entreprise en priorité), photo de profil ronde ou aucune, et sa hauteur ;
+  - infos affichées, avec ou sans icônes : entreprise (masquée par défaut), mobile, support, e-mail, site, adresse ;
+  - réseaux (LinkedIn, WhatsApp, rendez-vous, liens) en petites icônes cliquables ;
+  - texte libre en bas (slogan, mention légale…).
 - **Fond Teams / Zoom** : image PNG 1920 × 1080 aux couleurs du recto, avec logo, nom, poste, entreprise et QR « contact » à gauche ; le centre reste libre pour la personne filmée (Teams affiche ton propre fond en miroir, mais les autres le voient à l'endroit).
 - **Téléchargements** : recto/verso en PNG, JPG et SVG (300 dpi), PDF recto + verso au format de la carte, planche A4 recto-verso, **PDF imprimeur** (fonds perdus 3 mm + traits de coupe), contact `.vcf`, ZIP de la carte, et **ZIP de toutes les cartes** (un dossier par personne).
 
 ### Onglet « Modèles »
+- L'onglet tient dans la fenêtre : la carte s'adapte à la place disponible et seul le volet de droite (propriétés, calques) défile.
 - 8 modèles de base : Classique, Ardoise, Océan, Bandeau corail, Minimal (QR au verso), Réseaux (QR des liens au verso), Vertical (portrait, icônes), Néon.
 - **Éditeur visuel recto / verso** :
   - placement à la souris (glisser), redimensionnement avec la poignée, déplacement au clavier ;

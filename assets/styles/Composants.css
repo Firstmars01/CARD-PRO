@@ -522,10 +522,37 @@ textarea {
 .Signature-guide {
   font-size: 0.9rem;
   color: var(--texte-doux);
-  padding-left: 1.2em;
   margin: 12px 0;
+}
+
+.Signature-guide summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.Signature-guide ol {
+  padding-left: 1.2em;
 }
 
 .Signature-guide li + li {
   margin-top: 6px;
+}
+
+/* Exemples en gris clair dans les champs vides (jamais enregistrés). */
+input::placeholder,
+textarea::placeholder {
+  color: var(--texte-doux);
+  opacity: 0.55;
+}
+
+/* Section « Signature e-mail » : un seul bloc pleine largeur. */
+.Signature {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 10px;
+}
+
+.Signature .FormulaireSchema {
+  display: grid;
+  gap: 8px;
 }

@@ -3,12 +3,14 @@
  * Entreprises configurées dans le Configurateur : nom, coordonnées et logo
  * saisis une seule fois. Une carte reliée à une entreprise prend toutes ses
  * informations (non modifiables sur la carte) et son logo ; une carte en
- * « réglage personnalisé » garde ses propres valeurs.
+ * « réglage personnalisé » garde ses propres valeurs. La signature e-mail
+ * suit la même règle (réglages de l'entreprise, ou de la carte).
  */
 
 import { idValide, IMAGE_MAX } from '../Utilitaires/Schema.js';
 import { normaliserImageDataUrl } from '../Utilitaires/Validation.js';
 import { normaliserChamp } from './Personne.js';
+import { normaliserReglagesSignature } from './ReglagesSignature.js';
 
 export const ENTREPRISES_MAX = 100;
 
@@ -24,6 +26,12 @@ export const CHAMPS_ENTREPRISE = [
   { cle: 'pays', libelle: 'Pays', type: 'texte', max: 60, champPersonne: 'pays' },
 ];
 
+// Exemples affichés en gris dans les champs vides de la fiche entreprise.
+export const EXEMPLE_ENTREPRISE = Object.freeze({
+  nom: 'Entreprise Exemple', telephone: '01 23 45 67 89', siteWeb: 'https://exemple.fr', linkedin: 'https://linkedin.com/company/exemple',
+  rue: '12 rue des Lilas', codePostal: '75011', ville: 'Paris', pays: 'France',
+});
+
 // Champs de la personne remplis par l'entreprise (non modifiables si la carte est reliée).
 export const CHAMPS_PERSONNE_ENTREPRISE = CHAMPS_ENTREPRISE.map((c) => c.champPersonne);
 
@@ -37,6 +45,8 @@ export function normaliserEntreprise(brut) {
   const entreprise = { id: brut.id };
   CHAMPS_ENTREPRISE.forEach((champ) => { entreprise[champ.cle] = normaliserChamp(champ, brut[champ.cle]); });
   entreprise.logo = brut.logo ? normaliserImageDataUrl(brut.logo, IMAGE_MAX) || '' : '';
+  // Signature e-mail commune à toutes les cartes de l'entreprise.
+  entreprise.signature = normaliserReglagesSignature(brut.signature);
   return entreprise;
 }
 

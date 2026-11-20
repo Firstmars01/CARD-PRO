@@ -2,8 +2,7 @@
  * PanneauExportCarte.js
  * Boutons de téléchargement de la carte sélectionnée : images (PNG, JPG,
  * SVG) du recto et du verso, PDF, planche A4 recto-verso, PDF imprimeur
- * (fonds perdus), contact et ZIP ; section « Signature et visio » (signature
- * Outlook, fond Teams / Zoom) ; et section « Portefeuille mobile » (QR
+ * (fonds perdus), contact et ZIP ; fond Teams / Zoom ; et section « Portefeuille mobile » (QR
  * animé à scanner, GIF pour e-mail, fichier .cardpro).
  */
 
@@ -16,7 +15,6 @@ import {
   fichierCardpro, fichierGifPortefeuille,
 } from './GenerateurFichiers.js';
 import { ouvrirAffichageTransfert } from './AffichageTransfert.js';
-import { ouvrirDialogueSignature } from './DialogueSignature.js';
 import { fichierFondVisio } from '../Rendu/RenduFondVisio.js';
 import { creerSection } from '../Champs.js';
 import { notifier } from '../Notifications.js';
@@ -79,26 +77,16 @@ export function monterPanneauExportCarte(conteneur) {
 }
 
 /**
- * Crée la section « Signature et visio » (signature Outlook, fond Teams / Zoom).
+ * Crée la section « Visio » (fond Teams / Zoom).
  * @returns {HTMLElement} Section.
  */
 function creerSectionSignatureVisio() {
-  const { section, contenu } = creerSection('Signature e-mail et visio');
-  const signature = creerElement('button', { classe: 'Bouton Bouton--secondaire', texte: 'Signature Outlook…', attributs: { type: 'button' } });
-  signature.addEventListener('click', async () => {
-    const entree = trouverPersonne(personneSelectionnee());
-    if (!entree) return;
-    try {
-      await ouvrirDialogueSignature(preparerCarte(entree));
-    } catch (erreur) {
-      notifier(erreur.message || 'Signature impossible.', 'erreur');
-    }
-  });
+  const { section, contenu } = creerSection('Fond Teams / Zoom');
   contenu.append(
-    creerElement('div', { classe: 'GrilleBoutons' }, [signature, ...creerBoutons([['Fond Teams / Zoom (PNG)', '-fond-visio.png', fichierFondVisio]])]),
+    creerElement('div', { classe: 'GrilleBoutons' }, creerBoutons([['Fond Teams / Zoom (PNG)', '-fond-visio.png', fichierFondVisio]])),
     creerElement('p', {
       classe: 'Aide',
-      texte: "Signature : aux couleurs de la carte, à coller dans Outlook. Fond Teams / Zoom : image 1920 × 1080 (Teams : Effets d'arrière-plan → Ajouter nouveau ; Zoom : Arrière-plan virtuel → +).",
+      texte: "Image 1920 × 1080 aux couleurs de la carte (Teams : Effets d'arrière-plan → Ajouter nouveau ; Zoom : Arrière-plan virtuel → +).",
     }),
   );
   return section;
