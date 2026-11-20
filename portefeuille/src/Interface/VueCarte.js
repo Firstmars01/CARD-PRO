@@ -2,14 +2,15 @@
  * VueCarte.js
  * Écran d'une carte : recto et verso en grand (on touche la carte pour la
  * retourner), coordonnées cliquables, transmission du contact (QR plein
- * écran, partage, NFC dans l'appli Android), ajout aux contacts et suppression.
+ * écran, partage, NFC dans l'appli Android), ajout aux contacts, favori,
+ * « c'est ma carte » (et sa modification) et suppression.
  */
 
 import { creerElement, vider } from '../../../src/Utilitaires/Dom.js';
 import { notifier } from '../../../src/Interface/Notifications.js';
-import { trouverCarte, retirerCarte, titreCarte } from '../Metier/Portefeuille.js';
+import { trouverCarte, retirerCarte, titreCarte, modifierCarte } from '../Metier/Portefeuille.js';
 import { dessinerFace } from './RenduCarte.js';
-import { revenirALaListe } from './Navigation.js';
+import { revenirALaListe, allerA } from './Navigation.js';
 import { montrerContact, envoyerContact, ajouterAuxContacts } from './PartageContact.js';
 import { creerCoordonnees } from './Coordonnees.js';
 import { creerSectionNfc } from './PartageNfc.js';
@@ -77,6 +78,24 @@ export function creerVueCarte() {
       return bouton;
     });
     nfc = creerSectionNfc(carte);
+    // Favori et « ma carte » : interrupteurs, enregistrés tout de suite.
+    const basculer = (texte, cle) => {
+      const bouton = creerElement('button', { classe: 'PBouton', texte, attributs: { type: 'button', 'aria-pressed': String(carte[cle]) } });
+      bouton.addEventListener('click', async () => {
+        try {
+          await modifierCarte(carte.id, { [cle]: !carte[cle] });
+          afficher(carte.id);
+        } catch (erreur) {
+          notifier(erreur.message, 'erreur');
+        }
+      });
+      return bouton;
+    };
+    const favori = basculer(carte.favori ? '★ Favori' : '☆ Ajouter aux favoris', 'favori');
+    const maCarte = basculer(carte.maCarte ? '✓ C\'est ma carte' : 'C\'est ma carte', 'maCarte');
+    const modifier = carte.maCarte && creerElement('button', {
+      classe: 'PBouton PBouton--principal', texte: 'Modifier ma carte', attributs: { type: 'button' }, surClic: () => allerA('edition', carte.id),
+    });
     const retour = creerElement('button', { classe: 'PBouton', texte: '← Mes cartes', attributs: { type: 'button' } });
     retour.addEventListener('click', () => history.back());
 
@@ -89,6 +108,7 @@ export function creerVueCarte() {
       creerElement('div', { classe: 'Actions' }, [montrer, envoyer]),
       ...(nfc.element ? [nfc.element] : []),
       creerCoordonnees(personne),
+      creerElement('div', { classe: 'Actions' }, [favori, maCarte, modifier].filter(Boolean)),
       creerElement('div', { classe: 'Actions' }, [contact, supprimer]),
     );
   };

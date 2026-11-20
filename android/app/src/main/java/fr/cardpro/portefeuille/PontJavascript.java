@@ -28,8 +28,11 @@ import java.util.List;
 
 final class PontJavascript {
 
-    private static final List<String> TYPES_AUTORISES = Arrays.asList("text/x-vcard", "text/vcard");
-    private static final int CONTENU_MAX = 64 * 1024;
+    private static final List<String> TYPES_CONTACT = Arrays.asList("text/x-vcard", "text/vcard");
+    private static final String TYPE_SAUVEGARDE = "application/json";
+    private static final int CONTENU_MAX_CONTACT = 64 * 1024;
+    // Sauvegarde du portefeuille (cartes avec leurs images).
+    private static final int CONTENU_MAX_SAUVEGARDE = 40 * 1024 * 1024;
 
     private final MainActivity activite;
     private final FichiersRecus fichiersRecus;
@@ -116,7 +119,8 @@ final class PontJavascript {
             .setType(type)
             .putExtra(Intent.EXTRA_STREAM, adresse)
             .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        activite.runOnUiThread(() -> lancer(Intent.createChooser(envoi, "Envoyer le contact")));
+        String titre = TYPE_SAUVEGARDE.equals(type) ? "Enregistrer la sauvegarde" : "Envoyer le contact";
+        activite.runOnUiThread(() -> lancer(Intent.createChooser(envoi, titre)));
     }
 
     /**
@@ -170,10 +174,15 @@ final class PontJavascript {
      * @return adresse content://, ou null si les paramètres sont refusés
      */
     private Uri ecrireFichier(String nom, String type, String contenu) {
-        if (!TYPES_AUTORISES.contains(type) || contenu == null || contenu.length() > CONTENU_MAX) return null;
+        // Seuls deux types sont acceptés : fiche contact (.vcf) et sauvegarde (.json).
+        boolean contact = TYPES_CONTACT.contains(type);
+        boolean sauvegarde = TYPE_SAUVEGARDE.equals(type);
+        if ((!contact && !sauvegarde) || contenu == null) return null;
+        if (contenu.length() > (contact ? CONTENU_MAX_CONTACT : CONTENU_MAX_SAUVEGARDE)) return null;
+        String extension = contact ? ".vcf" : ".json";
         String nomSur = nom == null ? "" : nom.replaceAll("[^A-Za-z0-9._-]", "_");
         if (nomSur.length() > 80) nomSur = nomSur.substring(0, 80);
-        if (!nomSur.endsWith(".vcf")) nomSur = "contact.vcf";
+        if (!nomSur.endsWith(extension)) nomSur = (contact ? "contact" : "sauvegarde-cardpro") + extension;
         File dossier = new File(activite.getCacheDir(), "partage");
         if (!dossier.isDirectory() && !dossier.mkdirs()) return null;
         File fichier = new File(dossier, nomSur);

@@ -25,8 +25,12 @@ const FICHIERS = [
   './src/Main.js',
   './src/Donnees/StockageCartes.js',
   './src/Metier/Portefeuille.js',
+  './src/Metier/TriCartes.js',
+  './src/Metier/SauvegardePortefeuille.js',
   './src/Interface/AnimationNfc.js',
   './src/Interface/Coordonnees.js',
+  './src/Interface/VueEdition.js',
+  './src/Interface/SauvegardeTelephone.js',
   './src/Interface/EcranInstallation.js',
   './src/Interface/Navigation.js',
   './src/Interface/PartageContact.js',
@@ -143,6 +147,7 @@ const FICHIERS = [
   '../src/Utilitaires/Schema.js',
   '../src/Utilitaires/Telechargement.js',
   '../src/Utilitaires/Validation.js',
+  '../src/Utilitaires/Image.js',
   '../src/Utilitaires/Zip.js',
 ];
 

@@ -1,6 +1,6 @@
 /**
  * Navigation.js
- * Navigation entre les écrans du portefeuille (liste, carte, scanner) avec
+ * Navigation entre les écrans du portefeuille (liste, carte, scanner, édition) avec
  * l'adresse de la page (#carte/…, #scanner) : le bouton « retour » du
  * téléphone fonctionne naturellement.
  */

@@ -234,6 +234,12 @@ Depuis une carte ouverte, on peut aussi **transmettre le contact** à quelqu'un 
   - Pendant le partage, ton téléphone ne « lit » pas l'autre : aucune autre appli (paiement, lecteur NFC…) ne s'ouvre chez toi.
   - Le partage s'arrête en quittant la carte ou l'appli. Envoyer depuis un iPhone est impossible (Apple réserve le NFC aux paiements).
 
+Organiser et garder ses cartes :
+- **« C'est ma carte »** (sur une carte ouverte) : elle passe en tête de liste et devient **modifiable sur le téléphone** (« Modifier ma carte ») : prénom, nom, poste, mobile, support, WhatsApp, e-mail, site, LinkedIn, rendez-vous, liens et photo de profil. Le design ne change pas ; les mêmes contrôles qu'au Configurateur s'appliquent ; les modifications restent sur ce téléphone. Les cartes reçues ne sont pas modifiables.
+- **Favoris** (☆) : affichés juste après « ma carte ».
+- **Tri** : plus récentes, A → Z ou par entreprise (le choix est retenu).
+- **Sauvegarder mes cartes** : un fichier `.json` avec tout le portefeuille, envoyé par le menu de partage (Drive, e-mail, Fichiers…). Pour restaurer (nouveau téléphone…) : **Importer un fichier** → ce fichier ; les cartes déjà présentes ne sont pas dupliquées.
+
 ### Mise en ligne (une seule fois)
 
 L'appareil photo et l'installation d'une application web exigent le **HTTPS** : le portefeuille est donc publié gratuitement sur **GitHub Pages**. Seul son code est publié (ni le serveur, ni la page du Configurateur, ni aucune donnée).
@@ -363,10 +369,11 @@ Android exige que chaque version soit signée avec **la même clé**. Garde-la p
 - **Secrets** : aucun n'est nécessaire. `.env` est exclu de Git et de l'image.
 - **Portefeuille mobile** :
   - les cartes restent sur le téléphone (IndexedDB) ; l'application ne contacte aucun serveur (CSP `connect-src 'self'`) ;
-  - tout fichier reçu (GIF, `.cardpro`, QR) est une source non fiable : taille limitée (3 Mo de carte, 4 Mo une fois décompressée, contre les « bombes de décompression »), chaque longueur est vérifiée, et les données repassent par **les mêmes validations** que la page web (textes, couleurs, liens `http`/`https`, images PNG/JPEG/WebP à la signature vérifiée) ;
+  - tout fichier reçu (GIF, `.cardpro`, QR, sauvegarde `.json`) est une source non fiable : taille limitée (3 Mo de carte, 4 Mo une fois décompressée, contre les « bombes de décompression »), chaque longueur est vérifiée, et les données repassent par **les mêmes validations** que la page web (textes, couleurs, liens `http`/`https`, images PNG/JPEG/WebP à la signature vérifiée) ;
   - les cartes lues depuis le stockage sont revalidées avant affichage ; les liens d'appel et d'e-mail sont construits à partir de valeurs déjà nettoyées ;
   - le QR animé est contrôlé par un **CRC-32** : une lecture incomplète ou erronée est rejetée ;
   - la page web n'a pas accès à la caméra (`Permissions-Policy: camera=()`), seul le portefeuille y a droit ;
+  - **modifier ma carte** : seule une carte marquée « c'est ma carte » peut être modifiée, jamais le design ; chaque valeur repasse par la validation commune ;
   - **appli Android** : aucune permission Internet ; la WebView n'affiche que les pages incluses dans l'appli (tout autre lien s'ouvre dans l'appli adaptée du téléphone) ; caméra et choix de fichiers réservés à ces pages ; les fonctions Android appelées par la page vérifient chaque paramètre (types de fichiers en liste blanche, tailles limitées, noms nettoyés) ; fichiers partagés uniquement via un dossier dédié (FileProvider) ;
   - **mises à jour** : le nouvel exe n'est installé qu'après vérification de son empreinte SHA-256 (publiée avec la version), de son en-tête et de son numéro de version ; les téléchargements ne viennent que des « Releases » du dépôt, en HTTPS. Android refuse toute mise à jour de l'APK qui ne serait pas signée avec la même clé ;
   - **NFC** : puce émulée en **lecture seule**, active seulement quand la personne l'active sur une carte, coupée dès que l'appli passe en arrière-plan ;

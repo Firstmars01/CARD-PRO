@@ -154,3 +154,34 @@ test('lien contact (NFC iPhone) : aller-retour, validation et refus', async () =
   await assert.rejects(lireLienContact('#%%%'), /invalide/);
   await assert.rejects(lireLienContact(''), /invalide/);
 });
+
+test('portefeuille : tri (ma carte, favoris, puis ordre choisi) et sauvegarde revalidée', async () => {
+  const { trierCartes } = await import('../portefeuille/src/Metier/TriCartes.js');
+  const { creerSauvegarde, lireSauvegarde } = await import('../portefeuille/src/Metier/SauvegardePortefeuille.js');
+  const carte = (id, prenom, entreprise, ajouteLe, options = {}) => ({
+    id, ajouteLe, maCarte: false, favori: false, ...options, personne: { prenom, nom: '', entreprise, liens: [] }, modele: {},
+  });
+  const cartes = [
+    carte('carte-aaaa1', 'Zoé', 'Beta', '2026-01-01T00:00:00Z'),
+    carte('carte-aaaa2', 'Ana', 'Alpha', '2026-03-01T00:00:00Z'),
+    carte('carte-aaaa3', 'Moi', 'Gamma', '2026-02-01T00:00:00Z', { maCarte: true }),
+    carte('carte-aaaa4', 'Léo', 'Alpha', '2025-12-01T00:00:00Z', { favori: true }),
+  ];
+  const ids = (ordre) => trierCartes(cartes, ordre).map((c) => c.personne.prenom);
+  assert.deepEqual(ids('recentes'), ['Moi', 'Léo', 'Ana', 'Zoé']);
+  assert.deepEqual(ids('az'), ['Moi', 'Léo', 'Ana', 'Zoé']);
+  assert.deepEqual(ids('entreprise'), ['Moi', 'Léo', 'Ana', 'Zoé']);
+  assert.deepEqual(trierCartes(cartes.filter((c) => !c.maCarte && !c.favori), 'az').map((c) => c.personne.prenom), ['Ana', 'Zoé']);
+
+  // Sauvegarde : relue et revalidée (champs dangereux nettoyés, doublons et cartes invalides retirés).
+  const texte = creerSauvegarde([
+    { ...cartes[0], personne: { prenom: 'Zoé', siteWeb: 'javascript:alert(1)' } },
+    cartes[0], { id: '../pirate' }, { ...cartes[2], maCarte: 'oui' },
+  ]);
+  const relues = lireSauvegarde(texte);
+  assert.equal(relues.length, 2);
+  assert.equal(relues[0].personne.siteWeb, '');
+  assert.equal(relues[1].maCarte, false);
+  assert.throws(() => lireSauvegarde('{"format":"autre","cartes":[]}'), /pas une sauvegarde/);
+  assert.throws(() => lireSauvegarde('pas du json'), /pas une sauvegarde/);
+});

@@ -1,7 +1,8 @@
 /**
  * Portefeuille.js
  * Logique du portefeuille : import d'une carte (fichier .cardpro, GIF reçu
- * par e-mail ou QR animé scanné), liste et suppression. Toute donnée lue
+ * par e-mail ou QR animé scanné), liste, favoris, « ma carte » (modifiable),
+ * modification, restauration d'une sauvegarde et suppression. Toute donnée lue
  * (fichier ou stockage) est revalidée avant d'être affichée.
  */
 
@@ -31,15 +32,18 @@ export function abonnerCartes(rappel) {
 }
 
 /**
- * Valide une carte lue dans le stockage.
- * @param {object} brute - Carte enregistrée.
+ * Valide une carte lue dans le stockage ou dans une sauvegarde.
+ * @param {object} brute - Carte enregistrée (source non fiable).
  * @returns {object|null} Carte propre, ou null si inutilisable.
  */
-function validerCarteStockee(brute) {
+export function validerCarteStockee(brute) {
   if (!brute || typeof brute.id !== 'string' || !/^[a-z0-9-]{8,40}$/i.test(brute.id)) return null;
   return {
     id: brute.id,
-    ajouteLe: typeof brute.ajouteLe === 'string' ? brute.ajouteLe : '',
+    ajouteLe: typeof brute.ajouteLe === 'string' && /^[\d\-T:.Z]{0,30}$/.test(brute.ajouteLe) ? brute.ajouteLe : '',
+    // Ma carte : celle de la personne qui utilise le téléphone (modifiable). Favori : affichée en haut.
+    maCarte: brute.maCarte === true,
+    favori: brute.favori === true,
     personne: normaliserPersonne(brute.personne),
     modele: normaliserModele(brute.modele),
   };
@@ -81,7 +85,7 @@ export function trouverCarte(id) {
  */
 export async function ajouterDepuisPaquet(paquet) {
   const { personne, modele } = await lirePaquet(paquet);
-  const carte = { id: crypto.randomUUID(), ajouteLe: new Date().toISOString(), personne, modele };
+  const carte = { id: crypto.randomUUID(), ajouteLe: new Date().toISOString(), maCarte: false, favori: false, personne, modele };
   await enregistrerCarte(carte);
   cartes = [carte, ...cartes];
   notifierAbonnes();
@@ -108,6 +112,45 @@ export async function retirerCarte(id) {
   await supprimerCarte(id);
   cartes = cartes.filter((c) => c.id !== id);
   notifierAbonnes();
+}
+
+/**
+ * Modifie une carte : favori, « ma carte », ou infos de la personne (seulement
+ * pour « ma carte » ; le design ne change jamais). Tout est revalidé.
+ * @param {string} id - Identifiant de la carte.
+ * @param {{favori?:boolean, maCarte?:boolean, personne?:object}} changements - Changements.
+ * @returns {Promise<object>} Carte enregistrée.
+ * @throws {Error} Si la carte n'existe pas, ou si on modifie les infos d'une carte reçue.
+ */
+export async function modifierCarte(id, changements) {
+  const actuelle = trouverCarte(id);
+  if (!actuelle) throw new Error('Carte introuvable.');
+  if (changements.personne && !actuelle.maCarte) throw new Error('Seule ta propre carte est modifiable.');
+  const carte = validerCarteStockee({
+    ...actuelle,
+    favori: typeof changements.favori === 'boolean' ? changements.favori : actuelle.favori,
+    maCarte: typeof changements.maCarte === 'boolean' ? changements.maCarte : actuelle.maCarte,
+    personne: changements.personne || actuelle.personne,
+  });
+  await enregistrerCarte(carte);
+  cartes = cartes.map((c) => (c.id === id ? carte : c));
+  notifierAbonnes();
+  return carte;
+}
+
+/**
+ * Ajoute les cartes d'une sauvegarde (déjà validées) : celles déjà présentes
+ * (même identifiant) sont gardées telles quelles.
+ * @param {object[]} restaurees - Cartes validées.
+ * @returns {Promise<number>} Nombre de cartes ajoutées.
+ */
+export async function ajouterCartesRestaurees(restaurees) {
+  const connues = new Set(cartes.map((c) => c.id));
+  const nouvelles = restaurees.filter((c) => !connues.has(c.id));
+  for (const carte of nouvelles) await enregistrerCarte(carte);
+  cartes = [...cartes, ...nouvelles];
+  notifierAbonnes();
+  return nouvelles.length;
 }
 
 /**

@@ -549,3 +549,90 @@ a.PBouton {
     opacity: 0.6;
   }
 }
+
+/* Liste : titre et tri sur la même ligne */
+.EnteteListe {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.Tri {
+  padding: 8px 10px;
+  border: 1px solid var(--bordure);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--texte);
+  font: inherit;
+}
+
+/* Écran « Modifier ma carte » */
+.Edition {
+  display: grid;
+  gap: 12px;
+}
+
+.Edition-champ {
+  display: grid;
+  gap: 4px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.Edition-champ input,
+.Edition-lien input {
+  min-width: 0;
+  padding: 11px 12px;
+  border: 1px solid var(--bordure);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--texte);
+  font: inherit;
+  font-weight: 400;
+}
+
+.Edition-champ input::placeholder,
+.Edition-lien input::placeholder {
+  color: var(--texte-doux);
+  opacity: 0.55;
+}
+
+.Edition-erreur {
+  margin: 0;
+  color: var(--danger);
+  font-size: 0.85rem;
+  font-weight: 400;
+}
+
+.Edition-groupe {
+  display: grid;
+  gap: 10px;
+  margin: 16px 0 0;
+  padding: 12px;
+  border: 1px solid var(--bordure);
+  border-radius: 12px;
+}
+
+.Edition-groupe legend {
+  padding: 0 6px;
+  font-weight: 600;
+}
+
+.Edition-liens {
+  display: grid;
+  gap: 8px;
+}
+
+.Edition-lien {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) auto;
+  gap: 6px;
+}
+
+.Edition-photo {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+}

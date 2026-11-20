@@ -18,6 +18,7 @@ import { declarerEcran, demarrerNavigation } from './Interface/Navigation.js';
 import { creerVueListe, importerFichiers } from './Interface/VueListe.js';
 import { creerVueCarte } from './Interface/VueCarte.js';
 import { creerVueScanner } from './Interface/VueScanner.js';
+import { creerVueEdition } from './Interface/VueEdition.js';
 import { afficherEcranInstallation } from './Interface/EcranInstallation.js';
 import { estInstalle, systeme } from './Utilitaires/Plateforme.js';
 import { estAppliAndroid, fichiersRecus } from './Utilitaires/PontAndroid.js';
@@ -99,7 +100,7 @@ async function demarrer() {
 
   // Polices de la carte : chargées avant tout affichage (rendu identique au PC).
   await chargerPolices().catch(() => notifier('Polices de la carte non chargées : le texte peut différer du PC.', 'erreur'));
-  [['liste', creerVueListe()], ['carte', creerVueCarte()], ['scanner', creerVueScanner()]].forEach(([nom, ecran]) => {
+  [['liste', creerVueListe()], ['carte', creerVueCarte()], ['scanner', creerVueScanner()], ['edition', creerVueEdition()]].forEach(([nom, ecran]) => {
     ecran.element.hidden = true;
     principal.append(ecran.element);
     declarerEcran(nom, ecran);
