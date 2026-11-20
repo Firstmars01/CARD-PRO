@@ -2,13 +2,14 @@
  * ContenuQr.js
  * Génère les QR codes d'une carte :
  * - le QR « contact » contient la vCard (ajout aux contacts, sans internet) ;
- * - un QR « lien » ou « site web » contient une seule adresse (LinkedIn,
- *   portfolio…) et ouvre directement la page quand on le scanne ;
+ * - un QR « lien » (site web, LinkedIn, WhatsApp, rendez-vous, itinéraire,
+ *   lien personnalisé) contient une seule adresse et l'ouvre directement ;
  * - un QR avec logo est encodé au niveau de correction maximal (H).
  */
 
 import { encoderTexteQr } from '../Utilitaires/EncodeurQr.js';
 import { genererVCard } from './GenerateurVCard.js';
+import { lienWhatsapp, lienItineraire } from './Personne.js';
 
 // Au-delà de cette version, le QR devient difficile à scanner sur une carte.
 const VERSION_CONFORTABLE = 15;
@@ -47,9 +48,16 @@ export function genererQrPersonne(personne) {
  * @returns {string} URL ('' si la personne n'a pas ce lien).
  */
 export function adresseQrElement(personne, element) {
-  if (element.contenu === 'siteWeb') return personne.siteWeb;
-  if (element.contenu === 'lien') return personne.liens[element.numeroLien - 1]?.url || '';
-  return '';
+  switch (element.contenu) {
+    case 'siteWeb':
+    case 'linkedin':
+    case 'linkedinEntreprise':
+    case 'rendezVous': return personne[element.contenu];
+    case 'whatsapp': return lienWhatsapp(personne.whatsapp);
+    case 'itineraire': return lienItineraire(personne);
+    case 'lien': return personne.liens[element.numeroLien - 1]?.url || '';
+    default: return '';
+  }
 }
 
 /**

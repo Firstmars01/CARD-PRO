@@ -13,7 +13,8 @@ import { cheminForme } from '../../Utilitaires/Formes.js';
 import { POLICES, familleCss } from '../../Metier/Polices.js';
 import { TRACES_ICONES } from '../../Metier/IconesCarte.js';
 import { dimensionsModele, FOND_PERDU } from '../../Metier/Formats.js';
-import { valeurChamp, nomComplet, CHAMPS_AFFICHABLES } from '../../Metier/Personne.js';
+import { nomComplet } from '../../Metier/Personne.js';
+import { texteElement } from '../../Metier/Elements.js';
 import { qrPourElement } from '../../Metier/ContenuQr.js';
 import { creerDegrade, creerFiltre, creerMotif } from './Peintures.js';
 import { dessinerQr } from './RenduQrSvg.js';
@@ -99,20 +100,6 @@ function dessinerFond(groupe, defs, fond, zone, nouvelIdSvg) {
   const motif = creerMotif(defs, nouvelIdSvg(), fond);
   if (motif) creerSvg('rect', { ...rect(zone), fill: motif, opacity: fond.motifOpacite / 100 }, groupe);
   if (fond.voileOpacite > 0) creerSvg('rect', { ...rect(zone), fill: fond.voileCouleur, opacity: fond.voileOpacite / 100 }, groupe);
-}
-
-/**
- * Calcule le texte affiché par un élément texte.
- * @param {object} element - Élément texte.
- * @param {object} personne - Personne.
- * @param {boolean} edition - Mode édition (affiche un repère si vide).
- * @returns {string} Texte final ('' = rien à afficher).
- */
-function texteElement(element, personne, edition) {
-  let valeur = element.source === 'libre' ? element.texte : valeurChamp(personne, element.champ);
-  if (valeur) valeur = `${element.prefixe}${valeur}`;
-  else if (edition) valeur = element.source === 'libre' ? 'Texte' : `[${CHAMPS_AFFICHABLES.find(([c]) => c === element.champ)?.[1]}]`;
-  return element.majuscules ? valeur.toLocaleUpperCase('fr') : valeur;
 }
 
 /**

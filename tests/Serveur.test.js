@@ -131,7 +131,7 @@ test('sauvegarde : export, restauration complète et validation', async () => {
     modeles: [...sauvegarde.modeles, MODELES_DE_BASE[0]],
     personnes: [{ id: 'p-restaure', modeleId: modele.id, personne: { prenom: 'Léa', siteWeb: 'javascript:alert(1)' } }, { modeleId: 'inconnu', personne: {} }],
   };
-  assert.deepEqual((await appeler('POST', '/api/sauvegarde', restauree)).donnees, { modeles: sauvegarde.modeles.length, personnes: 2 });
+  assert.deepEqual((await appeler('POST', '/api/sauvegarde', restauree)).donnees, { modeles: sauvegarde.modeles.length, entreprises: 0, personnes: 2 });
   const personnes = (await appeler('GET', '/api/personnes')).donnees.personnes;
   assert.equal(personnes.length, 2);
   assert.equal(personnes.find((p) => p.id === 'p-restaure').personne.siteWeb, '');
@@ -139,4 +139,38 @@ test('sauvegarde : export, restauration complète et validation', async () => {
 
   assert.equal((await appeler('POST', '/api/sauvegarde', { format: 'autre', modeles: [], personnes: [] })).statut, 400);
   assert.equal((await appeler('POST', '/api/sauvegarde', sauvegarde, { Origin: 'https://site-malveillant.fr' })).statut, 403);
+});
+
+test('entreprises : création, carte reliée, suppression bloquée, design en lot, sauvegarde', async () => {
+  const logo = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+  const creee = await appeler('POST', '/api/entreprises', { entreprise: { id: 'pirate', nom: 'ACME <b>', siteWeb: 'javascript:alert(1)', logo } });
+  assert.equal(creee.statut, 201);
+  const { entreprise } = creee.donnees;
+  assert.notEqual(entreprise.id, 'pirate');
+  assert.equal(entreprise.siteWeb, '');
+  assert.ok(entreprise.logo.startsWith('data:image/png'));
+
+  // Carte reliée ; une entreprise inconnue redevient « réglage personnalisé ».
+  const carte = (await appeler('POST', '/api/personnes', { personne: { prenom: 'Lou' }, entrepriseId: entreprise.id })).donnees;
+  assert.equal(carte.entrepriseId, entreprise.id);
+  assert.equal((await appeler('POST', '/api/personnes', { personne: {}, entrepriseId: 'e-inconnue' })).donnees.entrepriseId, '');
+
+  // Suppression refusée tant qu'une carte est reliée.
+  assert.equal((await appeler('DELETE', `/api/entreprises/${entreprise.id}`)).statut, 409);
+
+  // Changement de design en lot.
+  const [base1, base2] = MODELES_DE_BASE;
+  const lot = await appeler('POST', '/api/personnes/changer-modele', { ancien: base1.id, nouveau: base2.id });
+  assert.equal(lot.statut, 200);
+  assert.ok(lot.donnees.modifiees >= 1);
+  assert.equal((await appeler('POST', '/api/personnes/changer-modele', { ancien: base1.id, nouveau: 'm-inconnu' })).statut, 400);
+
+  // La sauvegarde contient les entreprises et le lien des cartes.
+  const sauvegarde = (await appeler('GET', '/api/sauvegarde')).donnees;
+  assert.ok(sauvegarde.entreprises.some((e) => e.id === entreprise.id));
+  assert.equal(sauvegarde.personnes.find((p) => p.id === carte.id).entrepriseId, entreprise.id);
+
+  // Une fois la carte détachée, la suppression passe.
+  await appeler('PUT', `/api/personnes/${carte.id}`, { personne: carte.personne, modeleId: base2.id, entrepriseId: '' });
+  assert.equal((await appeler('DELETE', `/api/entreprises/${entreprise.id}`)).statut, 200);
 });

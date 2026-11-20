@@ -7,7 +7,7 @@
  */
 
 import { normaliserObjet, nouvelId, idValide } from '../Utilitaires/Schema.js';
-import { CHAMPS_AFFICHABLES } from './Personne.js';
+import { CHAMPS_AFFICHABLES, valeurChamp } from './Personne.js';
 import { OPTIONS_POLICES } from './Polices.js';
 import { OPTIONS_ICONES } from './IconesCarte.js';
 
@@ -69,7 +69,11 @@ const SPECIFIQUES = {
     ...OMBRE,
   ],
   qr: [
-    { cle: 'contenu', type: 'choix', libelle: 'Contenu du QR code', groupe: 'QR code', options: [['vcard', 'Contact (vCard)'], ['lien', 'Un lien de la personne'], ['siteWeb', 'Site web']] },
+    { cle: 'contenu', type: 'choix', libelle: 'Contenu du QR code', groupe: 'QR code', options: [
+      ['vcard', 'Contact (vCard)'], ['siteWeb', 'Site web'], ['linkedin', 'LinkedIn'], ['linkedinEntreprise', "LinkedIn de l'entreprise"],
+      ['whatsapp', 'WhatsApp (discuter)'], ['rendezVous', 'Prise de rendez-vous'], ['itineraire', "Itinéraire vers l'adresse"],
+      ['lien', 'Un lien de la personne'],
+    ] },
     { cle: 'numeroLien', type: 'plage', libelle: 'Numéro du lien (ordre dans la fiche)', groupe: 'QR code', min: 1, max: 8, visibleSi: (e) => e.contenu === 'lien' },
     { cle: 'styleModules', type: 'choix', libelle: 'Forme des points', groupe: 'Style du QR', options: [['carre', 'Carrés'], ['arrondi', 'Carrés arrondis'], ['rond', 'Ronds']] },
     { cle: 'styleYeux', type: 'choix', libelle: 'Forme des coins (yeux)', groupe: 'Style du QR', options: [['carre', 'Carrés'], ['arrondi', 'Arrondis'], ['rond', 'Ronds']] },
@@ -84,6 +88,7 @@ const SPECIFIQUES = {
   ],
   image: [
     { cle: 'image', type: 'image', libelle: 'Image (PNG, JPEG, WebP)', groupe: 'Image' },
+    { cle: 'logoEntreprise', type: 'booleen', libelle: "Remplacer par le logo de l'entreprise de la carte", groupe: 'Image' },
     { cle: 'ajustement', type: 'choix', libelle: 'Ajustement', groupe: 'Image', options: [['contain', 'Entière'], ['cover', 'Remplir (recadrée)']] },
     { cle: 'cadrage', type: 'choix', libelle: 'Forme', groupe: 'Image', options: [['rectangle', 'Rectangle'], ['arrondi', 'Coins arrondis'], ['cercle', 'Rond (photo de profil)']] },
     { cle: 'arrondiImage', type: 'plage', libelle: 'Arrondi des coins', groupe: 'Image', min: 0, max: 200, visibleSi: (e) => e.cadrage === 'arrondi' },
@@ -132,7 +137,7 @@ const DEFAUTS = {
     largeur: 300, hauteur: 300, contenu: 'vcard', numeroLien: 1, styleModules: 'carre', styleYeux: 'carre', couleur: '#000000',
     couleurYeux: '#000000', fond: '#ffffff', marge: 2, arrondi: 14, logo: '', tailleLogo: 22,
   },
-  image: { largeur: 200, hauteur: 100, image: '', ajustement: 'contain', cadrage: 'rectangle', arrondiImage: 20, bordure: 0, bordureCouleur: '#ffffff', noirEtBlanc: false },
+  image: { largeur: 200, hauteur: 100, image: '', logoEntreprise: true, ajustement: 'contain', cadrage: 'rectangle', arrondiImage: 20, bordure: 0, bordureCouleur: '#ffffff', noirEtBlanc: false },
   forme: {
     largeur: 200, hauteur: 120, forme: 'rectangle', cotes: 5, arrondi: 0, arrondiParCoin: false, arrondiHG: 0, arrondiHD: 0, arrondiBD: 0, arrondiBG: 0,
     typeRemplissage: 'uni', remplissage: '#2563eb', remplissage2: '#1aa3a3', angleDegrade: 90, contour: '#1d2430', epaisseurContour: 0,
@@ -190,14 +195,17 @@ export function decrireElement(element) {
   if (element.type === 'forme') return `Forme : ${element.forme}`;
   if (element.type === 'icone') return `Icône : ${OPTIONS_ICONES.find(([c]) => c === element.icone)?.[1]}`;
   if (element.type === 'qr' && element.contenu === 'lien') return `QR code : lien ${element.numeroLien}`;
-  if (element.type === 'qr' && element.contenu === 'siteWeb') return 'QR code : site web';
+  if (element.type === 'qr' && element.contenu !== 'vcard') {
+    const option = schemaElement('qr').find((r) => r.cle === 'contenu').options.find(([v]) => v === element.contenu);
+    return `QR code : ${option ? option[1].toLowerCase() : 'lien'}`;
+  }
   return TYPES_ELEMENT[element.type];
 }
 
 // Réglages de contenu ou de position : jamais copiés avec le style.
 const CLES_HORS_STYLE = [
   'x', 'y', 'largeur', 'hauteur', 'rotation', 'visible', 'verrouille', 'source', 'champ', 'texte', 'prefixe', 'image', 'forme',
-  'cotes', 'contenu', 'numeroLien', 'logo', 'icone',
+  'cotes', 'contenu', 'numeroLien', 'logo', 'icone', 'logoEntreprise',
 ];
 
 /**
@@ -228,4 +236,18 @@ export function extraireStyle(element) {
 export function appliquerStyle(element, style) {
   const changements = Object.fromEntries(clesStyle(element.type).filter((cle) => Object.hasOwn(style, cle)).map((cle) => [cle, style[cle]]));
   return normaliserElement({ ...element, ...changements, id: element.id, type: element.type, groupe: element.groupe });
+}
+
+/**
+ * Calcule le texte affiché par un élément texte.
+ * @param {object} element - Élément texte.
+ * @param {object} personne - Personne.
+ * @param {boolean} [edition=false] - Mode édition (affiche un repère si vide).
+ * @returns {string} Texte final ('' = rien à afficher).
+ */
+export function texteElement(element, personne, edition = false) {
+  let valeur = element.source === 'libre' ? element.texte : valeurChamp(personne, element.champ);
+  if (valeur) valeur = `${element.prefixe}${valeur}`;
+  else if (edition) valeur = element.source === 'libre' ? 'Texte' : `[${CHAMPS_AFFICHABLES.find(([c]) => c === element.champ)?.[1]}]`;
+  return element.majuscules ? valeur.toLocaleUpperCase('fr') : valeur;
 }

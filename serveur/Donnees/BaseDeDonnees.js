@@ -1,6 +1,7 @@
 /**
  * BaseDeDonnees.js
- * Ouverture de la base SQLite (intégrée à Node.js) et création des tables.
+ * Ouverture de la base SQLite (intégrée à Node.js), création des tables et
+ * mise à jour des bases des versions précédentes.
  * Toutes les requêtes du projet sont des requêtes préparées (anti-injection SQL).
  */
 
@@ -22,7 +23,23 @@ const SCHEMA = `
     cree_le TEXT NOT NULL DEFAULT (datetime('now')),
     modifie_le TEXT NOT NULL DEFAULT (datetime('now'))
   );
+  CREATE TABLE IF NOT EXISTS entreprises (
+    id TEXT PRIMARY KEY,
+    nom TEXT NOT NULL,
+    donnees TEXT NOT NULL,
+    modifie_le TEXT NOT NULL DEFAULT (datetime('now'))
+  );
 `;
+
+/**
+ * Met à jour les bases créées par une version précédente
+ * (v4.6 : colonne « entreprise_id » des personnes, vide = réglage personnalisé).
+ * @param {DatabaseSync} base - Connexion.
+ */
+function migrer(base) {
+  const colonnes = base.prepare('PRAGMA table_info(personnes)').all().map((c) => c.name);
+  if (!colonnes.includes('entreprise_id')) base.exec("ALTER TABLE personnes ADD COLUMN entreprise_id TEXT NOT NULL DEFAULT ''");
+}
 
 /**
  * Ouvre (ou crée) la base de données et applique le schéma.
@@ -34,6 +51,7 @@ export function ouvrirBase(chemin) {
   const base = new DatabaseSync(chemin);
   base.exec('PRAGMA journal_mode = WAL; PRAGMA busy_timeout = 5000;');
   base.exec(SCHEMA);
+  migrer(base);
   return base;
 }
 

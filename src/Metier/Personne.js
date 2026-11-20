@@ -1,8 +1,8 @@
 /**
  * Personne.js
  * Informations d'une personne (le contenu de sa carte) : liste des champs,
- * validation, valeurs calculées (nom complet, adresse…) et personne d'exemple
- * utilisée dans l'éditeur de modèles.
+ * validation, valeurs calculées (nom complet, adresse…), liens calculés
+ * (WhatsApp, itinéraire) et personne d'exemple utilisée dans l'éditeur.
  */
 
 import {
@@ -19,8 +19,13 @@ export const CHAMPS_PERSONNE = [
   { cle: 'entreprise', libelle: 'Entreprise', type: 'texte', max: 80 },
   { cle: 'telephoneMobile', libelle: 'Téléphone mobile', type: 'tel', max: 25 },
   { cle: 'telephonePro', libelle: 'Téléphone fixe', type: 'tel', max: 25 },
+  { cle: 'telephoneStandard', libelle: 'Standard', type: 'tel', max: 25 },
+  { cle: 'whatsapp', libelle: 'WhatsApp (numéro)', type: 'tel', max: 25 },
   { cle: 'email', libelle: 'E-mail', type: 'email', max: 254 },
   { cle: 'siteWeb', libelle: 'Site web', type: 'url', max: 300 },
+  { cle: 'linkedin', libelle: 'LinkedIn', type: 'url', max: 300 },
+  { cle: 'linkedinEntreprise', libelle: "LinkedIn de l'entreprise", type: 'url', max: 300 },
+  { cle: 'rendezVous', libelle: 'Prise de rendez-vous (lien)', type: 'url', max: 300 },
   { cle: 'rue', libelle: 'Adresse', type: 'texte', max: 100 },
   { cle: 'codePostal', libelle: 'Code postal', type: 'texte', max: 15 },
   { cle: 'ville', libelle: 'Ville', type: 'texte', max: 60 },
@@ -32,7 +37,9 @@ export const CHAMPS_PERSONNE = [
 export const CHAMPS_AFFICHABLES = [
   ['nomComplet', 'Prénom + nom'], ['prenom', 'Prénom'], ['nom', 'Nom'], ['poste', 'Poste'],
   ['entreprise', 'Entreprise'], ['telephoneMobile', 'Téléphone mobile'], ['telephonePro', 'Téléphone fixe'],
-  ['email', 'E-mail'], ['siteWeb', 'Site web'], ['adresse', 'Adresse complète'], ['rue', 'Rue'],
+  ['telephoneStandard', 'Standard'], ['whatsapp', 'WhatsApp'],
+  ['email', 'E-mail'], ['siteWeb', 'Site web'], ['linkedin', 'LinkedIn'], ['linkedinEntreprise', "LinkedIn de l'entreprise"],
+  ['rendezVous', 'Prise de rendez-vous'], ['adresse', 'Adresse complète'], ['rue', 'Rue'],
   ['villeComplete', 'Code postal + ville'], ['pays', 'Pays'], ['note', 'Note'], ['liens', 'Liens (noms)'],
   // Nom d'un lien précis (légende sous un QR code de lien).
   ...Array.from({ length: LIENS_MAX }, (_, i) => [`lien${i + 1}`, `Lien ${i + 1} (nom)`]),
@@ -117,7 +124,10 @@ export function valeurChamp(personne, champ) {
   const villeComplete = [personne.codePostal, personne.ville].filter(Boolean).join(' ');
   switch (champ) {
     case 'nomComplet': return nomComplet(personne);
-    case 'siteWeb': return personne.siteWeb ? urlLisible(personne.siteWeb) : '';
+    case 'siteWeb':
+    case 'linkedin':
+    case 'linkedinEntreprise':
+    case 'rendezVous': return personne[champ] ? urlLisible(personne[champ]) : '';
     case 'villeComplete': return villeComplete;
     case 'adresse': return [personne.rue, villeComplete, personne.pays].filter(Boolean).join(', ');
     case 'liens': return personne.liens.map((l) => l.libelle).join(' · ');
@@ -131,10 +141,36 @@ export function valeurChamp(personne, champ) {
 export const PERSONNE_EXEMPLE = Object.freeze(normaliserPersonne({
   prenom: 'Camille', nom: 'Durand', poste: 'Responsable commerciale', entreprise: 'Entreprise Exemple',
   telephoneMobile: '06 12 34 56 78', telephonePro: '01 23 45 67 89', email: 'camille.durand@exemple.fr',
-  siteWeb: 'exemple.fr', rue: '12 rue des Lilas', codePostal: '75011', ville: 'Paris', pays: 'France',
+  telephoneStandard: '01 23 45 67 00', whatsapp: '06 12 34 56 78',
+  siteWeb: 'exemple.fr', linkedin: 'https://linkedin.com/in/camille-durand',
+  linkedinEntreprise: 'https://linkedin.com/company/exemple', rendezVous: 'https://calendly.com/camille-durand', rue: '12 rue des Lilas', codePostal: '75011', ville: 'Paris', pays: 'France',
   liens: [
     { libelle: 'LinkedIn', url: 'https://linkedin.com/in/exemple' },
     { libelle: 'Instagram', url: 'https://instagram.com/exemple' },
     { libelle: 'Portfolio', url: 'https://exemple.fr/portfolio' },
   ],
 }));
+
+/**
+ * Lien WhatsApp (wa.me) d'un numéro : chiffres seuls, indicatif français
+ * ajouté si le numéro commence par 0.
+ * @param {string} numero - Numéro normalisé.
+ * @returns {string} Lien https://wa.me/… ('' si pas de numéro).
+ */
+export function lienWhatsapp(numero) {
+  let chiffres = String(numero || '').replace(/\D/g, '');
+  if (!chiffres) return '';
+  if (String(numero).trim().startsWith('00')) chiffres = chiffres.slice(2);
+  else if (chiffres.startsWith('0')) chiffres = `33${chiffres.slice(1)}`;
+  return `https://wa.me/${chiffres}`;
+}
+
+/**
+ * Lien d'itinéraire (Google Maps, ouvert aussi par Plans sur iPhone) vers l'adresse.
+ * @param {object} personne - Personne normalisée.
+ * @returns {string} Lien ('' si pas d'adresse).
+ */
+export function lienItineraire(personne) {
+  const adresse = valeurChamp(personne, 'adresse');
+  return adresse ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(adresse)}` : '';
+}

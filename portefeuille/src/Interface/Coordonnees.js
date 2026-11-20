@@ -1,13 +1,13 @@
 /**
  * Coordonnees.js
- * Liste des coordonnées cliquables d'une personne (appel, e-mail, site,
- * liens, adresse). Partagée par l'écran d'une carte et la page « contact ».
+ * Liste des coordonnées cliquables d'une personne (appel, WhatsApp, e-mail,
+ * site, LinkedIn, rendez-vous, liens, adresse avec itinéraire). Partagée par l'écran d'une carte et la page « contact ».
  * Les adresses viennent de données déjà validées (liens http/https,
  * téléphone et e-mail nettoyés).
  */
 
 import { creerElement } from '../../../src/Utilitaires/Dom.js';
-import { valeurChamp, urlLisible } from '../../../src/Metier/Personne.js';
+import { urlLisible, lienWhatsapp, lienItineraire, valeurChamp } from '../../../src/Metier/Personne.js';
 
 /**
  * Crée une ligne de coordonnée (lien cliquable).
@@ -38,16 +38,15 @@ export function creerCoordonnees(personne) {
   const telephone = (numero) => `tel:${numero.replace(/[^\d+]/g, '')}`;
   if (personne.telephoneMobile) lignes.push(ligneLien('Mobile', personne.telephoneMobile, telephone(personne.telephoneMobile)));
   if (personne.telephonePro) lignes.push(ligneLien('Fixe', personne.telephonePro, telephone(personne.telephonePro)));
+  if (personne.telephoneStandard) lignes.push(ligneLien('Standard', personne.telephoneStandard, telephone(personne.telephoneStandard)));
+  if (personne.whatsapp) lignes.push(ligneLien('WhatsApp', personne.whatsapp, lienWhatsapp(personne.whatsapp)));
   if (personne.email) lignes.push(ligneLien('E-mail', personne.email, `mailto:${personne.email}`));
-  if (personne.siteWeb) lignes.push(ligneLien('Site', urlLisible(personne.siteWeb), personne.siteWeb));
+  [['Site', 'siteWeb'], ['LinkedIn', 'linkedin'], ['LinkedIn entreprise', 'linkedinEntreprise'], ['Rendez-vous', 'rendezVous']]
+    .filter(([, cle]) => personne[cle])
+    .forEach(([libelle, cle]) => lignes.push(ligneLien(libelle, urlLisible(personne[cle]), personne[cle])));
   personne.liens.forEach((lien) => lignes.push(ligneLien(lien.libelle || 'Lien', urlLisible(lien.url), lien.url)));
-  const adresse = valeurChamp(personne, 'adresse');
-  if (adresse) {
-    lignes.push(creerElement('li', { classe: 'Coordonnee' }, [
-      creerElement('span', { classe: 'Coordonnee-libelle', texte: 'Adresse' }),
-      creerElement('span', { classe: 'Coordonnee-valeur', texte: adresse }),
-    ]));
-  }
+  // Adresse : ouvre l'itinéraire (Google Maps, ou Plans sur iPhone).
+  if (lienItineraire(personne)) lignes.push(ligneLien('Adresse', valeurChamp(personne, 'adresse'), lienItineraire(personne)));
   const liste = creerElement('ul', { classe: 'Coordonnees' }, lignes);
   liste.hidden = lignes.length === 0;
   return liste;

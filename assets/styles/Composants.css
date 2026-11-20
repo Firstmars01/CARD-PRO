@@ -499,3 +499,12 @@ textarea {
   flex: 1 1 200px;
   width: auto;
 }
+
+/* Champ imposé par l'entreprise de la carte : visible mais non modifiable. */
+.Formulaire input:disabled,
+.Formulaire textarea:disabled {
+  background: var(--surface-douce);
+  color: var(--texte-doux);
+  border-style: dashed;
+  cursor: not-allowed;
+}

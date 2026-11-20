@@ -17,10 +17,11 @@ export async function listerPersonnes() {
  * Ajoute une personne.
  * @param {object} personne - Personne normalisée.
  * @param {string} modeleId - Modèle de sa carte.
- * @returns {Promise<{id:string, modeleId:string, personne:object}>} Personne créée.
+ * @param {string} [entrepriseId] - Entreprise reliée ('' : réglage personnalisé).
+ * @returns {Promise<{id:string, modeleId:string, entrepriseId:string, personne:object}>} Personne créée.
  */
-export function creerPersonne(personne, modeleId) {
-  return appelerApi('POST', '/api/personnes', { personne, modeleId });
+export function creerPersonne(personne, modeleId, entrepriseId = '') {
+  return appelerApi('POST', '/api/personnes', { personne, modeleId, entrepriseId });
 }
 
 /**
@@ -34,14 +35,22 @@ export async function importerPersonnes(personnes, modeleId) {
 }
 
 /**
- * Enregistre une personne.
- * @param {string} id - Identifiant.
- * @param {object} personne - Personne normalisée.
- * @param {string} modeleId - Modèle de sa carte.
+ * Enregistre une carte.
+ * @param {{id:string, modeleId:string, entrepriseId:string, personne:object}} entree - Carte.
  * @returns {Promise<void>}
  */
-export async function modifierPersonne(id, personne, modeleId) {
-  await appelerApi('PUT', `/api/personnes/${encodeURIComponent(id)}`, { personne, modeleId });
+export async function modifierPersonne({ id, personne, modeleId, entrepriseId }) {
+  await appelerApi('PUT', `/api/personnes/${encodeURIComponent(id)}`, { personne, modeleId, entrepriseId });
+}
+
+/**
+ * Fait passer toutes les cartes d'un modèle sur un autre (design en lot).
+ * @param {string} ancien - Modèle actuel.
+ * @param {string} nouveau - Nouveau modèle.
+ * @returns {Promise<number>} Nombre de cartes modifiées.
+ */
+export async function changerModeleEnLot(ancien, nouveau) {
+  return (await appelerApi('POST', '/api/personnes/changer-modele', { ancien, nouveau })).modifiees;
 }
 
 /**

@@ -1,14 +1,15 @@
 /**
  * ApercuPersonne.js
- * Aperçu en direct du recto et du verso de la carte sélectionnée, avec
- * les avertissements de lisibilité du QR code.
+ * Aperçu en direct du recto et du verso de la carte sélectionnée (avec les
+ * infos et le logo de son entreprise), et avertissements de lisibilité du QR.
  */
 
 import { creerElement, vider } from '../../Utilitaires/Dom.js';
 import { verifierLisibiliteQr } from '../../Utilitaires/Couleurs.js';
 import { genererQrPersonne, qrPourElement, avertissementsQrElement } from '../../Metier/ContenuQr.js';
-import { abonner, trouverPersonne, trouverModele } from '../../Metier/EtatApplication.js';
+import { abonner, trouverPersonne, carteEffective } from '../../Metier/EtatApplication.js';
 import { rendreFaceSvg } from '../Rendu/RenduFaceSvg.js';
+import { controlerCartes } from '../../Metier/ControleCartes.js';
 import { personneSelectionnee, abonnerSelection } from './SelectionCarte.js';
 
 /**
@@ -20,19 +21,22 @@ export function monterApercuPersonne(conteneur) {
     vider(conteneur);
     const entree = trouverPersonne(personneSelectionnee());
     if (!entree) return;
-    const modele = trouverModele(entree.modeleId);
-    const { qr, avertissements } = genererQrPersonne(entree.personne);
+    const { modele, personne } = carteEffective(entree);
+    const { qr, avertissements } = genererQrPersonne(personne);
     // Vérifie la lisibilité de chaque QR code du modèle.
     ['recto', 'verso'].forEach((cote) => modele[cote].elements
       .filter((e) => e.type === 'qr' && e.visible)
       .forEach((e) => {
         avertissements.push(...verifierLisibiliteQr(e.couleur, e.fond), ...verifierLisibiliteQr(e.couleurYeux, e.fond));
-        avertissements.push(...avertissementsQrElement(qrPourElement(entree.personne, e, qr), e));
+        avertissements.push(...avertissementsQrElement(qrPourElement(personne, e, qr), e));
       }));
 
+    // Contrôle de cette carte (texte coupé, contact manquant…).
+    controlerCartes([{ id: entree.id, modele, personne }]).forEach((r) => avertissements.push(...r.problemes));
+
     conteneur.append(
-      creerElement('figure', { classe: 'Apercu-face' }, [rendreFaceSvg(modele, 'recto', entree.personne, qr), creerElement('figcaption', { texte: 'Recto' })]),
-      creerElement('figure', { classe: 'Apercu-face' }, [rendreFaceSvg(modele, 'verso', entree.personne, qr), creerElement('figcaption', { texte: 'Verso' })]),
+      creerElement('figure', { classe: 'Apercu-face' }, [rendreFaceSvg(modele, 'recto', personne, qr), creerElement('figcaption', { texte: 'Recto' })]),
+      creerElement('figure', { classe: 'Apercu-face' }, [rendreFaceSvg(modele, 'verso', personne, qr), creerElement('figcaption', { texte: 'Verso' })]),
       ...[...new Set(avertissements)].map((m) => creerElement('p', { classe: 'Avertissement', texte: m, attributs: { role: 'status' } })),
     );
   };

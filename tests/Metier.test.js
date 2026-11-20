@@ -219,3 +219,54 @@ test('polices : clé inconnue (ancienne « manuscrite ») remplacée par Inter',
     assert.ok(existsSync(new URL(`../assets/polices/${fichier}.woff`, import.meta.url)), `${fichier}.woff manquant`);
   });
 });
+
+test('entreprise : infos imposées à la carte reliée, logo remplacé, liens calculés', async () => {
+  const { normaliserEntreprise, appliquerEntreprisePersonne, appliquerEntrepriseModele } = await import('../src/Metier/Entreprise.js');
+  const { normaliserPersonne, lienWhatsapp, lienItineraire } = await import('../src/Metier/Personne.js');
+  const { normaliserModele } = await import('../src/Metier/ModeleCarte.js');
+  const { adresseQrElement } = await import('../src/Metier/ContenuQr.js');
+  const { genererVCard } = await import('../src/Metier/GenerateurVCard.js');
+  assert.equal(normaliserEntreprise({ id: '../x' }), null);
+  const logo = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+  const entreprise = normaliserEntreprise({ id: 'e-1', nom: 'ACME', telephone: '01 02 03 04 05', ville: 'Lyon', logo });
+  const personne = normaliserPersonne({ prenom: 'Lou', entreprise: 'Ancienne', ville: 'Paris', rue: '1 rue A', whatsapp: '06 11 22 33 44' });
+  const effective = appliquerEntreprisePersonne(personne, entreprise);
+  assert.equal(effective.entreprise, 'ACME');
+  assert.equal(effective.ville, 'Lyon');
+  assert.equal(effective.rue, '');
+  assert.equal(effective.telephoneStandard, '01 02 03 04 05');
+  assert.equal(effective.prenom, 'Lou');
+  assert.equal(appliquerEntreprisePersonne(personne, null), personne);
+
+  const modele = normaliserModele({ nom: 'M', recto: { elements: [{ type: 'image', image: '' }, { type: 'image', image: '', logoEntreprise: false }] } });
+  const [avecLogo, sansLogo] = appliquerEntrepriseModele(modele, entreprise).recto.elements;
+  assert.equal(avecLogo.image, logo);
+  assert.equal(sansLogo.image, '');
+
+  assert.equal(lienWhatsapp('06 11 22 33 44'), 'https://wa.me/33611223344');
+  assert.equal(lienWhatsapp('+44 20 7946 0000'), 'https://wa.me/442079460000');
+  assert.ok(lienItineraire(personne).includes(encodeURIComponent('1 rue A')));
+  assert.equal(adresseQrElement(personne, { contenu: 'whatsapp' }), 'https://wa.me/33611223344');
+  assert.match(genererVCard(effective), /TEL;TYPE=WORK,MAIN:01 02 03 04 05/);
+  assert.match(genererVCard(effective), /X-ABLabel:WhatsApp/);
+});
+
+test('contrôle avant export : nom vide, contact manquant, doublons, texte coupé', async () => {
+  const { controlerCartes } = await import('../src/Metier/ControleCartes.js');
+  const { normaliserPersonne } = await import('../src/Metier/Personne.js');
+  const { normaliserModele } = await import('../src/Metier/ModeleCarte.js');
+  const modele = normaliserModele({ nom: 'M', recto: { elements: [{ type: 'texte', champ: 'nomComplet', largeur: 300, hauteur: 50, taille: 40 }] } });
+  const carte = (id, p) => ({ id, modele, personne: normaliserPersonne(p) });
+  const resultat = controlerCartes([
+    carte('a', { prenom: 'Lou', nom: 'Martin', email: 'lou@exemple.fr' }),
+    carte('b', { prenom: 'lou', nom: 'martin', email: 'LOU@exemple.fr' }),
+    carte('c', { email: 'c@exemple.fr' }),
+    carte('d', { prenom: 'Maximilien-Alexandre', nom: 'de La Rochefoucauld-Montbazon', telephoneMobile: '0600000000' }),
+    carte('e', { prenom: 'Ana', nom: 'Li', telephoneMobile: '0600000000' }),
+  ]);
+  const de = (id) => resultat.find((r) => r.id === id)?.problemes || [];
+  assert.ok(de('a').some((p) => p.includes('Même nom')) && de('a').some((p) => p.includes('Même e-mail')));
+  assert.ok(de('c').some((p) => p.includes('Prénom et nom vides')));
+  assert.ok(de('d').some((p) => p.startsWith('Texte coupé')));
+  assert.deepEqual(de('e'), []);
+});

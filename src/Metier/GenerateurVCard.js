@@ -5,7 +5,7 @@
  * QR code de la carte et dans le fichier .vcf.
  */
 
-import { nomComplet } from './Personne.js';
+import { nomComplet, lienWhatsapp } from './Personne.js';
 
 /**
  * Échappe un texte selon la norme vCard (\ ; , et sauts de ligne).
@@ -44,15 +44,21 @@ export function genererVCard(carte) {
   if (carte.poste) lignes.push(`TITLE:${e(carte.poste)}`);
   if (carte.telephoneMobile) lignes.push(`TEL;TYPE=CELL:${e(carte.telephoneMobile)}`);
   if (carte.telephonePro) lignes.push(`TEL;TYPE=WORK,VOICE:${e(carte.telephonePro)}`);
+  if (carte.telephoneStandard) lignes.push(`TEL;TYPE=WORK,MAIN:${e(carte.telephoneStandard)}`);
   if (carte.email) lignes.push(`EMAIL;TYPE=INTERNET:${e(carte.email)}`);
   if (carte.siteWeb) lignes.push(`URL:${urlSurUneLigne(carte.siteWeb)}`);
   if (carte.rue || carte.ville || carte.codePostal || carte.pays) {
     lignes.push(`ADR;TYPE=WORK:;;${e(carte.rue)};${e(carte.ville)};;${e(carte.codePostal)};${e(carte.pays)}`);
   }
-  // Liens personnalisés : le libellé est reconnu par iPhone (X-ABLabel).
-  carte.liens.forEach((lien, i) => {
-    lignes.push(`item${i + 1}.URL:${urlSurUneLigne(lien.url)}`);
-    lignes.push(`item${i + 1}.X-ABLabel:${e(lien.libelle)}`);
+  // Liens avec un nom (reconnu par iPhone via X-ABLabel) : champs dédiés puis liens personnalisés.
+  const liensNommes = [
+    ['LinkedIn', carte.linkedin], ["LinkedIn de l'entreprise", carte.linkedinEntreprise],
+    ['WhatsApp', lienWhatsapp(carte.whatsapp)], ['Rendez-vous', carte.rendezVous],
+    ...carte.liens.map((lien) => [lien.libelle, lien.url]),
+  ].filter(([, url]) => url);
+  liensNommes.forEach(([libelle, url], i) => {
+    lignes.push(`item${i + 1}.URL:${urlSurUneLigne(url)}`);
+    lignes.push(`item${i + 1}.X-ABLabel:${e(libelle)}`);
   });
   if (carte.note) lignes.push(`NOTE:${e(carte.note)}`);
   lignes.push('END:VCARD');

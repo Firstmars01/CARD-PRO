@@ -1,14 +1,17 @@
 /**
  * FormulairePersonne.js
- * Formulaire de la personne sélectionnée : modèle de carte, informations,
- * liens ajoutables et suppression. Sauvegarde automatique.
+ * Formulaire de la personne sélectionnée : modèle de carte, entreprise
+ * reliée (ou réglage personnalisé), informations, liens ajoutables et
+ * suppression. Sauvegarde automatique. Quand la carte est reliée à une
+ * entreprise, les infos de l'entreprise sont affichées et non modifiables.
  */
 
 import { creerElement, vider } from '../../Utilitaires/Dom.js';
 import { CHAMPS_PERSONNE, LIENS_MAX, normaliserChamp, nomComplet } from '../../Metier/Personne.js';
 import { MODELES_DE_BASE } from '../../Metier/ModelesDeBase.js';
+import { CHAMPS_PERSONNE_ENTREPRISE, appliquerEntreprisePersonne } from '../../Metier/Entreprise.js';
 import {
-  obtenirEtat, abonner, trouverPersonne, modifierPersonne, supprimerPersonne,
+  obtenirEtat, abonner, trouverPersonne, trouverEntreprise, modifierPersonne, supprimerPersonne,
 } from '../../Metier/EtatApplication.js';
 import { personneSelectionnee, selectionnerPersonne, abonnerSelection } from './SelectionCarte.js';
 import { creerChamp, afficherErreur, creerSection } from '../Champs.js';
@@ -22,11 +25,13 @@ const MESSAGES = {
 };
 const SECTIONS = [
   { titre: 'Identité', cles: ['prenom', 'nom', 'poste', 'entreprise'] },
-  { titre: 'Coordonnées', cles: ['telephoneMobile', 'telephonePro', 'email', 'siteWeb'] },
+  { titre: 'Coordonnées', cles: ['telephoneMobile', 'telephonePro', 'telephoneStandard', 'whatsapp', 'email', 'siteWeb'] },
+  { titre: 'Réseaux et rendez-vous', cles: ['linkedin', 'linkedinEntreprise', 'rendezVous'], fermee: true },
   { titre: 'Adresse', cles: ['rue', 'codePostal', 'ville', 'pays'], fermee: true },
   { titre: 'Note', cles: ['note'], fermee: true },
 ];
-const LIENS_RAPIDES = ['LinkedIn', 'Instagram', 'Facebook', 'X', 'YouTube', 'GitHub', 'WhatsApp'];
+const LIENS_RAPIDES = ['Instagram', 'Facebook', 'X', 'YouTube', 'GitHub', 'Portfolio'];
+const PERSONNALISE = '';
 
 /**
  * Monte le formulaire (reconstruit à chaque changement de sélection).
@@ -34,6 +39,7 @@ const LIENS_RAPIDES = ['LinkedIn', 'Instagram', 'Facebook', 'X', 'YouTube', 'Git
  */
 export function monterFormulairePersonne(conteneur) {
   let choixModele = null;
+  let entrepriseAffichee = null;
   const construire = () => {
     vider(conteneur);
     const entree = trouverPersonne(personneSelectionnee());
@@ -42,11 +48,15 @@ export function monterFormulairePersonne(conteneur) {
       choixModele = null;
       return;
     }
+    entrepriseAffichee = entree.entrepriseId;
     choixModele = construireFormulaire(conteneur, entree);
   };
   abonnerSelection(construire);
-  abonner((type) => {
+  abonner((type, id) => {
     if (type === 'modeles' && choixModele) choixModele.remplir();
+    // Entreprise modifiée, ou carte reliée / détachée : les champs verrouillés changent.
+    if (type === 'entreprises') construire();
+    if (type === 'personne' && id === personneSelectionnee() && trouverPersonne(id)?.entrepriseId !== entrepriseAffichee) construire();
     if (type === 'personnes' && !trouverPersonne(personneSelectionnee())) selectionnerPersonne('');
   });
   construire();
@@ -61,12 +71,15 @@ export function monterFormulairePersonne(conteneur) {
 function construireFormulaire(conteneur, entree) {
   const { id } = entree;
   const choixModele = creerChoixModele(entree);
+  const entreprise = trouverEntreprise(entree.entrepriseId);
+  // Valeurs affichées : celles de l'entreprise pour les champs qu'elle impose.
+  const affichee = appliquerEntreprisePersonne(entree.personne, entreprise);
   const controles = [];
   // Un bloc neuf par personne : ses écouteurs disparaissent avec lui.
   const formulaire = creerElement('div', { classe: 'Formulaire' });
   conteneur.append(formulaire);
 
-  formulaire.append(choixModele.bloc);
+  formulaire.append(choixModele.bloc, creerChoixEntreprise(entree, entreprise));
   SECTIONS.forEach(({ titre, cles, fermee }) => {
     const { section, contenu } = creerSection(titre, !fermee);
     cles.forEach((cle) => {
@@ -75,9 +88,15 @@ function construireFormulaire(conteneur, entree) {
       const element = champ.type === 'multiligne'
         ? creerElement('textarea', { attributs: { ...attributs, rows: 3 } })
         : creerElement('input', { attributs: { ...attributs, type: TYPES_INPUT[champ.type], inputmode: champ.type === 'tel' ? 'tel' : undefined } });
-      element.value = entree.personne[cle];
+      element.value = affichee[cle];
+      const impose = Boolean(entreprise) && CHAMPS_PERSONNE_ENTREPRISE.includes(cle);
+      if (impose) {
+        element.disabled = true;
+        element.title = `Info de l'entreprise « ${entreprise.nom} » : passe la carte en réglage personnalisé pour la changer.`;
+      }
       const { bloc, erreur } = creerChamp(champ.libelle, element, champ.type === 'multiligne' ? 'Champ--large' : '');
-      controles.push({ champ, element, erreur });
+      // Champ imposé : la valeur propre de la personne est conservée telle quelle.
+      if (!impose) controles.push({ champ, element, erreur });
       contenu.append(bloc);
     });
     formulaire.append(section);
@@ -86,14 +105,14 @@ function construireFormulaire(conteneur, entree) {
 
   // Toute saisie met à jour la personne (validée par le modèle).
   const enregistrer = (cible) => {
-    const personne = { liens: liens.lire() };
+    const personne = { ...trouverPersonne(id).personne, liens: liens.lire() };
     controles.forEach(({ champ, element, erreur }) => {
       personne[champ.cle] = element.value;
       if (element === cible) verifierChamp(champ, element, erreur);
     });
     modifierPersonne(id, { personne });
   };
-  formulaire.addEventListener('input', (e) => { if (e.target.id !== 'carte-modele') enregistrer(e.target); });
+  formulaire.addEventListener('input', (e) => { if (!['carte-modele', 'carte-entreprise'].includes(e.target.id)) enregistrer(e.target); });
   liens.surSuppression(() => enregistrer(null));
 
   formulaire.append(creerElement('div', { classe: 'BarreActions' }, [creerElement('button', {
@@ -131,6 +150,33 @@ function creerChoixModele(entree) {
   liste.addEventListener('change', () => modifierPersonne(entree.id, { modeleId: liste.value }));
   remplir();
   return { bloc: creerChamp('Modèle de la carte', liste, 'Champ--large Champ--modele').bloc, remplir };
+}
+
+/**
+ * Crée la liste déroulante de l'entreprise de la carte. Passer en réglage
+ * personnalisé recopie les infos de l'entreprise dans la carte (rien ne
+ * change à l'écran, mais elles deviennent modifiables).
+ * @param {{id:string, entrepriseId:string, personne:object}} entree - Carte.
+ * @param {object|null} entreprise - Entreprise reliée.
+ * @returns {HTMLElement} Bloc du champ.
+ */
+function creerChoixEntreprise(entree, entreprise) {
+  const liste = creerElement('select', { attributs: { id: 'carte-entreprise' } }, [
+    creerElement('option', { texte: 'Réglage personnalisé (infos propres à la carte)', attributs: { value: PERSONNALISE } }),
+    ...obtenirEtat().entreprises.map((e) => creerElement('option', { texte: e.nom || 'Sans nom', attributs: { value: e.id } })),
+  ]);
+  liste.value = entreprise ? entreprise.id : PERSONNALISE;
+  liste.addEventListener('change', () => {
+    const carte = trouverPersonne(entree.id);
+    if (liste.value === PERSONNALISE) {
+      modifierPersonne(entree.id, { entrepriseId: PERSONNALISE, personne: appliquerEntreprisePersonne(carte.personne, trouverEntreprise(carte.entrepriseId)) });
+    } else {
+      modifierPersonne(entree.id, { entrepriseId: liste.value });
+    }
+  });
+  const { bloc } = creerChamp('Entreprise de la carte', liste, 'Champ--large Champ--modele');
+  if (entreprise) bloc.append(creerElement('p', { classe: 'Aide', texte: `Adresse, site, standard, LinkedIn de l'entreprise et logo viennent de « ${entreprise.nom} ».` }));
+  return bloc;
 }
 
 /**

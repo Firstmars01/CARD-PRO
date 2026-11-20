@@ -12,7 +12,7 @@ import { creerElement, creerSvg, vider } from '../../Utilitaires/Dom.js';
 import { PERSONNE_EXEMPLE } from '../../Metier/Personne.js';
 import { genererQrPersonne } from '../../Metier/ContenuQr.js';
 import { boiteEnglobante, toucheCadre } from '../../Metier/Alignement.js';
-import { trouverPersonne } from '../../Metier/EtatApplication.js';
+import { trouverPersonne, carteEffective } from '../../Metier/EtatApplication.js';
 import { FOND_PERDU, MARGE_SECURITE } from '../../Metier/Formats.js';
 import { rendreFaceSvg } from '../Rendu/RenduFaceSvg.js';
 import {
@@ -44,7 +44,8 @@ export function monterZoneEdition(conteneur) {
     rafEnAttente = false;
     const edition = obtenirEdition();
     if (apercu.id !== edition.personneApercuId) {
-      const personne = trouverPersonne(edition.personneApercuId)?.personne || PERSONNE_EXEMPLE;
+      const entree = trouverPersonne(edition.personneApercuId);
+      const personne = entree ? carteEffective(entree).personne : PERSONNE_EXEMPLE;
       apercu = { id: edition.personneApercuId, personne, qr: genererQrPersonne(personne).qr };
     }
     const svg = rendreFaceSvg(edition.modele, edition.cote, apercu.personne, apercu.qr, { edition: true });

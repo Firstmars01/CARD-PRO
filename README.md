@@ -13,9 +13,16 @@ Application Windows (**CardPro-Configurateur.exe**, sans installation) pour cré
 
 ### Onglet « Cartes »
 - Ajout, modification et suppression des personnes, avec sauvegarde automatique.
-- Informations : identité, téléphones, e-mail, site, adresse, note et jusqu'à 8 liens (LinkedIn…).
-- Choix du modèle pour chaque carte.
+- Informations : identité, téléphones (mobile, fixe, standard), WhatsApp, e-mail, site, LinkedIn, LinkedIn de l'entreprise, lien de prise de rendez-vous, adresse, note et jusqu'à 8 liens.
+- **Entreprises** : nom, standard, site, LinkedIn, adresse et **logo** saisis une seule fois. Chaque carte est reliée à une entreprise **ou** en « réglage personnalisé » :
+  - carte reliée : elle prend toutes les infos de l'entreprise (champs grisés, non modifiables) ; modifier l'entreprise met à jour toutes ses cartes ;
+  - le logo de l'entreprise remplace les images du modèle cochées « Remplacer par le logo de l'entreprise » (cochée par défaut) ;
+  - repasser une carte en réglage personnalisé recopie les infos de l'entreprise dans la carte, où elles deviennent modifiables ;
+  - une entreprise encore reliée à des cartes ne peut pas être supprimée.
+- Choix du modèle pour chaque carte, et **changement de design en lot** (toutes les cartes du design A passent au design B).
+- **Contrôle avant export** : nom vide, aucun téléphone ni e-mail, doublons (même nom ou même e-mail), QR trop chargé, texte coupé ou très réduit. Les problèmes de la carte affichée apparaissent sous l'aperçu ; l'export de toutes les cartes prévient s'il en reste.
 - Aperçu en direct du **recto** et du **verso**, avec une alerte si le QR code risque d'être mal lu.
+- QR codes possibles : contact (vCard), site web, LinkedIn, LinkedIn de l'entreprise, **WhatsApp** (ouvre la discussion), **prise de rendez-vous**, **itinéraire** vers l'adresse (Google Maps / Plans), ou un lien de la personne.
 - **Import d'une liste** (CSV exporté d'Excel) avec un fichier modèle à télécharger.
 - **Import d'une carte** (`.cardpro` ou GIF de portefeuille) : la personne est ajoutée avec, au choix, un **nouveau modèle** créé à partir du design de la carte ou un **modèle existant** ; si elle est déjà dans la liste (même prénom, nom et e-mail), Card Pro demande s'il faut **mettre à jour** sa fiche ou en **créer une nouvelle**.
 - **Téléchargements** : recto/verso en PNG, JPG et SVG (300 dpi), PDF recto + verso au format de la carte, planche A4 recto-verso, **PDF imprimeur** (fonds perdus 3 mm + traits de coupe), contact `.vcf`, ZIP de la carte, et **ZIP de toutes les cartes** (un dossier par personne).
@@ -108,7 +115,8 @@ CARD PRO/
 │   │   ├── Themes.js          # Thème clair / sombre (partagé avec le portefeuille)
 │   │   ├── Modeles/           # Éditeur : zone, outils, raccourcis, propriétés, calques, modèles
 │   │   └── Rendu/             # Dessin des faces, du QR, dégradés, ombres et motifs en SVG ; QR d'un lien
-│   ├── Metier/                # Personne, éléments, modèles, formats, palette, icônes, alignement, polices, vCard, import, état,
+│   ├── Metier/                # Personne, entreprise, éléments, modèles, formats, palette, icônes, alignement, polices, vCard,
+│   │                          # import, contrôle avant export (ControleCartes), état,
 │   │                          # PaquetCarte (carte complète compressée), TransfertQr (QR animé), LienContact (lien NFC iPhone)
 │   ├── Donnees/               # Appels à l'API
 │   └── Utilitaires/           # QR, formes, validation, schémas, images, CSV, ZIP, PDF, GIF, Base45, compression
@@ -116,7 +124,7 @@ CARD PRO/
 │   ├── Serveur.js             # Point d'entrée : API + fichiers
 │   ├── Configuration.js       # Variables d'environnement
 │   ├── Http/                  # Routeur, requêtes, réponses, sécurité, fichiers
-│   ├── Routes/                # Personnes, modèles
+│   ├── Routes/                # Personnes, entreprises, modèles, sauvegarde
 │   └── Donnees/               # SQLite et dépôts (requêtes préparées)
 ├── portefeuille/              # Application mobile Card Pro Portefeuille (PWA)
 │   ├── index.html, manifest.webmanifest, sw.js   # Page, installation, hors ligne et partage
@@ -146,7 +154,7 @@ CARD PRO/
 Bon à savoir :
 - L'appli n'est accessible **que depuis ce PC** (adresse `http://localhost:48080`, ou le port libre suivant).
 - **Données** : `%APPDATA%\CardPro\cardpro.sqlite` (gardées d'une version à l'autre). Journal en cas de problème : `%APPDATA%\CardPro\journal.txt`.
-- **Sauvegarde** : onglet Cartes → « Sauvegarde des données » → **Sauvegarder** (un fichier `.json` avec toutes les cartes et tous les modèles) / **Restaurer…**. Les modèles seuls s'exportent aussi en `.json` depuis l'onglet Modèles.
+- **Sauvegarde** : onglet Cartes → « Sauvegarde des données » → **Sauvegarder** (un fichier `.json` avec toutes les cartes, toutes les entreprises et tous les modèles) / **Restaurer…**. Les modèles seuls s'exportent aussi en `.json` depuis l'onglet Modèles.
 - **Mise à jour automatique** : au lancement (si Internet répond), Card Pro télécharge la nouvelle version, la vérifie et **remplace l'exe tout seul**, puis redémarre (rien à désinstaller, données conservées). Pendant qu'il tourne, il vérifie toutes les 6 heures : une version trouvée est téléchargée en arrière-plan et s'installe au prochain lancement, ou tout de suite par clic droit → « Redémarrer et installer… ». L'exe doit être dans un dossier où tu peux écrire (Téléchargements, Bureau, Documents…).
 - Lancer l'exe une seconde fois rouvre simplement la page.
 
@@ -297,18 +305,21 @@ Android exige que chaque version soit signée avec **la même clé**. Garde-la p
 
 1. **Modèles** → choisis un modèle de base → **Dupliquer**.
 2. Donne-lui un nom, ajoute ton logo (« + Image »), place les éléments à la souris, règle le verso, puis **Enregistrer**.
-3. **Cartes** → « Importer une liste » → télécharge le fichier modèle, remplis-le dans Excel, enregistre-le en CSV et importe-le en choisissant ton modèle.
-4. Sélectionne une personne pour vérifier sa carte, puis télécharge :
+3. **Cartes** → « Entreprises » → **+ Ajouter une entreprise** : nom, adresse, standard, site, logo.
+4. **Cartes** → « Importer une liste » → télécharge le fichier modèle, remplis-le dans Excel, enregistre-le en CSV et importe-le en choisissant ton modèle. Pour chaque carte, choisis son **entreprise** dans le formulaire (les cartes ajoutées ensuite reprennent celle de la carte sélectionnée).
+5. « Contrôle avant export » → **Contrôler toutes les cartes**, et corrige ce qui est signalé.
+6. Sélectionne une personne pour vérifier sa carte, puis télécharge :
    - **Recto PNG** : pour l'envoyer par e-mail ;
    - **PDF recto + verso** : pour un imprimeur ;
    - **Planche A4** : pour imprimer toi-même. Imprime en recto-verso « bord long », puis découpe le long des traits.
-5. **Toutes les cartes (ZIP)** : tous les fichiers de toute l'équipe en une fois.
+7. **Toutes les cartes (ZIP)** : tous les fichiers de toute l'équipe en une fois.
+8. Nouveau design pour tout le monde : « Changer le design de plusieurs cartes » → design actuel → nouveau design → **Appliquer**.
 
 ## Sécurité
 
 - **Usage local** : pas de comptes. Le serveur n'écoute que sur **127.0.0.1** : il est inaccessible depuis le réseau.
 - **DNS rebinding** : le nom d'hôte de chaque requête doit être `localhost` / `127.0.0.1` / `[::1]` avec le bon port ; un site malveillant qui ferait pointer son propre nom vers ce PC est refusé (code 421).
-- **Sauvegarde** : la restauration revalide chaque modèle et chaque personne (mêmes règles que le reste), dans une seule transaction (tout ou rien), après confirmation ; taille limitée à 64 Mo.
+- **Sauvegarde** : la restauration revalide chaque modèle, chaque entreprise et chaque personne (mêmes règles que le reste), dans une seule transaction (tout ou rien), après confirmation ; taille limitée à 64 Mo.
 - **Anti-CSRF** : toute requête qui modifie des données doit venir de l'application elle-même (contrôle de l'en-tête `Origin`). Un site malveillant ouvert dans le navigateur ne peut donc rien modifier.
 - **Injection SQL** : uniquement des **requêtes préparées**.
 - **Validation** : toutes les données (formulaire, import CSV, modèles JSON, API) sont **revalidées par le serveur** avec le même code que le navigateur, à partir de schémas :
@@ -319,6 +330,7 @@ Android exige que chaque version soit signée avec **la même clé**. Garde-la p
   - taille des requêtes limitée.
 - **XSS** : aucun `innerHTML`. Le texte est inséré via `textContent`, et une **CSP stricte** (`script-src 'self'`) est appliquée par une balise et un en-tête HTTP.
 - **Polices** : chargées uniquement depuis les fichiers de l'appli (même origine, jamais depuis Internet) ; dans les exports, elles sont copiées dans le fichier en Base64.
+- **Entreprises** : revalidées par le serveur comme les personnes (téléphone, liens `http`/`https`, logo = image vérifiée) ; l'identifiant est toujours donné par le serveur ; une carte ne peut être reliée qu'à une entreprise qui existe ; suppression refusée (409) tant que des cartes y sont reliées.
 - **Images** : PNG, JPEG ou WebP uniquement (signature vérifiée, 8 Mo maximum), **redessinées dans un canvas** pour supprimer tout contenu caché. Le SVG est refusé.
 - **Injection vCard** : valeurs échappées (`\ ; ,` et retours à la ligne).
 - **CSV** : à l'export, les cellules qui commencent par `= + - @` sont neutralisées (pas de formule exécutée dans Excel). À l'import, le fichier est limité à 1 Mo et 500 personnes.

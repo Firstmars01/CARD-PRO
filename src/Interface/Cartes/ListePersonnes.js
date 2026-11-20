@@ -8,9 +8,10 @@ import { creerElement, vider } from '../../Utilitaires/Dom.js';
 import { telechargerBlob } from '../../Utilitaires/Telechargement.js';
 import { nomComplet } from '../../Metier/Personne.js';
 import { MODELES_DE_BASE } from '../../Metier/ModelesDeBase.js';
-import { obtenirEtat, abonner, ajouterPersonne, trouverModele } from '../../Metier/EtatApplication.js';
+import { obtenirEtat, abonner, ajouterPersonne, trouverModele, trouverEntreprise } from '../../Metier/EtatApplication.js';
 import { personneSelectionnee, selectionnerPersonne, abonnerSelection } from './SelectionCarte.js';
 import { fichierZipTous } from './GenerateurFichiers.js';
+import { controlerToutesLesCartes } from './SectionControle.js';
 import { notifier } from '../Notifications.js';
 
 /**
@@ -39,7 +40,7 @@ export function monterListePersonnes(conteneur) {
     compteur.textContent = `${personnes.length} carte${personnes.length > 1 ? 's' : ''}`;
     boutonZip.disabled = personnes.length === 0;
     const triees = [...personnes].sort((a, b) => (nomComplet(a.personne) || '~').localeCompare(nomComplet(b.personne) || '~', 'fr'));
-    triees.forEach(({ id, personne, modeleId }) => {
+    triees.forEach(({ id, personne, modeleId, entrepriseId }) => {
       const actif = id === personneSelectionnee();
       liste.append(creerElement('li', {}, [creerElement('button', {
         classe: `Personne${actif ? ' Personne--active' : ''}`,
@@ -47,7 +48,7 @@ export function monterListePersonnes(conteneur) {
         surClic: () => selectionnerPersonne(id),
       }, [
         creerElement('strong', { texte: nomComplet(personne) || 'Sans nom' }),
-        creerElement('span', { texte: [personne.poste, trouverModele(modeleId).nom].filter(Boolean).join(' · ') }),
+        creerElement('span', { texte: [personne.poste, trouverEntreprise(entrepriseId)?.nom, trouverModele(modeleId).nom].filter(Boolean).join(' · ') }),
       ])]));
     });
     if (!personnes.length) liste.append(creerElement('li', { classe: 'Aide', texte: 'Aucune carte : ajoute une personne ou importe une liste.' }));
@@ -58,12 +59,12 @@ export function monterListePersonnes(conteneur) {
 }
 
 /**
- * Ajoute une personne vide (modèle de la personne sélectionnée par défaut) et la sélectionne.
+ * Ajoute une personne vide (modèle et entreprise de la personne sélectionnée par défaut) et la sélectionne.
  */
 async function ajouter() {
   const courante = obtenirEtat().personnes.find((p) => p.id === personneSelectionnee());
   try {
-    const entree = await ajouterPersonne(courante ? courante.modeleId : MODELES_DE_BASE[0].id);
+    const entree = await ajouterPersonne(courante ? courante.modeleId : MODELES_DE_BASE[0].id, courante ? courante.entrepriseId : '');
     selectionnerPersonne(entree.id);
     document.getElementById('champ-prenom')?.focus();
   } catch (erreur) {
@@ -77,6 +78,9 @@ async function ajouter() {
  */
 async function exporterTout(bouton) {
   const { personnes } = obtenirEtat();
+  // Contrôle avant export : on prévient s'il reste des cartes à vérifier.
+  const aVerifier = controlerToutesLesCartes();
+  if (aVerifier.length && !window.confirm(`${aVerifier.length} carte(s) à vérifier (voir « Contrôle avant export »). Exporter quand même ?`)) return;
   bouton.disabled = true;
   const texte = bouton.textContent;
   try {

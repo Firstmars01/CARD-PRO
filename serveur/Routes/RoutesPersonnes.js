@@ -1,7 +1,7 @@
 /**
  * RoutesPersonnes.js
  * Routes des personnes (une carte par personne) : liste, ajout,
- * import en lot, modification et suppression.
+ * import en lot, modification, suppression et changement de design en lot.
  */
 
 import { normaliserPersonne } from '../../src/Metier/Personne.js';
@@ -30,6 +30,29 @@ function modeleValide(ctx, modeleId) {
 }
 
 /**
+ * Vérifie l'entreprise reliée à une carte.
+ * @param {object} ctx - Contexte de la requête.
+ * @param {unknown} entrepriseId - Identifiant reçu.
+ * @returns {string} Identifiant d'une entreprise existante, ou '' (réglage personnalisé).
+ */
+function entrepriseValide(ctx, entrepriseId) {
+  return idValide(entrepriseId) && ctx.depots.entreprises.existe(entrepriseId) ? entrepriseId : '';
+}
+
+/**
+ * Construit une carte validée à partir du corps de la requête.
+ * @param {object} ctx - Contexte de la requête.
+ * @param {string} id - Identifiant de la carte.
+ * @param {object} corps - { modeleId, entrepriseId, personne } non fiables.
+ * @returns {{id:string, modeleId:string, entrepriseId:string, personne:object}} Carte.
+ */
+function entreeValide(ctx, id, corps) {
+  return {
+    id, modeleId: modeleValide(ctx, corps?.modeleId), entrepriseId: entrepriseValide(ctx, corps?.entrepriseId), personne: normaliserPersonne(corps?.personne),
+  };
+}
+
+/**
  * Bloque l'ajout si la limite de personnes serait dépassée.
  * @param {object} ctx - Contexte de la requête.
  * @param {number} nombre - Nombre de personnes à ajouter.
@@ -47,8 +70,8 @@ function listerPersonnes(ctx) {
 async function creerPersonne(ctx) {
   const corps = await lireCorpsJson(ctx.req, LIMITE_CORPS);
   verifierPlace(ctx, 1);
-  const entree = { id: nouvelId('p'), modeleId: modeleValide(ctx, corps?.modeleId), personne: normaliserPersonne(corps?.personne) };
-  ctx.depots.personnes.creer(entree.id, entree.modeleId, entree.personne);
+  const entree = entreeValide(ctx, nouvelId('p'), corps);
+  ctx.depots.personnes.creer(entree);
   envoyerJson(ctx.res, 201, entree);
 }
 
@@ -58,9 +81,8 @@ async function importerPersonnes(ctx) {
   if (!Array.isArray(corps?.personnes) || corps.personnes.length === 0) throw new ErreurHttp(400, 'Liste vide.');
   if (corps.personnes.length > IMPORT_MAX) throw new ErreurHttp(413, `Maximum ${IMPORT_MAX} personnes par import.`);
   verifierPlace(ctx, corps.personnes.length);
-  const modeleId = modeleValide(ctx, corps.modeleId);
-  const entrees = corps.personnes.map((p) => ({ id: nouvelId('p'), modeleId, personne: normaliserPersonne(p) }));
-  transaction(ctx.base, () => entrees.forEach((e) => ctx.depots.personnes.creer(e.id, e.modeleId, e.personne)));
+  const entrees = corps.personnes.map((personne) => entreeValide(ctx, nouvelId('p'), { ...corps, personne }));
+  transaction(ctx.base, () => entrees.forEach((e) => ctx.depots.personnes.creer(e)));
   envoyerJson(ctx.res, 201, { personnes: entrees });
 }
 
@@ -68,8 +90,8 @@ async function importerPersonnes(ctx) {
 async function modifierPersonne(ctx) {
   if (!ctx.depots.personnes.existe(ctx.params.id)) throw new ErreurHttp(404, 'Personne introuvable.');
   const corps = await lireCorpsJson(ctx.req, LIMITE_CORPS);
-  const entree = { id: ctx.params.id, modeleId: modeleValide(ctx, corps?.modeleId), personne: normaliserPersonne(corps?.personne) };
-  ctx.depots.personnes.modifier(entree.id, entree.modeleId, entree.personne);
+  const entree = entreeValide(ctx, ctx.params.id, corps);
+  ctx.depots.personnes.modifier(entree);
   envoyerJson(ctx.res, 200, entree);
 }
 
@@ -81,6 +103,18 @@ function supprimerPersonne(ctx) {
 }
 
 /**
+ * POST /api/personnes/changer-modele : toutes les cartes du modèle « ancien »
+ * passent sur le modèle « nouveau ».
+ * @param {object} ctx - Contexte.
+ */
+async function changerModeleEnLot(ctx) {
+  const corps = await lireCorpsJson(ctx.req, LIMITE_CORPS);
+  if (!idValide(corps?.ancien) || modeleValide(ctx, corps?.nouveau) !== corps.nouveau) throw new ErreurHttp(400, 'Modèle invalide.');
+  const modifiees = ctx.depots.personnes.remplacerModele(corps.ancien, corps.nouveau);
+  envoyerJson(ctx.res, 200, { modifiees });
+}
+
+/**
  * Déclare les routes des personnes.
  * @param {import('../Http/Routeur.js').Routeur} routeur - Routeur.
  */
@@ -88,6 +122,7 @@ export function enregistrerRoutesPersonnes(routeur) {
   routeur.ajouter('GET', '/api/personnes', listerPersonnes);
   routeur.ajouter('POST', '/api/personnes', creerPersonne);
   routeur.ajouter('POST', '/api/personnes/import', importerPersonnes);
+  routeur.ajouter('POST', '/api/personnes/changer-modele', changerModeleEnLot);
   routeur.ajouter('PUT', '/api/personnes/:id', modifierPersonne);
   routeur.ajouter('DELETE', '/api/personnes/:id', supprimerPersonne);
 }

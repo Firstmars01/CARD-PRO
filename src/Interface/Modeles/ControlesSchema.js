@@ -133,7 +133,7 @@ function creerControle(reglage, surChangement, avantModification, palette) {
  * @param {Function} avantModification - Appelée avant la modification.
  * @returns {{bloc:HTMLElement, afficher:Function}} Contrôle.
  */
-function creerControleImage(reglage, id, surChangement, avantModification) {
+export function creerControleImage(reglage, id, surChangement, avantModification) {
   const entree = creerElement('input', { attributs: { id, type: 'file', accept: 'image/png,image/jpeg,image/webp' } });
   const miniature = creerElement('img', { classe: 'Miniature', attributs: { alt: '' } });
   const retirer = creerElement('button', {

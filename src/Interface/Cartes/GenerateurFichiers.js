@@ -14,7 +14,7 @@ import { creerZip } from '../../Utilitaires/Zip.js';
 import { nomComplet } from '../../Metier/Personne.js';
 import { genererVCard } from '../../Metier/GenerateurVCard.js';
 import { genererQrPersonne } from '../../Metier/ContenuQr.js';
-import { trouverModele } from '../../Metier/EtatApplication.js';
+import { carteEffective } from '../../Metier/EtatApplication.js';
 import { rendreFaceSvg } from '../Rendu/RenduFaceSvg.js';
 import { creerPaquet, IDENTIFIANT_GIF } from '../../Metier/PaquetCarte.js';
 import { decouperPaquet, encoderTrames } from '../../Metier/TransfertQr.js';
@@ -25,26 +25,27 @@ const DELAI_GIF = 20; // 1/5 de seconde par QR code
 
 
 /**
- * Prépare le rendu d'une carte (les deux faces).
- * @param {{personne:object, modeleId:string}} entree - Personne et son modèle.
+ * Prépare le rendu d'une carte (les deux faces), avec les infos et le logo
+ * de son entreprise si elle est reliée à une entreprise.
+ * @param {{personne:object, modeleId:string, entrepriseId:string}} entree - Carte.
  * @returns {{nom:string, recto:SVGSVGElement, verso:SVGSVGElement, personne:object, modele:object}} Carte prête à exporter.
  */
 export function preparerCarte(entree) {
-  const modele = trouverModele(entree.modeleId);
-  const { qr } = genererQrPersonne(entree.personne);
+  const { modele, personne } = carteEffective(entree);
+  const { qr } = genererQrPersonne(personne);
   const dimensions = dimensionsModele(modele);
   const perdu = { largeur: dimensions.largeur + 2 * FOND_PERDU, hauteur: dimensions.hauteur + 2 * FOND_PERDU };
   return {
-    nom: nomFichierSur(nomComplet(entree.personne), 'carte-de-visite'),
-    personne: entree.personne,
+    nom: nomFichierSur(nomComplet(personne), 'carte-de-visite'),
+    personne,
     modele,
     dimensions,
     pixels: enPixels(dimensions),
     pixelsPerdu: enPixels(perdu),
-    recto: rendreFaceSvg(modele, 'recto', entree.personne, qr),
-    verso: rendreFaceSvg(modele, 'verso', entree.personne, qr),
+    recto: rendreFaceSvg(modele, 'recto', personne, qr),
+    verso: rendreFaceSvg(modele, 'verso', personne, qr),
     // Faces avec 3 mm de fond en plus (fichier imprimeur), créées à la demande.
-    facePerdue: (cote) => rendreFaceSvg(modele, cote, entree.personne, qr, { fondPerdu: true }),
+    facePerdue: (cote) => rendreFaceSvg(modele, cote, personne, qr, { fondPerdu: true }),
   };
 }
 

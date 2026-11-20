@@ -11,6 +11,7 @@ import { lireConfiguration } from './Configuration.js';
 import { ouvrirBase } from './Donnees/BaseDeDonnees.js';
 import { creerDepotModeles } from './Donnees/DepotModeles.js';
 import { creerDepotPersonnes } from './Donnees/DepotPersonnes.js';
+import { creerDepotEntreprises } from './Donnees/DepotEntreprises.js';
 import { ErreurHttp } from './Http/ErreurHttp.js';
 import { envoyerJson } from './Http/Reponse.js';
 import { appliquerEntetesSecurite, verifierOrigine, estHoteLocal, verifierHoteLocal } from './Http/Securite.js';
@@ -19,6 +20,7 @@ import { servirFichier } from './Http/FichiersStatiques.js';
 import { enregistrerRoutesModeles } from './Routes/RoutesModeles.js';
 import { enregistrerRoutesPersonnes } from './Routes/RoutesPersonnes.js';
 import { enregistrerRoutesSauvegarde } from './Routes/RoutesSauvegarde.js';
+import { enregistrerRoutesEntreprises } from './Routes/RoutesEntreprises.js';
 
 /**
  * Crée le serveur HTTP (sans le démarrer).
@@ -27,7 +29,7 @@ import { enregistrerRoutesSauvegarde } from './Routes/RoutesSauvegarde.js';
  */
 export function creerServeur(config) {
   const base = ouvrirBase(config.cheminBase);
-  const depots = { modeles: creerDepotModeles(base), personnes: creerDepotPersonnes(base) };
+  const depots = { modeles: creerDepotModeles(base), personnes: creerDepotPersonnes(base), entreprises: creerDepotEntreprises(base) };
   const routeur = new Routeur();
   routeur.ajouter('GET', '/api/sante', (ctx) => envoyerJson(ctx.res, 200, { ok: true }));
   // Réglages publics utiles à la page (adresse de l'appli mobile).
@@ -35,6 +37,7 @@ export function creerServeur(config) {
   enregistrerRoutesModeles(routeur);
   enregistrerRoutesPersonnes(routeur);
   enregistrerRoutesSauvegarde(routeur);
+  enregistrerRoutesEntreprises(routeur);
 
   const application = { config, base, depots, routeur };
   const serveur = http.createServer((req, res) => { traiterRequete(req, res, application); });
