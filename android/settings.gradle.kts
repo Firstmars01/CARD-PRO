@@ -1,5 +1,5 @@
 // settings.gradle.kts
-// Projet Android de Card Pro : l'appli « Card Pro » (portefeuille + NFC).
+// Projet Android de DrawCard : l'appli « DrawCard » (portefeuille + NFC).
 
 pluginManagement {
     repositories {
@@ -17,5 +17,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "CardPro"
+rootProject.name = "DrawCard"
 include(":app")

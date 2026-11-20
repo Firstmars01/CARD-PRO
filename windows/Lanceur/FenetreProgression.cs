@@ -1,6 +1,6 @@
 /*
  * FenetreProgression.cs
- * Petite fenêtre affichée au démarrage de Card Pro : elle montre l'étape en
+ * Petite fenêtre affichée au démarrage de DrawCard : elle montre l'étape en
  * cours (recherche de mise à jour, téléchargement avec pourcentage,
  * installation, lancement) puis se ferme toute seule.
  */
@@ -9,7 +9,7 @@ using System.Drawing;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace CardPro.Lanceur
+namespace DrawCard.Lanceur
 {
     /// <summary>Fenêtre de progression du démarrage.</summary>
     internal sealed class FenetreProgression : Form
@@ -20,7 +20,7 @@ namespace CardPro.Lanceur
         /// <summary>Crée la fenêtre.</summary>
         private FenetreProgression()
         {
-            Text = "Card Pro";
+            Text = "DrawCard";
             Icon = IconeBarre.ChargerIcone();
             FormBorderStyle = FormBorderStyle.FixedDialog;
             ControlBox = false;
@@ -32,7 +32,7 @@ namespace CardPro.Lanceur
 
             Label titre = new Label
             {
-                Text = "Card Pro",
+                Text = "DrawCard",
                 Font = new Font("Segoe UI", 13f, FontStyle.Bold),
                 AutoSize = true,
                 Location = new Point(20, 14),

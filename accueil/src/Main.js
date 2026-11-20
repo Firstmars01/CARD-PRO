@@ -2,7 +2,7 @@
  * Main.js (accueil)
  * Page d'accueil du projet : présentation, fonctionnement et bouton de
  * téléchargement adapté à l'appareil :
- *  - PC : CardPro-Configurateur.exe (Card Pro Configurateur pour Windows) ;
+ *  - PC : DrawCard-Configurateur.exe (DrawCard Configurateur pour Windows) ;
  *  - téléphone : l'appli mobile (page portefeuille/, qui propose l'APK
  *    sur Android et l'ajout à l'écran d'accueil sur iPhone).
  * Le texte est inséré avec textContent (aucune injection possible).
@@ -44,8 +44,8 @@ function liste(elements) {
 function creerBandeau(depot) {
   const surPc = systeme() === 'pc';
   const actions = surPc && depot
-    ? [bouton('Télécharger Card Pro Configurateur (Windows)', lienExeConfigurateur(depot), true), bouton("Appli mobile : sur ton téléphone", '#mobile')]
-    : [bouton("Installer l'appli Card Pro", ADRESSE_MOBILE, true), bouton('Card Pro Configurateur (PC Windows)', '#configurateur')];
+    ? [bouton('Télécharger DrawCard Configurateur (Windows)', lienExeConfigurateur(depot), true), bouton("Appli mobile : sur ton téléphone", '#mobile')]
+    : [bouton("Installer l'appli DrawCard", ADRESSE_MOBILE, true), bouton('DrawCard Configurateur (PC Windows)', '#configurateur')];
   return creerElement('section', { classe: 'Bandeau' }, [
     creerElement('h2', { classe: 'Bandeau-titre', texte: "Les cartes de visite de toute l'équipe, sur papier et sur téléphone." }),
     creerElement('p', { classe: 'Bandeau-texte', texte: "Le Configurateur crée les cartes avec QR code. Chacun garde les siennes et celles des autres dans son téléphone, et partage son contact d'un geste : QR code, NFC ou message." }),
@@ -100,7 +100,7 @@ function creerApplis(depot) {
     creerElement('div', { classe: 'Applis' }, [
       creerAppli({
         id: 'configurateur',
-        titre: 'Card Pro Configurateur · PC Windows',
+        titre: 'DrawCard Configurateur · PC Windows',
         texte: 'Pour créer et gérer les cartes de toute l’équipe.',
         points: [
           'Éditeur visuel recto / verso : formes, icônes, dégradés, palette, formats',
@@ -109,16 +109,16 @@ function creerApplis(depot) {
           'QR animé et GIF pour envoyer la carte sur le téléphone',
           'Sauvegarde / restauration, mises à jour annoncées',
         ],
-        actions: depot ? [bouton('Télécharger CardPro-Configurateur.exe', lienExeConfigurateur(depot), true), bouton('Toutes les versions', pageVersions(depot))] : [],
-        complement: creerElement('p', { classe: 'Astuce', texte: "Si Windows affiche « Windows a protégé votre ordinateur » : Informations complémentaires → Exécuter quand même. Ensuite, une icône Card Pro apparaît près de l'horloge." }),
+        actions: depot ? [bouton('Télécharger DrawCard-Configurateur.exe', lienExeConfigurateur(depot), true), bouton('Toutes les versions', pageVersions(depot))] : [],
+        complement: creerElement('p', { classe: 'Astuce', texte: "Si Windows affiche « Windows a protégé votre ordinateur » : Informations complémentaires → Exécuter quand même. Ensuite, une icône DrawCard apparaît près de l'horloge." }),
       }),
       creerAppli({
         id: 'mobile',
-        titre: 'Card Pro · Téléphone',
+        titre: 'DrawCard · Téléphone',
         texte: 'Le portefeuille de cartes qui remplace le papier.',
         points: [
           'Cartes reçues en recto / verso, comme imprimées',
-          'Ajout par scan du QR animé ou par le GIF / .cardpro reçu par e-mail',
+          'Ajout par scan du QR animé ou par le GIF / .drawcard reçu par e-mail',
           'Montrer son contact en QR plein écran, l’envoyer par AirDrop / Quick Share',
           'NFC : approcher un autre téléphone suffit (appli Android)',
           'Thème clair / sombre, fonctionne hors ligne',
@@ -159,7 +159,7 @@ function demarrer() {
   obtenirElement('principal').append(creerBandeau(depot), creerFonctionnement(), creerApplis(depot), creerDonnees());
   if (depot) {
     obtenirElement('pied').append(
-      creerElement('span', { texte: 'Card Pro · ' }),
+      creerElement('span', { texte: 'DrawCard · ' }),
       creerElement('a', { texte: 'Code source sur GitHub', attributs: { href: `https://github.com/${depot.compte}/${depot.depot}`, rel: 'noopener noreferrer' } }),
     );
   }

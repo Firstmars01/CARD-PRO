@@ -2,7 +2,7 @@
  * VueListe.js
  * Écran d'accueil : la liste des cartes du portefeuille (ma carte, puis
  * favoris, puis les autres, triées au choix), avec les boutons « Scanner »
- * (QR animé), « Importer » (GIF, .cardpro ou sauvegarde .json) et
+ * (QR animé), « Importer » (GIF, .drawcard ou sauvegarde .json) et
  * « Sauvegarder » (tout le portefeuille dans un fichier).
  */
 
@@ -16,7 +16,7 @@ import { icone } from '../../../src/Interface/Icones.js';
 import { trierCartes, ORDRES, ORDRE_PAR_DEFAUT } from '../Metier/TriCartes.js';
 import { estSauvegarde, sauvegarderPortefeuille, restaurerPortefeuille } from './SauvegardeTelephone.js';
 
-const CLE_ORDRE = 'cardpro-ordre-cartes';
+const CLE_ORDRE = 'drawcard-ordre-cartes';
 
 /**
  * Lit l'ordre de tri choisi (gardé sur le téléphone).
@@ -78,7 +78,7 @@ function creerVignette(carte) {
  */
 export function creerVueListe() {
   const entree = creerElement('input', {
-    attributs: { type: 'file', accept: '.cardpro,.gif,.json,image/gif,application/json,application/octet-stream', multiple: true, hidden: true },
+    attributs: { type: 'file', accept: '.drawcard,.cardpro,.gif,.json,image/gif,application/json,application/octet-stream', multiple: true, hidden: true },
   });
   entree.addEventListener('change', async () => {
     const fichiers = [...entree.files];
@@ -110,7 +110,7 @@ export function creerVueListe() {
     creerElement('p', { texte: 'Aucune carte pour le moment.' }),
     creerElement('p', {
       classe: 'Astuce',
-      texte: "Scanne le QR animé affiché par le Configurateur, ou importe le GIF / le fichier .cardpro reçu par e-mail (sur Android : « Partager » → Card Pro).",
+      texte: "Scanne le QR animé affiché par le Configurateur, ou importe le GIF / le fichier .drawcard reçu par e-mail (sur Android : « Partager » → DrawCard).",
     }),
   ]);
   const element = creerElement('section', { classe: 'Ecran', attributs: { 'aria-label': 'Mes cartes' } }, [

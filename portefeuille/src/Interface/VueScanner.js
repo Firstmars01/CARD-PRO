@@ -49,7 +49,7 @@ export function creerVueScanner() {
       return;
     }
     if (resultat.etat === 'ignore') {
-      if (!resultat.total) etat.textContent = "Ce QR code n'est pas un QR de transfert Card Pro.";
+      if (!resultat.total) etat.textContent = "Ce QR code n'est pas un QR de transfert DrawCard.";
       return;
     }
     barre.max = resultat.total;

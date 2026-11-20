@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   AndroidManifest.xml
-  Appli Card Pro : écran principal (portefeuille), service NFC (le téléphone
+  Appli DrawCard : écran principal (portefeuille), service NFC (le téléphone
   se fait passer pour une puce NFC contenant le contact) et partage de fichiers.
   Aucune permission Internet : tout le contenu est dans l'appli.
 -->
@@ -31,7 +31,7 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <!-- « Ouvrir avec Card Pro » : fichier .cardpro ou GIF reçu par e-mail. -->
+            <!-- « Ouvrir avec DrawCard » : fichier .drawcard ou GIF reçu par e-mail. -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -39,7 +39,7 @@
                 <data android:mimeType="application/octet-stream" />
                 <data android:mimeType="image/gif" />
             </intent-filter>
-            <!-- « Partager → Card Pro ». -->
+            <!-- « Partager → DrawCard ». -->
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />

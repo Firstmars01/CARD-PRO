@@ -4,14 +4,14 @@
  * dans une vraie fenêtre. Ses bibliothèques sont intégrées à l'exe pour
  * qu'il reste un seul fichier :
  *  - les deux DLL .NET sont chargées depuis l'exe à la demande ;
- *  - WebView2Loader.dll (native) est extraite dans %LOCALAPPDATA%\CardPro\webview2.
+ *  - WebView2Loader.dll (native) est extraite dans %LOCALAPPDATA%\DrawCard\webview2.
  * Prepare() doit être appelé avant toute utilisation d'un type WebView2.
  */
 using System;
 using System.IO;
 using System.Reflection;
 
-namespace CardPro.Lanceur
+namespace DrawCard.Lanceur
 {
     /// <summary>Chargement des bibliothèques WebView2 intégrées.</summary>
     internal static class ChargementWebView2

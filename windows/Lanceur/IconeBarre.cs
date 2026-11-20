@@ -1,6 +1,6 @@
 /*
  * IconeBarre.cs
- * Icône Card Pro près de l'horloge, avec son menu :
+ * Icône DrawCard près de l'horloge, avec son menu :
  * afficher la fenêtre, dossier des données, mise à jour, quitter.
  * Toutes les 6 heures, elle cherche une nouvelle version, la télécharge en
  * arrière-plan et propose de redémarrer ; sinon elle s'installe au prochain lancement.
@@ -12,7 +12,7 @@ using System.Reflection;
 using System.Threading;
 using System.Windows.Forms;
 
-namespace CardPro.Lanceur
+namespace DrawCard.Lanceur
 {
     /// <summary>Icône de la zone de notification.</summary>
     internal sealed class IconeBarre : IDisposable
@@ -27,14 +27,14 @@ namespace CardPro.Lanceur
         private bool quitte;
 
         /// <summary>Crée l'icône et son menu.</summary>
-        /// <param name="serveur">Serveur Card Pro en cours.</param>
-        /// <param name="ouvrirAppli">Affiche l'appli (fenêtre Card Pro, ou navigateur en secours).</param>
+        /// <param name="serveur">Serveur DrawCard en cours.</param>
+        /// <param name="ouvrirAppli">Affiche l'appli (fenêtre DrawCard, ou navigateur en secours).</param>
         public IconeBarre(ServeurLocal serveur, Action ouvrirAppli)
         {
             this.serveur = serveur;
             this.ouvrirAppli = ouvrirAppli;
             ContextMenuStrip menu = new ContextMenuStrip();
-            ToolStripMenuItem ouvrir = new ToolStripMenuItem("Ouvrir Card Pro", null, (s, e) => OuvrirAppli());
+            ToolStripMenuItem ouvrir = new ToolStripMenuItem("Ouvrir DrawCard", null, (s, e) => OuvrirAppli());
             ouvrir.Font = new Font(ouvrir.Font, FontStyle.Bold);
             elementMiseAJour = new ToolStripMenuItem("", null, (s, e) => RedemarrerPourMettreAJour()) { Available = false };
             menu.Items.Add(ouvrir);
@@ -44,14 +44,14 @@ namespace CardPro.Lanceur
             menu.Items.Add(new ToolStripMenuItem("Rechercher une mise à jour", null, (s, e) => VerifierMiseAJour(true)));
             menu.Items.Add(new ToolStripMenuItem("Version " + Parametres.TexteVersion) { Enabled = false });
             menu.Items.Add(new ToolStripSeparator());
-            menu.Items.Add(new ToolStripMenuItem("Quitter Card Pro", null, (s, e) => Quitter()));
+            menu.Items.Add(new ToolStripMenuItem("Quitter DrawCard", null, (s, e) => Quitter()));
 
             // Le menu (un contrôle Windows) installe le contexte d'exécution de l'interface.
             contexte = SynchronizationContext.Current ?? new WindowsFormsSynchronizationContext();
             icone = new NotifyIcon
             {
                 Icon = ChargerIcone(),
-                Text = "Card Pro Configurateur",
+                Text = "DrawCard Configurateur",
                 ContextMenuStrip = menu,
                 Visible = true,
             };
@@ -93,7 +93,7 @@ namespace CardPro.Lanceur
                 if (prete == null)
                 {
                     InfoVersion info = await MiseAJour.ChercherAsync(TimeSpan.FromSeconds(10));
-                    if (info == null) message = "Card Pro est à jour.";
+                    if (info == null) message = "DrawCard est à jour.";
                     else if (await MiseAJour.TelechargerAsync(info, null)) prete = info.Version;
                     else message = "La mise à jour téléchargée est invalide : elle a été ignorée.";
                 }
@@ -109,7 +109,7 @@ namespace CardPro.Lanceur
             contexte.Post(_ =>
             {
                 if (prete != null) SignalerVersionPrete(prete);
-                else if (manuelle) Bulle("Card Pro", message, ToolTipIcon.Info);
+                else if (manuelle) Bulle("DrawCard", message, ToolTipIcon.Info);
             }, null);
         }
 
@@ -133,7 +133,7 @@ namespace CardPro.Lanceur
             Process.Start(new ProcessStartInfo("explorer.exe", "\"" + Parametres.DossierDonnees + "\"") { UseShellExecute = true });
         }
 
-        /// <summary>Arrête le serveur et ferme Card Pro (menu, ou fermeture de la fenêtre).</summary>
+        /// <summary>Arrête le serveur et ferme DrawCard (menu, ou fermeture de la fenêtre).</summary>
         public void Quitter()
         {
             // Appelé une seule fois (fermer la fenêtre déclenche aussi Quitter).
@@ -150,10 +150,10 @@ namespace CardPro.Lanceur
         {
             elementMiseAJour.Text = "Redémarrer et installer la version " + version;
             elementMiseAJour.Available = true;
-            Bulle("Mise à jour prête", "Card Pro " + version + " s'installera au prochain lancement. Clic droit sur l'icône pour l'installer maintenant.", ToolTipIcon.Info);
+            Bulle("Mise à jour prête", "DrawCard " + version + " s'installera au prochain lancement. Clic droit sur l'icône pour l'installer maintenant.", ToolTipIcon.Info);
         }
 
-        /// <summary>Arrête Card Pro, installe la nouvelle version et la relance.</summary>
+        /// <summary>Arrête DrawCard, installe la nouvelle version et la relance.</summary>
         private void RedemarrerPourMettreAJour()
         {
             serveur.Arreter();
@@ -164,8 +164,8 @@ namespace CardPro.Lanceur
                 return;
             }
             MessageBox.Show(
-                "La mise à jour n'a pas pu être installée (dossier de l'exe protégé ?). Card Pro va se fermer : relance-le.",
-                "Card Pro Configurateur", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                "La mise à jour n'a pas pu être installée (dossier de l'exe protégé ?). DrawCard va se fermer : relance-le.",
+                "DrawCard Configurateur", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             icone.Visible = false;
             Application.Exit();
         }
@@ -175,13 +175,13 @@ namespace CardPro.Lanceur
         {
             icone.Visible = false;
             MessageBox.Show(
-                "Card Pro s'est arrêté de façon inattendue.\nRelance-le. Détails dans : " + Parametres.FichierJournal,
-                "Card Pro Configurateur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                "DrawCard s'est arrêté de façon inattendue.\nRelance-le. Détails dans : " + Parametres.FichierJournal,
+                "DrawCard Configurateur", MessageBoxButtons.OK, MessageBoxIcon.Error);
             Application.Exit();
         }
 
         /// <summary>Icône intégrée à l'exe.</summary>
-        /// <returns>Icône Card Pro.</returns>
+        /// <returns>Icône DrawCard.</returns>
         public static Icon ChargerIcone()
         {
             using (System.IO.Stream flux = Assembly.GetExecutingAssembly().GetManifestResourceStream("icone.ico"))

@@ -1,6 +1,6 @@
 {
-  "name": "Card Pro – Carte de visite QR",
-  "short_name": "Card Pro",
+  "name": "DrawCard – Carte de visite QR",
+  "short_name": "DrawCard",
   "description": "Crée ta carte de visite avec QR code, personnalisable, à partager par lien ou NFC.",
   "lang": "fr",
   "start_url": "./",

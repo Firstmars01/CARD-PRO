@@ -1,6 +1,6 @@
 /**
  * Plateforme.js
- * Reconnaît l'appareil (iPhone, Android, PC), le navigateur, et si Card Pro
+ * Reconnaît l'appareil (iPhone, Android, PC), le navigateur, et si DrawCard
  * est ouvert comme appli installée (APK Android, ou écran d'accueil iPhone)
  * ou simplement dans un navigateur.
  */
@@ -13,7 +13,7 @@ const AGENT = navigator.userAgent || '';
 window.addEventListener('beforeinstallprompt', (evenement) => evenement.preventDefault());
 
 /**
- * Indique si Card Pro est ouvert comme appli installée.
+ * Indique si DrawCard est ouvert comme appli installée.
  * @returns {boolean} true dans l'APK Android ou depuis l'écran d'accueil (iPhone).
  */
 export function estInstalle() {

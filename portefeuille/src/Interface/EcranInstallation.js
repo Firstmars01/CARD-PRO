@@ -1,6 +1,6 @@
 /**
  * EcranInstallation.js
- * Seul écran visible quand Card Pro est ouvert dans un navigateur : il
+ * Seul écran visible quand DrawCard est ouvert dans un navigateur : il
  * explique comment installer l'appli. Toutes les fonctions (cartes, scan,
  * import) ne sont disponibles qu'une fois l'appli installée.
  *  - PC : « ouvre ce lien sur ton téléphone » + QR code ;
@@ -14,7 +14,7 @@ import { notifier } from '../../../src/Interface/Notifications.js';
 import { systeme, navigateurCompatible } from '../Utilitaires/Plateforme.js';
 
 // Appli Android, publiée avec le site (voir .github/workflows/Portefeuille.yml).
-const ADRESSE_APK = '../telechargement/CardPro.apk';
+const ADRESSE_APK = '../telechargement/DrawCard.apk';
 
 /**
  * Adresse de l'appli, sans paramètres (celle à installer).
@@ -56,9 +56,9 @@ function listeEtapes(etapes) {
  */
 function contenuPc() {
   return [
-    creerElement('h2', { classe: 'Titre-ecran', texte: 'Installe Card Pro sur ton téléphone' }),
-    creerElement('p', { texte: "Card Pro est une appli pour téléphone (Android ou iPhone). Scanne ce QR code avec l'appareil photo de ton téléphone pour l'ouvrir, puis installe-la." }),
-    creerQrLien(adresseAppli(), "QR code de l'adresse de l'appli Card Pro"),
+    creerElement('h2', { classe: 'Titre-ecran', texte: 'Installe DrawCard sur ton téléphone' }),
+    creerElement('p', { texte: "DrawCard est une appli pour téléphone (Android ou iPhone). Scanne ce QR code avec l'appareil photo de ton téléphone pour l'ouvrir, puis installe-la." }),
+    creerQrLien(adresseAppli(), "QR code de l'adresse de l'appli DrawCard"),
     creerElement('p', { classe: 'Lien-appli', texte: adresseAppli() }),
     creerElement('div', { classe: 'Actions' }, [boutonCopier()]),
   ];
@@ -72,17 +72,17 @@ function contenuIos() {
   if (!navigateurCompatible()) {
     return [
       creerElement('h2', { classe: 'Titre-ecran', texte: 'Ouvre ce lien dans Safari' }),
-      creerElement('p', { texte: "Sur iPhone, Card Pro s'installe depuis Safari. Copie le lien, ouvre Safari et colle-le dans la barre d'adresse." }),
+      creerElement('p', { texte: "Sur iPhone, DrawCard s'installe depuis Safari. Copie le lien, ouvre Safari et colle-le dans la barre d'adresse." }),
       creerElement('div', { classe: 'Actions' }, [boutonCopier()]),
     ];
   }
   return [
-    creerElement('h2', { classe: 'Titre-ecran', texte: "Installe l'appli Card Pro" }),
+    creerElement('h2', { classe: 'Titre-ecran', texte: "Installe l'appli DrawCard" }),
     listeEtapes([
       'Touche le bouton Partager (le carré avec une flèche vers le haut), en bas de Safari.',
       'Fais défiler et choisis « Sur l’écran d’accueil ».',
       'Touche « Ajouter » en haut à droite.',
-      "Ouvre Card Pro depuis ton écran d'accueil.",
+      "Ouvre DrawCard depuis ton écran d'accueil.",
     ]),
   ];
 }
@@ -101,19 +101,19 @@ function contenuAndroid() {
   }
   const telecharger = creerElement('a', {
     classe: 'PBouton PBouton--principal PBouton--grand',
-    texte: "Télécharger l'appli Card Pro",
-    attributs: { href: ADRESSE_APK, download: 'CardPro.apk', type: 'application/vnd.android.package-archive' },
+    texte: "Télécharger l'appli DrawCard",
+    attributs: { href: ADRESSE_APK, download: 'DrawCard.apk', type: 'application/vnd.android.package-archive' },
   });
   return [
-    creerElement('h2', { classe: 'Titre-ecran', texte: "Installe l'appli Card Pro" }),
+    creerElement('h2', { classe: 'Titre-ecran', texte: "Installe l'appli DrawCard" }),
     creerElement('div', { classe: 'Actions' }, [telecharger]),
     creerElement('p', { classe: 'Astuce', texte: "Tu avais installé l'ancienne version web ? Désinstalle-la (appui long sur son icône → Désinstaller), puis installe l'appli ci-dessous." }),
     listeEtapes([
-      "Touche « Télécharger l'appli Card Pro ».",
-      'Ouvre le fichier CardPro.apk (notification de téléchargement).',
+      "Touche « Télécharger l'appli DrawCard ».",
+      'Ouvre le fichier DrawCard.apk (notification de téléchargement).',
       "Si Android le demande, autorise Chrome à installer des applis (« Sources inconnues »), puis reviens en arrière.",
       "Touche « Installer ». Si Play Protect affiche un avertissement : « Plus de détails » → « Installer quand même ».",
-      "Ouvre Card Pro depuis l'écran d'accueil.",
+      "Ouvre DrawCard depuis l'écran d'accueil.",
     ]),
     creerElement('p', { classe: 'Astuce', texte: "Mise à jour : télécharge et installe la nouvelle version par-dessus, tes cartes sont conservées." }),
   ];

@@ -1,6 +1,6 @@
 /**
  * DialogueImportCarte.js
- * Fenêtre de choix avant d'importer une carte (.cardpro / GIF) :
+ * Fenêtre de choix avant d'importer une carte (.drawcard / GIF) :
  *  - design : créer un nouveau modèle à partir de la carte, ou utiliser un modèle existant ;
  *  - si la personne existe déjà : la mettre à jour, ou en créer une nouvelle.
  * Un aperçu du recto importé est affiché.

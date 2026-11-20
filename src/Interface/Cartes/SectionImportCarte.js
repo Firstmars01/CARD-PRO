@@ -1,7 +1,7 @@
 /**
  * SectionImportCarte.js
  * Section « Importer une carte » : ajoute une personne (et éventuellement
- * le design de sa carte) à partir d'un fichier .cardpro ou du GIF de
+ * le design de sa carte) à partir d'un fichier .drawcard ou du GIF de
  * portefeuille. Le fichier est entièrement revalidé avant import.
  */
 
@@ -40,7 +40,7 @@ function trouverDoublon(personne) {
 
 /**
  * Importe le fichier choisi, après les choix de la personne.
- * @param {File} fichier - Fichier .cardpro ou GIF.
+ * @param {File} fichier - Fichier .drawcard ou GIF.
  */
 async function importer(fichier) {
   if (fichier.size > POIDS_MAX) throw new Error('Fichier trop volumineux.');
@@ -72,8 +72,8 @@ async function importer(fichier) {
  * @param {HTMLElement} conteneur - Zone d'accueil.
  */
 export function monterSectionImportCarte(conteneur) {
-  const { section, contenu } = creerSection('Importer une carte (.cardpro / GIF)', false);
-  const fichier = creerElement('input', { attributs: { type: 'file', id: 'import-carte', accept: '.cardpro,.gif,image/gif,application/octet-stream' } });
+  const { section, contenu } = creerSection('Importer une carte (.drawcard / GIF)', false);
+  const fichier = creerElement('input', { attributs: { type: 'file', id: 'import-carte', accept: '.drawcard,.cardpro,.gif,image/gif,application/octet-stream' } });
   fichier.addEventListener('change', async () => {
     const [choisi] = fichier.files;
     fichier.value = '';
@@ -85,7 +85,7 @@ export function monterSectionImportCarte(conteneur) {
     }
   });
   contenu.append(
-    creerElement('p', { classe: 'Aide', texte: "Ajoute une personne à partir d'un fichier .cardpro ou du GIF de portefeuille. Tu choisis ensuite le design : nouveau modèle à partir de la carte, ou un de tes modèles." }),
+    creerElement('p', { classe: 'Aide', texte: "Ajoute une personne à partir d'un fichier .drawcard ou du GIF de portefeuille. Tu choisis ensuite le design : nouveau modèle à partir de la carte, ou un de tes modèles." }),
     creerChamp('Fichier de la carte', fichier).bloc,
   );
   conteneur.append(section);

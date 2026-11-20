@@ -7,7 +7,7 @@
 
 import { icone } from './Icones.js';
 
-const CLE_STOCKAGE = 'cardpro-theme';
+const CLE_STOCKAGE = 'drawcard-theme';
 const THEMES = ['clair', 'sombre'];
 const requeteSombre = typeof matchMedia === 'function' ? matchMedia('(prefers-color-scheme: dark)') : null;
 

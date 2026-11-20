@@ -22,7 +22,7 @@ const ICONES_INFOS = ['entreprise', 'mobile', 'telephone', 'email', 'web', 'adre
 const cacheIcones = new Map(); // Couleur → icônes PNG.
 
 const LISEZMOI = [
-  'Signature e-mail Card Pro',
+  'Signature e-mail DrawCard',
   '',
   'Outlook classique (Windows) :',
   '  1. Ferme Outlook.',
@@ -36,7 +36,7 @@ const LISEZMOI = [
   '  2. Ctrl + A puis Ctrl + C.',
   '  3. Outlook : Paramètres → Comptes → Signatures → Nouvelle signature → Ctrl + V → Enregistrer.',
   '',
-  'Le plus simple reste le bouton « Copier la signature » dans Card Pro Configurateur.',
+  'Le plus simple reste le bouton « Copier la signature » dans DrawCard Configurateur.',
 ].join('\r\n');
 
 /**

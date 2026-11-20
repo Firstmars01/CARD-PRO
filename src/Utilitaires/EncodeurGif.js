@@ -2,7 +2,7 @@
  * EncodeurGif.js
  * Création d'un GIF animé en noir et blanc (norme GIF89a), sans dépendance.
  * Il peut transporter un bloc de données privé (« extension d'application ») :
- * les lecteurs d'images l'ignorent, mais le portefeuille Card Pro s'en sert
+ * les lecteurs d'images l'ignorent, mais le portefeuille DrawCard s'en sert
  * pour importer la carte instantanément, sans avoir à lire les QR codes.
  */
 

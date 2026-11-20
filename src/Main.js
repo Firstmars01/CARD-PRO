@@ -14,7 +14,7 @@ import { initialiserTheme, creerBoutonTheme } from './Interface/Themes.js';
 import { chargerPolices } from './Utilitaires/ChargementPolices.js';
 
 /**
- * Supprime l'ancien service worker des versions précédentes de Card Pro
+ * Supprime l'ancien service worker des versions précédentes de DrawCard
  * (il pouvait afficher d'anciens fichiers en cache). Celui du portefeuille
  * mobile (/portefeuille/) est conservé.
  */
@@ -34,7 +34,7 @@ async function demarrer() {
   retirerAncienServiceWorker().catch(() => {});
   // Polices de la carte : chargées avant tout affichage (rendu identique au mobile).
   await chargerPolices().catch(() => notifier('Polices de la carte non chargées : le texte peut différer du mobile.', 'erreur'));
-  await chargerDonnees(() => notifier('Sauvegarde impossible : vérifie que le serveur Card Pro tourne.', 'erreur'));
+  await chargerDonnees(() => notifier('Sauvegarde impossible : vérifie que le serveur DrawCard tourne.', 'erreur'));
   monterOngletCartes(obtenirElement('ongletCartes'));
   monterEditeurModeles(obtenirElement('ongletModeles'));
   initialiserOnglets(obtenirElement('barreOnglets'));
@@ -42,6 +42,6 @@ async function demarrer() {
 }
 
 demarrer().catch((erreur) => {
-  obtenirElement('chargement').textContent = 'Impossible de charger Card Pro. Vérifie que le serveur tourne puis recharge la page.';
+  obtenirElement('chargement').textContent = 'Impossible de charger DrawCard. Vérifie que le serveur tourne puis recharge la page.';
   notifier(erreur.message || "Erreur au démarrage de l'application.", 'erreur');
 });

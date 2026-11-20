@@ -1,6 +1,6 @@
 /**
  * Portefeuille.js
- * Logique du portefeuille : import d'une carte (fichier .cardpro, GIF reçu
+ * Logique du portefeuille : import d'une carte (fichier .drawcard, GIF reçu
  * par e-mail ou QR animé scanné), liste, favoris, « ma carte » (modifiable),
  * modification, restauration d'une sauvegarde et suppression. Toute donnée lue
  * (fichier ou stockage) est revalidée avant d'être affichée.
@@ -93,7 +93,7 @@ export async function ajouterDepuisPaquet(paquet) {
 }
 
 /**
- * Importe un fichier reçu : .cardpro, ou GIF Card Pro (la carte est cachée dedans).
+ * Importe un fichier reçu : .drawcard, ou GIF DrawCard (la carte est cachée dedans).
  * @param {File|Blob} fichier - Fichier choisi ou partagé.
  * @returns {Promise<object>} Carte ajoutée.
  * @throws {Error} Avec un message lisible si le fichier n'est pas une carte.

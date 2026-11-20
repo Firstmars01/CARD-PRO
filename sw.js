@@ -1,6 +1,6 @@
 /**
  * sw.js
- * Service worker de désactivation : les anciennes versions de Card Pro
+ * Service worker de désactivation : les anciennes versions de DrawCard
  * installaient un service worker avec cache. Celui-ci le remplace, vide
  * les caches, se désinscrit et recharge les pages ouvertes.
  */

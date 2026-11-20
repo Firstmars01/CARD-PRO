@@ -5,7 +5,7 @@
  * NDEF de NdefCarte comme sur une vraie puce, sans appli de son côté.
  * Puce en lecture seule : toute écriture est refusée.
  */
-package fr.cardpro.portefeuille;
+package fr.drawcard.portefeuille;
 
 import android.nfc.cardemulation.HostApduService;
 import android.os.Bundle;

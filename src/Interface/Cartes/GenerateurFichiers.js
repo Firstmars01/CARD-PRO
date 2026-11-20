@@ -2,7 +2,7 @@
  * GenerateurFichiers.js
  * Produit les fichiers d'une carte (recto et verso), au format de son
  * modèle : SVG, PNG et JPG en 300 dpi, PDF, planche A4, PDF imprimeur
- * (fonds perdus), vCard, fichiers du portefeuille mobile (.cardpro et GIF
+ * (fonds perdus), vCard, fichiers du portefeuille mobile (.drawcard et GIF
  * du QR animé), et le kit complet en ZIP (avec signature Outlook et fond
  * Teams / Zoom), pour une personne ou pour toutes.
  */
@@ -124,8 +124,8 @@ export async function fichierVcf(carte) {
   return new Blob([genererVCard(carte.personne, { photoJpeg })], { type: 'text/vcard;charset=utf-8' });
 }
 
-/** @param {object} carte - Carte préparée. @returns {Promise<Blob>} Fichier .cardpro (carte complète pour le portefeuille). */
-export async function fichierCardpro(carte) {
+/** @param {object} carte - Carte préparée. @returns {Promise<Blob>} Fichier .drawcard (carte complète pour le portefeuille). */
+export async function fichierDrawcard(carte) {
   return new Blob([await creerPaquet(carte.personne, carte.modele)], { type: 'application/octet-stream' });
 }
 
@@ -161,7 +161,7 @@ export async function fichierGifPortefeuille(carte) {
  *  - Contact : fiche .vcf (avec la photo de profil) ;
  *  - Signature Outlook : signature .htm + images + mode d'emploi ;
  *  - Teams - Zoom : fond d'écran 1920 × 1080 ;
- *  - Portefeuille mobile : fichier .cardpro et GIF du QR animé.
+ *  - Portefeuille mobile : fichier .drawcard et GIF du QR animé.
  * @param {object} carte - Carte préparée.
  * @param {string} [dossier=""] - Dossier de la personne dans le ZIP (avec « / » final).
  * @returns {Promise<{nom:string, donnees:Uint8Array}[]>} Fichiers.
@@ -183,7 +183,7 @@ async function fichiersCarte(carte, dossier = '') {
     { nom: `${d('Contact')}${n}.vcf`, donnees: await octets(await fichierVcf(carte)) },
     ...await fichiersSignature(carte, carte.entree, d('Signature Outlook')),
     { nom: `${d('Teams - Zoom')}${n}-fond-visio.png`, donnees: await octets(await fichierFondVisio(carte)) },
-    { nom: `${d('Portefeuille mobile')}${n}.cardpro`, donnees: await octets(await fichierCardpro(carte)) },
+    { nom: `${d('Portefeuille mobile')}${n}.drawcard`, donnees: await octets(await fichierDrawcard(carte)) },
     { nom: `${d('Portefeuille mobile')}${n}-portefeuille.gif`, donnees: await octets(await fichierGifPortefeuille(carte)) },
   ];
 }

@@ -1,14 +1,14 @@
 /**
  * AffichageTransfert.js
  * Fenêtre plein écran qui affiche le QR code animé d'une carte : le téléphone
- * (application « Card Pro Portefeuille ») le scanne pour récupérer la carte
+ * (application « DrawCard Portefeuille ») le scanne pour récupérer la carte
  * complète, recto et verso compris. Si l'adresse de l'appli est réglée
  * (LIEN_PORTEFEUILLE), un second QR code permet d'abord de l'installer.
  */
 
 import { creerElement } from '../../Utilitaires/Dom.js';
 import { telechargerBlob } from '../../Utilitaires/Telechargement.js';
-import { preparerTransfert, fichierGifPortefeuille, fichierCardpro } from './GenerateurFichiers.js';
+import { preparerTransfert, fichierGifPortefeuille, fichierDrawcard } from './GenerateurFichiers.js';
 import { notifier } from '../Notifications.js';
 import { lireConfiguration } from '../../Donnees/DepotConfiguration.js';
 import { creerQrLien } from '../Rendu/QrLien.js';
@@ -72,8 +72,8 @@ export async function ouvrirAffichageTransfert(carte) {
     creerElement('div', { classe: 'Transfert-etapes' }, [
       lienPortefeuille && creerElement('div', { classe: 'Transfert-etape Transfert-etape--installation' }, [
         creerElement('h3', { texte: "1. Installer l'appli" }),
-        creerQrLien(lienPortefeuille, "QR code d'installation de l'appli Card Pro"),
-        creerElement('p', { classe: 'Aide', texte: "Scanne avec l'appareil photo du téléphone, puis installe Card Pro." }),
+        creerQrLien(lienPortefeuille, "QR code d'installation de l'appli DrawCard"),
+        creerElement('p', { classe: 'Aide', texte: "Scanne avec l'appareil photo du téléphone, puis installe DrawCard." }),
       ]),
       creerElement('div', { classe: 'Transfert-etape' }, [
         creerElement('h3', { texte: lienPortefeuille ? '2. Scanner la carte' : 'Scanner la carte' }),
@@ -81,13 +81,13 @@ export async function ouvrirAffichageTransfert(carte) {
         compteur,
         creerElement('p', {
           classe: 'Aide',
-          texte: `Dans l'appli Card Pro : « Scanner un QR », puis vise ce QR code jusqu'à 100 %. ${qrs.length} QR code(s) défilent en boucle, dans n'importe quel ordre.`,
+          texte: `Dans l'appli DrawCard : « Scanner un QR », puis vise ce QR code jusqu'à 100 %. ${qrs.length} QR code(s) défilent en boucle, dans n'importe quel ordre.`,
         }),
       ]),
     ]),
     creerElement('div', { classe: 'Transfert-actions' }, [
       boutonTelechargement('GIF pour e-mail', () => fichierGifPortefeuille(carte), `${carte.nom}-portefeuille.gif`),
-      boutonTelechargement('Fichier .cardpro', () => fichierCardpro(carte), `${carte.nom}.cardpro`),
+      boutonTelechargement('Fichier .drawcard', () => fichierDrawcard(carte), `${carte.nom}.drawcard`),
       fermer,
     ]),
   ]);

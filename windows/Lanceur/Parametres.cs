@@ -1,7 +1,7 @@
 /*
  * Parametres.cs
  * Chemins et informations du lanceur : version, dépôt GitHub, dossiers des
- * données (%APPDATA%\CardPro) et de l'appli (%LOCALAPPDATA%\CardPro\app).
+ * données (%APPDATA%\DrawCard) et de l'appli (%LOCALAPPDATA%\DrawCard\app).
  */
 using System;
 using System.IO;
@@ -9,7 +9,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
-namespace CardPro.Lanceur
+namespace DrawCard.Lanceur
 {
     /// <summary>Chemins et informations de l'appli.</summary>
     internal static class Parametres
@@ -22,11 +22,11 @@ namespace CardPro.Lanceur
 
         /// <summary>Dossier des données (base, journal) : conservé entre les versions.</summary>
         public static readonly string DossierDonnees = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CardPro");
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "DrawCard");
 
         /// <summary>Dossier où l'appli est extraite (un sous-dossier par version).</summary>
         public static readonly string DossierProgrammes = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CardPro", "app");
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DrawCard", "app");
 
         /// <summary>Version au format « 4.1.0 ».</summary>
         public static string TexteVersion
@@ -43,7 +43,7 @@ namespace CardPro.Lanceur
         /// <summary>Base de données SQLite.</summary>
         public static string FichierBase
         {
-            get { return Path.Combine(DossierDonnees, "cardpro.sqlite"); }
+            get { return Path.Combine(DossierDonnees, "drawcard.sqlite"); }
         }
 
         /// <summary>Journal du serveur (en cas de problème).</summary>

@@ -1,6 +1,6 @@
 {
-  "name": "Card Pro Portefeuille",
-  "short_name": "Card Pro",
+  "name": "DrawCard Portefeuille",
+  "short_name": "DrawCard",
   "description": "Tes cartes de visite reçues, recto et verso, sur ton téléphone.",
   "lang": "fr",
   "id": "./",
@@ -21,7 +21,7 @@
     "enctype": "multipart/form-data",
     "params": {
       "files": [
-        { "name": "fichiers", "accept": [".cardpro", ".gif", "image/gif", "application/octet-stream"] }
+        { "name": "fichiers", "accept": [".drawcard", ".gif", "image/gif", "application/octet-stream"] }
       ]
     }
   }

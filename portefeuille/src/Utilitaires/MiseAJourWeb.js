@@ -6,7 +6,7 @@
  * installée, la page se recharge toute seule (sauf pendant un scan).
  */
 
-const CLE_MESSAGE = 'cardpro-mis-a-jour';
+const CLE_MESSAGE = 'drawcard-mis-a-jour';
 
 /**
  * Indique si un rechargement peut avoir lieu maintenant (pas pendant un scan).
@@ -37,7 +37,7 @@ export async function activerMisesAJourWeb(annoncer) {
   try {
     if (sessionStorage.getItem(CLE_MESSAGE)) {
       sessionStorage.removeItem(CLE_MESSAGE);
-      annoncer('Card Pro a été mis à jour.');
+      annoncer('DrawCard a été mis à jour.');
     }
   } catch {
     // Stockage indisponible : sans conséquence.

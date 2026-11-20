@@ -36,7 +36,7 @@ export async function appelerApi(methode, chemin, corps) {
       body: corps === undefined ? undefined : JSON.stringify(corps),
     });
   } catch {
-    throw new ErreurApi(0, 'Serveur injoignable. Vérifie que Card Pro tourne toujours.');
+    throw new ErreurApi(0, 'Serveur injoignable. Vérifie que DrawCard tourne toujours.');
   }
   const donnees = await reponse.json().catch(() => ({}));
   if (!reponse.ok) throw new ErreurApi(reponse.status, donnees.erreur || 'Erreur inattendue.');

@@ -6,7 +6,7 @@
  * Le contenu est vide tant que la personne n'a pas activé le partage.
  * Partagé entre l'écran (qui le définit) et le service NFC (qui le lit).
  */
-package fr.cardpro.portefeuille;
+package fr.drawcard.portefeuille;
 
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;

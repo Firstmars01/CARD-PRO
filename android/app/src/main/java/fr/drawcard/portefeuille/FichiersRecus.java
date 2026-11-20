@@ -1,10 +1,10 @@
 /*
  * FichiersRecus.java
- * Fichiers reçus d'autres applis (« Ouvrir avec » / « Partager → Card Pro »),
+ * Fichiers reçus d'autres applis (« Ouvrir avec » / « Partager → DrawCard »),
  * en attente d'import par le portefeuille. Leur contenu sera entièrement
  * revalidé par le portefeuille : ici, seules la taille et le nombre sont limités.
  */
-package fr.cardpro.portefeuille;
+package fr.drawcard.portefeuille;
 
 import android.content.ContentResolver;
 import android.content.Intent;

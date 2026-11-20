@@ -1,10 +1,10 @@
 /*
  * Navigateur.cs
- * Ouvre la page de Card Pro dans le navigateur par défaut, qu'il soit déjà
+ * Ouvre la page de DrawCard dans le navigateur par défaut, qu'il soit déjà
  * ouvert ou non. Le navigateur par défaut est lu dans les réglages de
  * Windows et lancé directement avec l'adresse ; en secours, on passe par
  * Windows (ouverture du lien, puis l'Explorateur).
- * Sert de secours si la fenêtre Card Pro (WebView2) est indisponible, et
+ * Sert de secours si la fenêtre DrawCard (WebView2) est indisponible, et
  * pour ouvrir les liens externes (https uniquement) de la fenêtre.
  */
 using System;
@@ -13,7 +13,7 @@ using System.IO;
 using System.Windows.Forms;
 using Microsoft.Win32;
 
-namespace CardPro.Lanceur
+namespace DrawCard.Lanceur
 {
     /// <summary>Ouverture du navigateur.</summary>
     internal static class Navigateur
@@ -26,12 +26,12 @@ namespace CardPro.Lanceur
             if (LancerNavigateurParDefaut(adresse)) return;
             if (Essayer(new ProcessStartInfo(adresse) { UseShellExecute = true })) return;
             if (Essayer(new ProcessStartInfo("explorer.exe", "\"" + adresse + "\"") { UseShellExecute = false })) return;
-            MessageBox.Show("Ouvre cette adresse dans ton navigateur : " + adresse, "Card Pro Configurateur", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show("Ouvre cette adresse dans ton navigateur : " + adresse, "DrawCard Configurateur", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         /// <summary>
         /// Ouvre un lien externe (https uniquement) dans le navigateur par défaut :
-        /// liens de la fenêtre Card Pro (GitHub, LinkedIn…).
+        /// liens de la fenêtre DrawCard (GitHub, LinkedIn…).
         /// </summary>
         /// <param name="adresse">Lien demandé par la page.</param>
         public static void OuvrirLienExterne(string adresse)

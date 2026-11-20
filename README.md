@@ -1,13 +1,16 @@
-# Card Pro
+# DrawCard
 
-Application Windows (**CardPro-Configurateur.exe**, sans installation) pour créer les **cartes de visite de toute une équipe** :
+Application Windows (**DrawCard-Configurateur.exe**, sans installation) pour créer les **cartes de visite de toute une équipe** :
 - des **modèles** recto / verso entièrement personnalisables, créés dans un éditeur visuel ;
 - une **liste de personnes** (saisie ou import Excel/CSV) ;
 - pour chaque personne, une carte avec un **QR code** qui contient ses coordonnées : un scan permet de l'ajouter aux contacts, même sans internet ;
 - en option, **un QR code par lien** (LinkedIn, GitHub, portfolio…) qui ouvre directement la page ;
 - des **exports** prêts à envoyer par e-mail ou à imprimer ;
-- une application mobile, **Card Pro** (APK Android avec **NFC**, appli web sur iPhone), qui garde les cartes reçues, recto et verso compris, à la place du papier ;
+- une application mobile, **DrawCard** (APK Android avec **NFC**, appli web sur iPhone), qui garde les cartes reçues, recto et verso compris, à la place du papier ;
 - des thèmes **clair et sombre** (bouton soleil / lune), sur la page web comme sur l'application mobile.
+
+
+> **Ancien nom : Card Pro.** Depuis la version 5.0, l'application s'appelle **DrawCard** (exe `DrawCard-Configurateur.exe`, données dans `%APPDATA%\DrawCard`, appli Android `fr.drawcard.portefeuille`, fichiers `.drawcard`). Pour reprendre tes données : dans l'ancienne version, **Sauvegarder** (PC) / **Sauvegarder mes cartes** (téléphone), puis **Restaurer** / **Importer un fichier** dans DrawCard. Les sauvegardes, fichiers `.cardpro` et GIF créés sous l'ancien nom restent lisibles.
 
 ## Fonctionnalités
 
@@ -24,7 +27,7 @@ Application Windows (**CardPro-Configurateur.exe**, sans installation) pour cré
 - Aperçu en direct du **recto** et du **verso**, avec une alerte si le QR code risque d'être mal lu.
 - QR codes possibles : contact (vCard), site web, LinkedIn, LinkedIn de l'entreprise, **WhatsApp** (ouvre la discussion), **prise de rendez-vous**, **itinéraire** vers l'adresse (Google Maps / Plans), ou un lien de la personne.
 - **Import d'une liste** (CSV exporté d'Excel) avec un fichier modèle à télécharger.
-- **Import d'une carte** (`.cardpro` ou GIF de portefeuille) : la personne est ajoutée avec, au choix, un **nouveau modèle** créé à partir du design de la carte ou un **modèle existant** ; si elle est déjà dans la liste (même prénom, nom et e-mail), Card Pro demande s'il faut **mettre à jour** sa fiche ou en **créer une nouvelle**.
+- **Import d'une carte** (`.drawcard` ou GIF de portefeuille) : la personne est ajoutée avec, au choix, un **nouveau modèle** créé à partir du design de la carte ou un **modèle existant** ; si elle est déjà dans la liste (même prénom, nom et e-mail), DrawCard demande s'il faut **mettre à jour** sa fiche ou en **créer une nouvelle**.
 - **Photo de profil** (fiche de la personne → « Photo de profil ») : recadrée en carré et allégée. Sur la carte, une image du modèle réglée sur « Image affichée : Photo de la personne » l'affiche (cadrage « Rond » conseillé) ; elle est aussi dans la signature et dans le fichier `.vcf`, mais pas dans le QR ni le NFC (trop lourde).
 - **Signature e-mail (Outlook)** : section du volet de droite, sous l'aperçu de la carte. Aperçu en direct, bouton **Copier la signature** et guide pour Outlook. Réglages simples, **communs à toutes les cartes d'une entreprise** (ou propres à la carte en réglage personnalisé) et enregistrés tout seuls :
   - couleurs de la carte, ou couleur principale et couleur du nom au choix ; police (Arial, Verdana, Tahoma, Trebuchet, Georgia) et taille du texte ;
@@ -40,7 +43,7 @@ Application Windows (**CardPro-Configurateur.exe**, sans installation) pour cré
   - `Contact/` : fiche `.vcf` (avec la photo de profil) ;
   - `Signature Outlook/` : signature `.htm` + dossier d'images (format des signatures d'Outlook classique) + `LISEZMOI.txt` ;
   - `Teams - Zoom/` : fond d'écran 1920 × 1080 ;
-  - `Portefeuille mobile/` : fichier `.cardpro` et GIF du QR animé.
+  - `Portefeuille mobile/` : fichier `.drawcard` et GIF du QR animé.
 
 ### Onglet « Modèles »
 - L'onglet tient dans la fenêtre : la carte s'adapte à la place disponible et seul le volet de droite (propriétés, calques) défile.
@@ -96,23 +99,23 @@ Application Windows (**CardPro-Configurateur.exe**, sans installation) pour cré
 
 - **Navigateur** : HTML, CSS, JavaScript (modules ES), sans framework. Encodeur QR (modes octets et alphanumérique), ZIP, CSV, GIF animé et Base45 intégrés. [pdf-lib](https://pdf-lib.js.org/) 1.17.1 (MIT) embarquée.
 - **Serveur** : Node.js 22, **sans aucune dépendance npm**, avec la base **SQLite** intégrée à Node.
-- **Windows** : lanceur `CardPro-Configurateur.exe` en C# (.NET Framework 4.8, déjà présent sur Windows) : fenêtre de bureau **WebView2** (bibliothèques intégrées à l'exe) et icône près de l'horloge ; il contient Node.js officiel et l'appli.
+- **Windows** : lanceur `DrawCard-Configurateur.exe` en C# (.NET Framework 4.8, déjà présent sur Windows) : fenêtre de bureau **WebView2** (bibliothèques intégrées à l'exe) et icône près de l'horloge ; il contient Node.js officiel et l'appli.
 - **Portefeuille mobile** : application web installable (PWA), hors ligne, publiée sur **GitHub Pages** (HTTPS). Lecture des QR : lecteur intégré du navigateur (Android) ou [jsQR](https://github.com/cozmo/jsQR) 1.4.0 (Apache 2.0, iPhone), ajouté à la publication.
 - **Tests** : `node:test`.
 
 ## Arborescence
 
 ```
-CARD PRO/
+DrawCard/
 ├── index.html                 # Page unique (onglets Cartes et Modèles)
 ├── manifest.webmanifest       # Icône et nom de l'application
 ├── sw.js                      # Désactive l'ancien cache des versions précédentes
-├── windows/Lanceur/           # CardPro-Configurateur.exe : démarrage, icône près de l'horloge, mises à jour (C#)
+├── windows/Lanceur/           # DrawCard-Configurateur.exe : démarrage, icône près de l'horloge, mises à jour (C#)
 ├── accueil/                   # Page d'accueil du projet (racine du site GitHub Pages)
 ├── configurateur/             # Page GitHub Pages de téléchargement de l'exe
-├── .github/workflows/         # Portefeuille.yml : APK + GitHub Pages ; Configurateur.yml : CardPro-Configurateur.exe dans Releases
+├── .github/workflows/         # Portefeuille.yml : APK + GitHub Pages ; Configurateur.yml : DrawCard-Configurateur.exe dans Releases
 ├── android/                   # Appli Android (APK) : WebView du portefeuille + NFC
-│   └── app/src/main/java/fr/cardpro/portefeuille/
+│   └── app/src/main/java/fr/drawcard/portefeuille/
 │       ├── MainActivity.java  # Écran : portefeuille en HTTPS local, caméra, fichiers, liens externes
 │       ├── PontJavascript.java# Fonctions appelées par le portefeuille (NFC, partage, fichiers reçus)
 │       ├── ServiceNfc.java    # Émulation de puce NFC Type 4 (HCE), lecture seule
@@ -142,7 +145,7 @@ CARD PRO/
 │   ├── Http/                  # Routeur, requêtes, réponses, sécurité, fichiers
 │   ├── Routes/                # Personnes, entreprises, modèles, sauvegarde
 │   └── Donnees/               # SQLite et dépôts (requêtes préparées)
-├── portefeuille/              # Application mobile Card Pro Portefeuille (PWA)
+├── portefeuille/              # Application mobile DrawCard Portefeuille (PWA)
 │   ├── index.html, manifest.webmanifest, sw.js   # Page, installation, hors ligne et partage
 │   ├── styles/                # Portefeuille.css
 │   ├── vendor/                # jsQR (ajouté à la publication)
@@ -157,37 +160,37 @@ CARD PRO/
 
 ## Installation et lancement (Windows)
 
-1. Télécharge **CardPro-Configurateur.exe** :
-   - depuis la page d'accueil du projet **https://firstmars01.github.io/CARD-PRO/** (bouton « Télécharger » sur PC ; sur téléphone, le même bouton ouvre l'appli mobile) ;
-   - ou depuis **https://firstmars01.github.io/CARD-PRO/configurateur/** ;
+1. Télécharge **DrawCard-Configurateur.exe** :
+   - depuis la page d'accueil du projet **https://firstmars01.github.io/DrawCard/** (bouton « Télécharger » sur PC ; sur téléphone, le même bouton ouvre l'appli mobile) ;
+   - ou depuis **https://firstmars01.github.io/DrawCard/configurateur/** ;
    - ou depuis la page **Releases** du dépôt GitHub.
 2. Double-clique dessus. Rien à installer (Windows 10 ou 11).
    Si Windows affiche « Windows a protégé votre ordinateur » : **Informations complémentaires → Exécuter quand même** (l'exe n'est pas signé par un certificat payant).
-3. Une petite fenêtre montre le démarrage (et la mise à jour éventuelle, avec son pourcentage). Puis Card Pro s'ouvre dans **sa propre fenêtre**, comme une application de bureau (sans barre d'adresse), et une **icône Card Pro** apparaît près de l'horloge :
-   - **fermer la fenêtre** arrête Card Pro ; relancer l'exe (ou cliquer sur l'icône) remet la fenêtre au premier plan ;
-   - **téléchargements** : Card Pro demande à chaque fois où enregistrer le fichier ;
+3. Une petite fenêtre montre le démarrage (et la mise à jour éventuelle, avec son pourcentage). Puis DrawCard s'ouvre dans **sa propre fenêtre**, comme une application de bureau (sans barre d'adresse), et une **icône DrawCard** apparaît près de l'horloge :
+   - **fermer la fenêtre** arrête DrawCard ; relancer l'exe (ou cliquer sur l'icône) remet la fenêtre au premier plan ;
+   - **téléchargements** : DrawCard demande à chaque fois où enregistrer le fichier ;
    - les liens externes (GitHub, LinkedIn…) s'ouvrent dans ton navigateur ;
-   - **clic droit** sur l'icône : dossier des données, rechercher une mise à jour, version, **Quitter Card Pro**.
-   La fenêtre utilise **Microsoft Edge WebView2**, déjà présent sur Windows 10 et 11. S'il manque, Card Pro s'ouvre dans ton navigateur par défaut (installable ici : https://developer.microsoft.com/microsoft-edge/webview2/).
+   - **clic droit** sur l'icône : dossier des données, rechercher une mise à jour, version, **Quitter DrawCard**.
+   La fenêtre utilise **Microsoft Edge WebView2**, déjà présent sur Windows 10 et 11. S'il manque, DrawCard s'ouvre dans ton navigateur par défaut (installable ici : https://developer.microsoft.com/microsoft-edge/webview2/).
 
 Bon à savoir :
 - L'appli n'est accessible **que depuis ce PC** (adresse `http://localhost:48080`, ou le port libre suivant).
-- **Données** : `%APPDATA%\CardPro\cardpro.sqlite` (gardées d'une version à l'autre). Journal en cas de problème : `%APPDATA%\CardPro\journal.txt`.
+- **Données** : `%APPDATA%\DrawCard\drawcard.sqlite` (gardées d'une version à l'autre). Journal en cas de problème : `%APPDATA%\DrawCard\journal.txt`.
 - **Sauvegarde** : onglet Cartes → « Sauvegarde des données » → **Sauvegarder** (un fichier `.json` avec toutes les cartes, toutes les entreprises et tous les modèles) / **Restaurer…**. Les modèles seuls s'exportent aussi en `.json` depuis l'onglet Modèles.
-- **Mise à jour automatique** : au lancement (si Internet répond), Card Pro télécharge la nouvelle version, la vérifie et **remplace l'exe tout seul**, puis redémarre (rien à désinstaller, données conservées). Pendant qu'il tourne, il vérifie toutes les 6 heures : une version trouvée est téléchargée en arrière-plan et s'installe au prochain lancement, ou tout de suite par clic droit → « Redémarrer et installer… ». L'exe doit être dans un dossier où tu peux écrire (Téléchargements, Bureau, Documents…).
+- **Mise à jour automatique** : au lancement (si Internet répond), DrawCard télécharge la nouvelle version, la vérifie et **remplace l'exe tout seul**, puis redémarre (rien à désinstaller, données conservées). Pendant qu'il tourne, il vérifie toutes les 6 heures : une version trouvée est téléchargée en arrière-plan et s'installe au prochain lancement, ou tout de suite par clic droit → « Redémarrer et installer… ». L'exe doit être dans un dossier où tu peux écrire (Téléchargements, Bureau, Documents…).
 - Lancer l'exe une seconde fois rouvre simplement la page.
 
 ### Récupérer les données de l'ancienne version Docker
 
 Avant de supprimer le conteneur Docker (il doit exister, même arrêté) :
 ```cmd
-docker cp cardpro:/donnees/cardpro.sqlite cardpro.sqlite
+docker cp drawcard:/donnees/drawcard.sqlite drawcard.sqlite
 ```
-Puis, **Card Pro (exe) fermé**, copie ce fichier dans `%APPDATA%\CardPro\` (remplace celui qui existe) et lance l'exe.
+Puis, **DrawCard (exe) fermé**, copie ce fichier dans `%APPDATA%\DrawCard\` (remplace celui qui existe) et lance l'exe.
 
 ### Publication de l'exe
 
-`.github/workflows/Configurateur.yml` construit `CardPro-Configurateur.exe` sur GitHub (Windows) à chaque `git push` qui touche l'appli, et le publie dans **Releases** sous le numéro de version de `package.json` (ex. `v4.3.0`), avec son empreinte SHA-256 (`CardPro-Configurateur.exe.sha256`).
+`.github/workflows/Configurateur.yml` construit `DrawCard-Configurateur.exe` sur GitHub (Windows) à chaque `git push` qui touche l'appli, et le publie dans **Releases** sous le numéro de version de `package.json` (ex. `v4.3.0`), avec son empreinte SHA-256 (`DrawCard-Configurateur.exe.sha256`).
 
 > **Pour livrer une mise à jour**, augmente `version` dans `package.json` (ex. `4.3.0` → `4.3.1`) puis `git push` : les PC se mettent à jour tout seuls, l'appli web iPhone aussi (à chaque publication) ; sur Android, il faut retélécharger l'APK.
 
@@ -219,7 +222,7 @@ npm test       # 40 tests
 - Les anciennes polices sont remplacées par l'équivalent libre le plus proche : « Moderne » → Inter, Arial → Liberation Sans, Times → Liberation Serif, Courier → Liberation Mono, Georgia → Gelasio (mêmes largeurs pour ces quatre dernières), Verdana → DM Sans, Trebuchet → Fira Sans, Impact → Anton, Garamond → Cardo, Palatino → Crimson Text, Condensée → Roboto condensée. Roboto et Open Sans sont aussi au choix. La police « Manuscrite » est retirée : les textes qui l'utilisaient passent en Inter.
 - Un texte trop long pour sa zone est **rétréci automatiquement** (jusqu'à la moitié de sa taille), sans changer son nombre de lignes. Il n'est coupé avec « … » que s'il ne tient toujours pas.
 
-## Portefeuille mobile (Card Pro Portefeuille)
+## Portefeuille mobile (DrawCard Portefeuille)
 
 Une application pour téléphone qui remplace la carte papier : la personne garde les cartes reçues, avec le **recto et le verso** exactement comme sur la page web, ses coordonnées cliquables et un bouton « Ajouter aux contacts ». Les cartes restent **sur le téléphone** : rien n'est envoyé sur Internet.
 
@@ -246,7 +249,7 @@ L'appareil photo et l'installation d'une application web exigent le **HTTPS** : 
 
 1. Sur GitHub, dans le dépôt : **Settings → Pages → Build and deployment → Source : « GitHub Actions »**.
 2. Pousse le code (`git push`). L'action « Publier le portefeuille » lance les tests puis publie le site.
-3. Adresse du portefeuille : **`https://<ton-compte>.github.io/<nom-du-dépôt>/portefeuille/`** (pour ce dépôt : `https://firstmars01.github.io/CARD-PRO/portefeuille/`).
+3. Adresse du portefeuille : **`https://<ton-compte>.github.io/<nom-du-dépôt>/portefeuille/`** (pour ce dépôt : `https://firstmars01.github.io/DrawCard/portefeuille/`).
 
 > Avec un compte GitHub gratuit, le dépôt doit être **public** pour utiliser Pages. Il ne contient aucun secret ni aucune donnée de personne.
 
@@ -256,18 +259,18 @@ La page web du portefeuille ne sert **qu'à installer l'appli** : les cartes, le
 
 | Ouvert depuis | Ce que la page affiche |
 | --- | --- |
-| **Android** (Chrome, Edge, Samsung…) | Un bouton **Télécharger l'appli Card Pro** (APK, avec le NFC) et les étapes d'installation. |
+| **Android** (Chrome, Edge, Samsung…) | Un bouton **Télécharger l'appli DrawCard** (APK, avec le NFC) et les étapes d'installation. |
 | **iPhone / iPad** (Safari) | Les étapes : **Partager → Sur l'écran d'accueil → Ajouter**. |
 | Autre navigateur sur iPhone, navigateur intégré (Gmail, Outlook, Facebook…) | « Ouvre ce lien dans Safari / dans Chrome » + **Copier le lien**. |
-| **PC** | « Installe Card Pro sur ton téléphone » + un **QR code** du lien à scanner. |
+| **PC** | « Installe DrawCard sur ton téléphone » + un **QR code** du lien à scanner. |
 
-L'icône Card Pro apparaît ensuite sur l'écran d'accueil comme une application. Elle fonctionne **hors ligne**.
+L'icône DrawCard apparaît ensuite sur l'écran d'accueil comme une application. Elle fonctionne **hors ligne**.
 
-**Mise à jour automatique (iPhone)** : à chaque ouverture et à chaque retour dans l'appli, si le téléphone est en ligne, elle vérifie s'il existe une nouvelle version, la télécharge et se recharge toute seule (jamais pendant un scan). Un message « Card Pro a été mis à jour » s'affiche.
+**Mise à jour automatique (iPhone)** : à chaque ouverture et à chaque retour dans l'appli, si le téléphone est en ligne, elle vérifie s'il existe une nouvelle version, la télécharge et se recharge toute seule (jamais pendant un scan). Un message « DrawCard a été mis à jour » s'affiche.
 
 ### Adresse de l'appli dans le Configurateur
 
-`CardPro-Configurateur.exe` connaît l'adresse de l'appli mobile (déduite du dépôt GitHub à la compilation) et l'affiche en **QR code d'installation** à côté du QR animé : la personne installe l'appli, puis scanne sa carte dans la foulée. En développement, la variable d'environnement `LIEN_PORTEFEUILLE` (HTTPS obligatoire) fait la même chose.
+`DrawCard-Configurateur.exe` connaît l'adresse de l'appli mobile (déduite du dépôt GitHub à la compilation) et l'affiche en **QR code d'installation** à côté du QR animé : la personne installe l'appli, puis scanne sa carte dans la foulée. En développement, la variable d'environnement `LIEN_PORTEFEUILLE` (HTTPS obligatoire) fait la même chose.
 
 ### Donner une carte à quelqu'un
 
@@ -276,23 +279,23 @@ Dans l'onglet **Cartes**, sélectionne la personne. La section **Portefeuille mo
 | Moyen | Pour qui | Comment |
 | --- | --- | --- |
 | **Afficher le QR animé** | La personne est devant l'écran | Dans l'application : **Scanner un QR**, puis vise l'écran jusqu'à 100 %. Les QR défilent en boucle, l'ordre n'a pas d'importance. |
-| **GIF pour e-mail** | Envoi par e-mail | Joins le GIF à l'e-mail. Sur le téléphone : **Importer un fichier** (iPhone : enregistre d'abord la pièce jointe dans « Fichiers »), ou sur Android **Partager → Card Pro**. Le GIF peut aussi être affiché sur un PC et scanné. |
-| **Fichier .cardpro** | Envoi par e-mail | Même import que le GIF, en plus léger. |
+| **GIF pour e-mail** | Envoi par e-mail | Joins le GIF à l'e-mail. Sur le téléphone : **Importer un fichier** (iPhone : enregistre d'abord la pièce jointe dans « Fichiers »), ou sur Android **Partager → DrawCard**. Le GIF peut aussi être affiché sur un PC et scanné. |
+| **Fichier .drawcard** | Envoi par e-mail | Même import que le GIF, en plus léger. |
 
-Pratique : dans l'e-mail, mets le lien du portefeuille (pour l'installer) **et** le GIF ou le `.cardpro`. La personne installe l'application puis importe sa carte, sans passer au bureau.
+Pratique : dans l'e-mail, mets le lien du portefeuille (pour l'installer) **et** le GIF ou le `.drawcard`. La personne installe l'application puis importe sa carte, sans passer au bureau.
 
 - Ce QR animé est **différent** du QR imprimé sur la carte (qui reste la fiche contact, pour tout téléphone).
 - Une carte avec des images (logo, fond) demande plus de QR : compte environ 1 QR par 600 octets, 5 QR par seconde.
 - Une carte reçue plusieurs fois est ajoutée plusieurs fois : la personne supprime elle-même celles dont elle ne veut plus.
-- Les fichiers `.cardpro` et `-portefeuille.gif` sont aussi inclus dans les ZIP.
+- Les fichiers `.drawcard` et `-portefeuille.gif` sont aussi inclus dans les ZIP.
 
 ### Essayer en local
 
-Le Configurateur sert aussi le portefeuille : **http://localhost:48080/portefeuille/**. Sur PC, il n'affiche que l'écran « Installe Card Pro sur ton téléphone » (c'est voulu). Pour tester l'appli elle-même, utilise l'adresse GitHub Pages sur un téléphone.
+Le Configurateur sert aussi le portefeuille : **http://localhost:48080/portefeuille/**. Sur PC, il n'affiche que l'écran « Installe DrawCard sur ton téléphone » (c'est voulu). Pour tester l'appli elle-même, utilise l'adresse GitHub Pages sur un téléphone.
 
 ## Appli Android (APK avec NFC)
 
-L'appli Android contient tout le portefeuille, plus le NFC. Elle est **construite et signée automatiquement** par GitHub à chaque `git push`, puis proposée sur la page d'installation Android (`…/telechargement/CardPro.apk`).
+L'appli Android contient tout le portefeuille, plus le NFC. Elle est **construite et signée automatiquement** par GitHub à chaque `git push`, puis proposée sur la page d'installation Android (`…/telechargement/DrawCard.apk`).
 
 ### Clé de signature (une seule fois)
 
@@ -300,12 +303,12 @@ Android exige que chaque version soit signée avec **la même clé**. Garde-la p
 
 1. Dans le dossier du projet (invite de commandes), crée la clé avec Docker ou Java (`keytool`) :
    ```cmd
-   docker run --rm -it -v "%cd%:/travail" -w /travail eclipse-temurin:17 keytool -genkeypair -v -keystore cardpro.jks -alias cardpro -keyalg RSA -keysize 4096 -validity 10000
+   docker run --rm -it -v "%cd%:/travail" -w /travail eclipse-temurin:17 keytool -genkeypair -v -keystore drawcard.jks -alias drawcard -keyalg RSA -keysize 4096 -validity 10000
    ```
    Choisis un mot de passe solide et réponds aux questions (nom, organisation…).
 2. Copie la clé en Base64 dans le presse-papiers :
    ```cmd
-   powershell -NoProfile -Command "[Convert]::ToBase64String([IO.File]::ReadAllBytes('cardpro.jks')) | Set-Clipboard"
+   powershell -NoProfile -Command "[Convert]::ToBase64String([IO.File]::ReadAllBytes('drawcard.jks')) | Set-Clipboard"
    ```
 3. Sur GitHub : **Settings → Secrets and variables → Actions → New repository secret**, crée 4 secrets :
 
@@ -313,16 +316,16 @@ Android exige que chaque version soit signée avec **la même clé**. Garde-la p
    | --- | --- |
    | `ANDROID_KEYSTORE_BASE64` | le texte copié à l'étape 2 |
    | `ANDROID_KEYSTORE_MOT_DE_PASSE` | le mot de passe choisi |
-   | `ANDROID_CLE_ALIAS` | `cardpro` |
+   | `ANDROID_CLE_ALIAS` | `drawcard` |
    | `ANDROID_CLE_MOT_DE_PASSE` | le même mot de passe |
 
-4. Range `cardpro.jks` en lieu sûr (clé USB, gestionnaire de mots de passe) puis supprime-le du dossier. `.gitignore` empêche de toute façon de l'envoyer sur GitHub.
+4. Range `drawcard.jks` en lieu sûr (clé USB, gestionnaire de mots de passe) puis supprime-le du dossier. `.gitignore` empêche de toute façon de l'envoyer sur GitHub.
 
 > Sans ces secrets, la publication s'arrête avec le message « Secret ANDROID_KEYSTORE_BASE64 manquant ».
 
 ### Installer et mettre à jour
 
-- **Installer** : sur Android, ouvre l'adresse du portefeuille → **Télécharger l'appli Card Pro** → ouvre `CardPro.apk` → autorise l'installation (« sources inconnues ») → **Installer**. Play Protect peut afficher un avertissement (appli hors Play Store) : « Plus de détails » → « Installer quand même ».
+- **Installer** : sur Android, ouvre l'adresse du portefeuille → **Télécharger l'appli DrawCard** → ouvre `DrawCard.apk` → autorise l'installation (« sources inconnues ») → **Installer**. Play Protect peut afficher un avertissement (appli hors Play Store) : « Plus de détails » → « Installer quand même ».
 - **Mettre à jour** : retélécharge l'appli depuis la page du portefeuille et installe-la par-dessus. Les cartes sont conservées. (Pas de mise à jour automatique sur Android : le droit « installer des applis » qu'elle demande fait bloquer l'appli par Play Protect.)
 - Les cartes de l'appli Android et celles de l'appli web sont stockées séparément.
 
@@ -364,12 +367,12 @@ Android exige que chaque version soit signée avec **la même clé**. Garde-la p
 - **Fichiers** : seule une liste blanche est servie (`index.html`, `assets/`, `src/`…). Le code du serveur, la base et les fichiers cachés sont inaccessibles, et la traversée de dossiers est bloquée.
 - **Erreurs** : messages génériques côté client, détails uniquement dans les journaux du serveur.
 - **En-têtes HTTP** : CSP, `X-Content-Type-Options`, `X-Frame-Options: DENY`, `Referrer-Policy`, `Permissions-Policy`, COOP/CORP.
-- **Fenêtre de bureau (WebView2)** : n'affiche que l'appli locale (`http://localhost:<port>/`) ; toute autre adresse est bloquée, et seuls les liens `https` sont transmis au navigateur ; outils de développement désactivés ; données du moteur dans `%LOCALAPPDATA%\CardPro\fenetre`.
-- **CardPro-Configurateur.exe** : contient le `node.exe` officiel (empreinte SHA-256 vérifiée à la compilation) ; aucune permission administrateur ; extraction dans `%LOCALAPPDATA%` (les chemins qui sortiraient du dossier sont refusés) ; n'ouvre dans le navigateur que l'appli locale et GitHub ; la recherche de mise à jour lit seulement le numéro de la dernière version publique (rien n'est envoyé) ; arrêt propre du serveur à la fermeture.
+- **Fenêtre de bureau (WebView2)** : n'affiche que l'appli locale (`http://localhost:<port>/`) ; toute autre adresse est bloquée, et seuls les liens `https` sont transmis au navigateur ; outils de développement désactivés ; données du moteur dans `%LOCALAPPDATA%\DrawCard\fenetre`.
+- **DrawCard-Configurateur.exe** : contient le `node.exe` officiel (empreinte SHA-256 vérifiée à la compilation) ; aucune permission administrateur ; extraction dans `%LOCALAPPDATA%` (les chemins qui sortiraient du dossier sont refusés) ; n'ouvre dans le navigateur que l'appli locale et GitHub ; la recherche de mise à jour lit seulement le numéro de la dernière version publique (rien n'est envoyé) ; arrêt propre du serveur à la fermeture.
 - **Secrets** : aucun n'est nécessaire. `.env` est exclu de Git et de l'image.
 - **Portefeuille mobile** :
   - les cartes restent sur le téléphone (IndexedDB) ; l'application ne contacte aucun serveur (CSP `connect-src 'self'`) ;
-  - tout fichier reçu (GIF, `.cardpro`, QR, sauvegarde `.json`) est une source non fiable : taille limitée (3 Mo de carte, 4 Mo une fois décompressée, contre les « bombes de décompression »), chaque longueur est vérifiée, et les données repassent par **les mêmes validations** que la page web (textes, couleurs, liens `http`/`https`, images PNG/JPEG/WebP à la signature vérifiée) ;
+  - tout fichier reçu (GIF, `.drawcard`, QR, sauvegarde `.json`) est une source non fiable : taille limitée (3 Mo de carte, 4 Mo une fois décompressée, contre les « bombes de décompression »), chaque longueur est vérifiée, et les données repassent par **les mêmes validations** que la page web (textes, couleurs, liens `http`/`https`, images PNG/JPEG/WebP à la signature vérifiée) ;
   - les cartes lues depuis le stockage sont revalidées avant affichage ; les liens d'appel et d'e-mail sont construits à partir de valeurs déjà nettoyées ;
   - le QR animé est contrôlé par un **CRC-32** : une lecture incomplète ou erronée est rejetée ;
   - la page web n'a pas accès à la caméra (`Permissions-Policy: camera=()`), seul le portefeuille y a droit ;

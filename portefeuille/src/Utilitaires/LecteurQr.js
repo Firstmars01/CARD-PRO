@@ -65,7 +65,7 @@ async function creerDetecteur() {
  */
 export async function demarrerLecture(video, surLecture) {
   const detecter = await creerDetecteur();
-  if (!detecter) throw new Error("La lecture de QR code n'est pas disponible sur ce navigateur. Importe plutôt le GIF ou le fichier .cardpro.");
+  if (!detecter) throw new Error("La lecture de QR code n'est pas disponible sur ce navigateur. Importe plutôt le GIF ou le fichier .drawcard.");
   if (!navigator.mediaDevices?.getUserMedia) throw new Error('Caméra indisponible (la page doit être ouverte en HTTPS).');
 
   let flux;

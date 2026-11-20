@@ -1,5 +1,5 @@
 // build.gradle.kts (app)
-// Appli Android « Card Pro » : le portefeuille web (copié dans les assets à
+// Appli Android « DrawCard » : le portefeuille web (copié dans les assets à
 // la publication) affiché dans une WebView, avec le partage NFC en plus.
 // La clé de signature vient de variables d'environnement (secrets GitHub),
 // jamais du code.
@@ -9,25 +9,25 @@ plugins {
 }
 
 android {
-    namespace = "fr.cardpro.portefeuille"
+    namespace = "fr.drawcard.portefeuille"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "fr.cardpro.portefeuille"
+        applicationId = "fr.drawcard.portefeuille"
         minSdk = 26
         targetSdk = 35
-        versionCode = (System.getenv("CARDPRO_VERSION_CODE") ?: "1").toInt()
-        versionName = System.getenv("CARDPRO_VERSION_NOM") ?: "dev"
+        versionCode = (System.getenv("DRAWCARD_VERSION_CODE") ?: "1").toInt()
+        versionName = System.getenv("DRAWCARD_VERSION_NOM") ?: "dev"
     }
 
     signingConfigs {
         create("publication") {
-            val fichier = System.getenv("CARDPRO_KEYSTORE")
+            val fichier = System.getenv("DRAWCARD_KEYSTORE")
             if (fichier != null) {
                 storeFile = file(fichier)
-                storePassword = System.getenv("CARDPRO_KEYSTORE_MOT_DE_PASSE")
-                keyAlias = System.getenv("CARDPRO_CLE_ALIAS")
-                keyPassword = System.getenv("CARDPRO_CLE_MOT_DE_PASSE")
+                storePassword = System.getenv("DRAWCARD_KEYSTORE_MOT_DE_PASSE")
+                keyAlias = System.getenv("DRAWCARD_CLE_ALIAS")
+                keyPassword = System.getenv("DRAWCARD_CLE_MOT_DE_PASSE")
             }
         }
     }

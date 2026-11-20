@@ -2,7 +2,7 @@
  * IconesCarte.js
  * Bibliothèque d'icônes vectorielles à placer sur les cartes (devant les
  * coordonnées, à côté des QR codes…). Icônes génériques dessinées pour
- * Card Pro (tracés 24 × 24, au trait) : aucune marque déposée.
+ * DrawCard (tracés 24 × 24, au trait) : aucune marque déposée.
  */
 
 // [clé, libellé, tracé SVG]

@@ -1,11 +1,11 @@
 /*
  * PontJavascript.java
  * Fonctions Android appelées par le portefeuille (objet JavaScript
- * « CardProAndroid ») : NFC, partage de fichiers, fichiers reçus.
+ * « DrawCardAndroid ») : NFC, partage de fichiers, fichiers reçus.
  * Chaque paramètre venant de la page est vérifié avant usage. La WebView ne
  * peut afficher que les pages de l'appli (voir MainActivity).
  */
-package fr.cardpro.portefeuille;
+package fr.drawcard.portefeuille;
 
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
@@ -182,7 +182,7 @@ final class PontJavascript {
         String extension = contact ? ".vcf" : ".json";
         String nomSur = nom == null ? "" : nom.replaceAll("[^A-Za-z0-9._-]", "_");
         if (nomSur.length() > 80) nomSur = nomSur.substring(0, 80);
-        if (!nomSur.endsWith(extension)) nomSur = (contact ? "contact" : "sauvegarde-cardpro") + extension;
+        if (!nomSur.endsWith(extension)) nomSur = (contact ? "contact" : "sauvegarde-drawcard") + extension;
         File dossier = new File(activite.getCacheDir(), "partage");
         if (!dossier.isDirectory() && !dossier.mkdirs()) return null;
         File fichier = new File(dossier, nomSur);

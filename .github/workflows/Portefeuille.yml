@@ -1,5 +1,5 @@
 # Portefeuille.yml
-# Publie l'appli mobile « Card Pro » sur GitHub Pages (HTTPS) :
+# Publie l'appli mobile « DrawCard » sur GitHub Pages (HTTPS) :
 #  - le portefeuille web (iPhone) et la page « contact » (NFC vers iPhone) ;
 #  - la page d'accueil du projet (accueil/, copiée à la racine) ;
 #  - la page de téléchargement du Configurateur (configurateur/, l'exe est dans « Releases ») ;
@@ -92,29 +92,29 @@ jobs:
 
       - name: Construire l'appli Android (APK signé)
         env:
-          CARDPRO_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-          CARDPRO_KEYSTORE_MOT_DE_PASSE: ${{ secrets.ANDROID_KEYSTORE_MOT_DE_PASSE }}
-          CARDPRO_CLE_ALIAS: ${{ secrets.ANDROID_CLE_ALIAS }}
-          CARDPRO_CLE_MOT_DE_PASSE: ${{ secrets.ANDROID_CLE_MOT_DE_PASSE }}
+          DRAWCARD_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          DRAWCARD_KEYSTORE_MOT_DE_PASSE: ${{ secrets.ANDROID_KEYSTORE_MOT_DE_PASSE }}
+          DRAWCARD_CLE_ALIAS: ${{ secrets.ANDROID_CLE_ALIAS }}
+          DRAWCARD_CLE_MOT_DE_PASSE: ${{ secrets.ANDROID_CLE_MOT_DE_PASSE }}
         run: |
-          if [ -z "$CARDPRO_KEYSTORE_BASE64" ]; then
+          if [ -z "$DRAWCARD_KEYSTORE_BASE64" ]; then
             echo "::error::Secret ANDROID_KEYSTORE_BASE64 manquant : voir la section « Appli Android » du README."
             exit 1
           fi
           # Clé de signature : écrite le temps de la compilation, puis effacée.
-          echo "$CARDPRO_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/cardpro.jks"
-          export CARDPRO_KEYSTORE="$RUNNER_TEMP/cardpro.jks"
+          echo "$DRAWCARD_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/drawcard.jks"
+          export DRAWCARD_KEYSTORE="$RUNNER_TEMP/drawcard.jks"
           # Numéro de version Android déduit de package.json (4.3.0 → 40300) :
           # une nouvelle version s'installe par-dessus l'ancienne (cartes conservées).
-          export CARDPRO_VERSION_NOM="$(node -p "require('./package.json').version")"
-          export CARDPRO_VERSION_CODE="$(node -p "const [a,b,c]=require('./package.json').version.split('.').map(Number); a*10000+b*100+c")"
+          export DRAWCARD_VERSION_NOM="$(node -p "require('./package.json').version")"
+          export DRAWCARD_VERSION_CODE="$(node -p "const [a,b,c]=require('./package.json').version.split('.').map(Number); a*10000+b*100+c")"
           # Le portefeuille (déjà préparé pour le site) est copié dans l'appli.
           mkdir -p android/app/src/main/assets/www
           cp -r _site/portefeuille _site/src _site/assets android/app/src/main/assets/www/
           gradle -p android assembleRelease --no-daemon
-          rm -f "$RUNNER_TEMP/cardpro.jks"
+          rm -f "$RUNNER_TEMP/drawcard.jks"
           mkdir -p _site/telechargement
-          cp android/app/build/outputs/apk/release/app-release.apk _site/telechargement/CardPro.apk
+          cp android/app/build/outputs/apk/release/app-release.apk _site/telechargement/DrawCard.apk
 
       - name: Envoyer le site
         uses: actions/upload-pages-artifact@v4

@@ -3,7 +3,7 @@
  * Communication avec l'appli Android (APK) qui contient le portefeuille :
  * NFC (le téléphone se fait passer pour une puce NFC contenant le contact),
  * partage de fichiers et fichiers reçus d'autres applis (e-mail…).
- * Dans un navigateur, l'objet CardProAndroid n'existe pas : rien ne se passe.
+ * Dans un navigateur, l'objet DrawCardAndroid n'existe pas : rien ne se passe.
  */
 
 /**
@@ -11,12 +11,12 @@
  * @returns {object|null} Pont, ou null hors de l'appli Android.
  */
 function pont() {
-  return typeof window.CardProAndroid === 'object' && window.CardProAndroid ? window.CardProAndroid : null;
+  return typeof window.DrawCardAndroid === 'object' && window.DrawCardAndroid ? window.DrawCardAndroid : null;
 }
 
 /**
  * Indique si la page tourne dans l'appli Android.
- * @returns {boolean} true dans l'APK Card Pro.
+ * @returns {boolean} true dans l'APK DrawCard.
  */
 export function estAppliAndroid() {
   return pont() !== null;

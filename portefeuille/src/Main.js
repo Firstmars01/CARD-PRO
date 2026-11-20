@@ -1,6 +1,6 @@
 /**
  * Main.js (portefeuille)
- * Point d'entrée de Card Pro Portefeuille : thème, écrans, chargement des
+ * Point d'entrée de DrawCard Portefeuille : thème, écrans, chargement des
  * cartes du téléphone, fichiers partagés depuis une autre appli (e-mail)
  * et mode hors ligne (service worker).
  * Seules deux façons d'ouvrir l'appli donnent accès aux fonctions :
@@ -25,7 +25,7 @@ import { estAppliAndroid, fichiersRecus } from './Utilitaires/PontAndroid.js';
 import { activerMisesAJourWeb } from './Utilitaires/MiseAJourWeb.js';
 import { chargerPolices } from '../../src/Utilitaires/ChargementPolices.js';
 
-const CACHE_PARTAGE = 'cardpro-partage';
+const CACHE_PARTAGE = 'drawcard-partage';
 
 /**
  * Enregistre le service worker (hors ligne et mises à jour automatiques).
@@ -57,7 +57,7 @@ function appliAutorisee() {
 }
 
 /**
- * Importe les fichiers partagés vers l'appli (« Partager → Card Pro » sur Android).
+ * Importe les fichiers partagés vers l'appli (« Partager → DrawCard » sur Android).
  * Le service worker les a déposés dans un cache temporaire.
  */
 async function importerFichiersPartages() {
@@ -111,7 +111,7 @@ async function demarrer() {
   await importerFichiersPartages();
   if (estAppliAndroid()) {
     // L'appli Android prévient quand un fichier arrive alors qu'elle est déjà ouverte.
-    window.addEventListener('cardpro-fichiers', () => importerFichiersAndroid());
+    window.addEventListener('drawcard-fichiers', () => importerFichiersAndroid());
     await importerFichiersAndroid();
   }
 }

@@ -4,7 +4,7 @@
  * Rien n'est envoyé sur Internet : les cartes restent sur l'appareil.
  */
 
-const NOM_BASE = 'cardpro-portefeuille';
+const NOM_BASE = 'drawcard-portefeuille';
 const VERSION_BASE = 1;
 const MAGASIN = 'cartes';
 

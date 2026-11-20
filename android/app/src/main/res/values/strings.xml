@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- strings.xml : textes de l'appli Card Pro. -->
+<!-- strings.xml : textes de l'appli DrawCard. -->
 <resources>
-    <string name="nom_appli">Card Pro</string>
-    <string name="description_nfc">Partage de carte de visite Card Pro</string>
+    <string name="nom_appli">DrawCard</string>
+    <string name="description_nfc">Partage de carte de visite DrawCard</string>
 </resources>

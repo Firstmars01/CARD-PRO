@@ -1,7 +1,7 @@
 /*
  * Themes.css
- * Couleurs des thèmes clair et sombre, partagées par la page web Card Pro et
- * l'application Card Pro Portefeuille. Le thème est choisi par l'attribut
+ * Couleurs des thèmes clair et sombre, partagées par la page web DrawCard et
+ * l'application DrawCard Portefeuille. Le thème est choisi par l'attribut
  * data-theme de <html> (voir src/Interface/Themes.js) : il suit le réglage de
  * l'appareil, sauf si la personne a forcé un thème avec le bouton.
  */

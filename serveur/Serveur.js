@@ -1,6 +1,6 @@
 /**
  * Serveur.js
- * Point d'entrée du serveur Card Pro (Node.js, sans dépendance externe).
+ * Point d'entrée du serveur DrawCard (Node.js, sans dépendance externe).
  * Il sert l'application web et l'API JSON (personnes et modèles), avec
  * les contrôles de sécurité communs (en-têtes, origine, gestion d'erreurs).
  */
@@ -66,7 +66,7 @@ async function traiterRequete(req, res, application) {
       envoyerJson(res, erreur.statut, { erreur: erreur.message });
     } else {
       // Le détail reste dans les journaux du serveur, jamais côté client.
-      console.error('[CardPro] Erreur interne :', erreur);
+      console.error('[DrawCard] Erreur interne :', erreur);
       envoyerJson(res, 500, { erreur: 'Erreur interne du serveur.' });
     }
   }
@@ -88,14 +88,14 @@ async function traiterApi(req, res, chemin, application) {
 }
 
 /**
- * Démarre le serveur. Lancé par CardPro-Configurateur.exe (CARDPRO_LANCEUR=1), il
+ * Démarre le serveur. Lancé par DrawCard-Configurateur.exe (DRAWCARD_LANCEUR=1), il
  * s'arrête proprement quand le lanceur ferme son entrée standard (« Quitter »).
  */
 function demarrer() {
   const config = lireConfiguration();
   const serveur = creerServeur(config);
   serveur.listen(config.port, config.hote, () => {
-    console.log(`[CardPro] Serveur démarré sur http://${config.hote}:${config.port}`);
+    console.log(`[DrawCard] Serveur démarré sur http://${config.hote}:${config.port}`);
   });
   const arreter = () => {
     serveur.close(() => process.exit(0));
@@ -104,7 +104,7 @@ function demarrer() {
   };
   process.on('SIGINT', arreter);
   process.on('SIGTERM', arreter);
-  if (process.env.CARDPRO_LANCEUR === '1') {
+  if (process.env.DRAWCARD_LANCEUR === '1') {
     process.stdin.on('end', arreter);
     process.stdin.resume();
   }

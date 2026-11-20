@@ -33,7 +33,7 @@ export async function sauvegarderPortefeuille() {
     return;
   }
   const texte = creerSauvegarde(cartes);
-  const nom = `sauvegarde-cardpro-${new Date().toISOString().slice(0, 10)}.json`;
+  const nom = `sauvegarde-drawcard-${new Date().toISOString().slice(0, 10)}.json`;
   if (estAppliAndroid()) {
     partagerFichier(nom, TYPE_JSON, texte);
     return;
@@ -41,7 +41,7 @@ export async function sauvegarderPortefeuille() {
   const fichier = new File([texte], nom, { type: TYPE_JSON });
   if (navigator.canShare?.({ files: [fichier] })) {
     try {
-      await navigator.share({ files: [fichier], title: 'Sauvegarde Card Pro' });
+      await navigator.share({ files: [fichier], title: 'Sauvegarde DrawCard' });
       return;
     } catch (erreur) {
       if (erreur.name === 'AbortError') return;

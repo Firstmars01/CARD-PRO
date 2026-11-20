@@ -25,10 +25,10 @@ export function pageVersions(depot) {
 }
 
 /**
- * Lien direct vers CardPro-Configurateur.exe (dernière version).
+ * Lien direct vers DrawCard-Configurateur.exe (dernière version).
  * @param {{compte:string, depot:string}} depot - Dépôt.
  * @returns {string} Adresse du fichier.
  */
 export function lienExeConfigurateur(depot) {
-  return `${pageVersions(depot)}/download/CardPro-Configurateur.exe`;
+  return `${pageVersions(depot)}/download/DrawCard-Configurateur.exe`;
 }

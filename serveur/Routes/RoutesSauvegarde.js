@@ -18,7 +18,9 @@ import { transaction } from '../Donnees/BaseDeDonnees.js';
 import { MODELES_MAX } from './RoutesModeles.js';
 import { PERSONNES_MAX } from './RoutesPersonnes.js';
 
-export const FORMAT_SAUVEGARDE = 'cardpro-sauvegarde';
+export const FORMAT_SAUVEGARDE = 'drawcard-sauvegarde';
+// Sauvegardes créées avant le nom DrawCard : encore acceptées à la restauration.
+const FORMATS_ACCEPTES = [FORMAT_SAUVEGARDE, 'cardpro-sauvegarde'];
 const VERSION_SAUVEGARDE = 2;
 // 200 modèles avec images + 5 000 personnes (avec photos de profil).
 const LIMITE_CORPS = 256 * 1024 * 1024;
@@ -88,10 +90,10 @@ function validerPersonnes(brutes, modelesConnus, entreprisesConnues) {
 /** POST /api/sauvegarde : remplace toutes les données. @param {object} ctx - Contexte. */
 async function restaurer(ctx) {
   const corps = await lireCorpsJson(ctx.req, LIMITE_CORPS);
-  if (corps?.format !== FORMAT_SAUVEGARDE || !Array.isArray(corps.modeles) || !Array.isArray(corps.personnes)) {
-    throw new ErreurHttp(400, "Ce fichier n'est pas une sauvegarde Card Pro.");
+  if (!FORMATS_ACCEPTES.includes(corps?.format) || !Array.isArray(corps.modeles) || !Array.isArray(corps.personnes)) {
+    throw new ErreurHttp(400, "Ce fichier n'est pas une sauvegarde DrawCard.");
   }
-  if (corps.version > VERSION_SAUVEGARDE) throw new ErreurHttp(400, 'Sauvegarde créée par une version plus récente de Card Pro.');
+  if (corps.version > VERSION_SAUVEGARDE) throw new ErreurHttp(400, 'Sauvegarde créée par une version plus récente de DrawCard.');
   if (corps.modeles.length > MODELES_MAX) throw new ErreurHttp(413, `Maximum ${MODELES_MAX} modèles.`);
   if (corps.personnes.length > PERSONNES_MAX) throw new ErreurHttp(413, `Maximum ${PERSONNES_MAX} personnes.`);
   const entreprisesBrutes = Array.isArray(corps.entreprises) ? corps.entreprises : [];

@@ -1,12 +1,12 @@
 /*
  * FenetreAppli.cs
- * Fenêtre de bureau de Card Pro : l'appli s'affiche dans une vraie fenêtre
+ * Fenêtre de bureau de DrawCard : l'appli s'affiche dans une vraie fenêtre
  * (WebView2), sans barre d'adresse ni onglets.
  *  - seule l'appli locale (http://localhost:<port>/) s'affiche dans la
  *    fenêtre ; les liens https s'ouvrent dans le navigateur par défaut ;
  *  - chaque téléchargement demande où enregistrer le fichier ;
  *  - outils de développement désactivés.
- * Fermer la fenêtre quitte Card Pro (géré par Programme).
+ * Fermer la fenêtre quitte DrawCard (géré par Programme).
  */
 using System;
 using System.Diagnostics;
@@ -17,9 +17,9 @@ using System.Windows.Forms;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
 
-namespace CardPro.Lanceur
+namespace DrawCard.Lanceur
 {
-    /// <summary>Fenêtre principale de Card Pro.</summary>
+    /// <summary>Fenêtre principale de DrawCard.</summary>
     internal sealed class FenetreAppli : Form
     {
         private readonly string adresse;
@@ -30,7 +30,7 @@ namespace CardPro.Lanceur
         public FenetreAppli(string adresse)
         {
             this.adresse = adresse;
-            Text = "Card Pro Configurateur";
+            Text = "DrawCard Configurateur";
             Icon = IconeBarre.ChargerIcone();
             StartPosition = FormStartPosition.CenterScreen;
             Size = new Size(1400, 900);
@@ -63,7 +63,7 @@ namespace CardPro.Lanceur
             moteur.Navigate(adresse);
         }
 
-        /// <summary>Remet la fenêtre au premier plan (seconde ouverture de Card Pro, icône).</summary>
+        /// <summary>Remet la fenêtre au premier plan (seconde ouverture de DrawCard, icône).</summary>
         public void Afficher()
         {
             if (WindowState == FormWindowState.Minimized) WindowState = FormWindowState.Maximized;
@@ -73,7 +73,7 @@ namespace CardPro.Lanceur
 
         /// <summary>true si l'adresse appartient à l'appli locale.</summary>
         /// <param name="uri">Adresse demandée.</param>
-        /// <returns>true pour une page de Card Pro.</returns>
+        /// <returns>true pour une page de DrawCard.</returns>
         private bool EstAppli(string uri)
         {
             return uri != null && uri.StartsWith(adresse, StringComparison.OrdinalIgnoreCase);

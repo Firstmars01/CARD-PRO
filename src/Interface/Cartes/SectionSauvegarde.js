@@ -22,7 +22,7 @@ async function sauvegarder(bouton) {
   try {
     const donnees = await lireSauvegarde();
     const date = new Date().toISOString().slice(0, 10);
-    telechargerBlob(new Blob([JSON.stringify(donnees)], { type: 'application/json' }), `cardpro-sauvegarde-${date}.json`);
+    telechargerBlob(new Blob([JSON.stringify(donnees)], { type: 'application/json' }), `drawcard-sauvegarde-${date}.json`);
     notifier('Sauvegarde téléchargée.', 'succes');
   } catch (erreur) {
     notifier(erreur.message || 'Sauvegarde impossible.', 'erreur');
@@ -46,7 +46,7 @@ async function restaurer(fichier) {
     notifier(`Restauré : ${resultat.personnes} personne(s), ${resultat.modeles} modèle(s).`, 'succes');
     setTimeout(() => location.reload(), 800);
   } catch (erreur) {
-    notifier(erreur instanceof SyntaxError ? "Ce fichier n'est pas une sauvegarde Card Pro." : erreur.message, 'erreur');
+    notifier(erreur instanceof SyntaxError ? "Ce fichier n'est pas une sauvegarde DrawCard." : erreur.message, 'erreur');
   }
 }
 

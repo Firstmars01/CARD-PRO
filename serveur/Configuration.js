@@ -32,7 +32,7 @@ export function lireConfiguration(env = process.env) {
   return {
     port: Number(env.PORT) || 3000,
     hote: env.HOTE || '127.0.0.1',
-    cheminBase: env.CHEMIN_BASE || path.join(RACINE_PROJET, 'donnees', 'cardpro.sqlite'),
+    cheminBase: env.CHEMIN_BASE || path.join(RACINE_PROJET, 'donnees', 'drawcard.sqlite'),
     racineStatique: RACINE_PROJET,
     lienPortefeuille: lienHttps(env.LIEN_PORTEFEUILLE),
   };

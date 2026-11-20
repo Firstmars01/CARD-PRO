@@ -1,8 +1,8 @@
 /**
  * sw.js (portefeuille)
- * Service worker de Card Pro Portefeuille :
+ * Service worker de DrawCard Portefeuille :
  *  - garde les fichiers de l'appli sur le téléphone (fonctionne hors ligne) ;
- *  - reçoit les fichiers partagés depuis une autre appli (« Partager → Card Pro »)
+ *  - reçoit les fichiers partagés depuis une autre appli (« Partager → DrawCard »)
  *    et les dépose dans un cache temporaire lu par la page.
  * VERSION est remplacée automatiquement à chaque publication (voir
  * .github/workflows/Portefeuille.yml) : le téléphone voit qu'une nouvelle
@@ -10,8 +10,8 @@
  */
 
 const VERSION = 'v6';
-const CACHE_APPLI = `cardpro-portefeuille-${VERSION}`;
-const CACHE_PARTAGE = 'cardpro-partage';
+const CACHE_APPLI = `drawcard-portefeuille-${VERSION}`;
+const CACHE_PARTAGE = 'drawcard-partage';
 const TAILLE_MAX_PARTAGE = 20 * 1024 * 1024;
 
 // Fichiers de l'application (chemins relatifs à ce fichier).
@@ -166,7 +166,7 @@ self.addEventListener('install', (evenement) => {
 self.addEventListener('activate', (evenement) => {
   evenement.waitUntil((async () => {
     const noms = await caches.keys();
-    await Promise.all(noms.filter((n) => n.startsWith('cardpro-portefeuille-') && n !== CACHE_APPLI).map((n) => caches.delete(n)));
+    await Promise.all(noms.filter((n) => n.startsWith('drawcard-portefeuille-') && n !== CACHE_APPLI).map((n) => caches.delete(n)));
     await self.clients.claim();
   })());
 });

@@ -1,13 +1,13 @@
 /*
  * Programme.cs
- * Point d'entrée de CardPro-Configurateur.exe :
+ * Point d'entrée de DrawCard-Configurateur.exe :
  *  1. une seule instance (une seconde ouverture remet la fenêtre au premier plan) ;
  *  2. mise à jour automatique au démarrage si une nouvelle version existe,
  *     avec une fenêtre qui montre l'avancement ;
- *  3. démarrage du serveur Card Pro en arrière-plan ;
- *  4. affichage de l'appli dans la fenêtre Card Pro (WebView2) ; si le moteur
+ *  3. démarrage du serveur DrawCard en arrière-plan ;
+ *  4. affichage de l'appli dans la fenêtre DrawCard (WebView2) ; si le moteur
  *     WebView2 manque, ouverture dans le navigateur par défaut ;
- *  5. fermer la fenêtre (ou « Quitter » près de l'horloge) arrête Card Pro.
+ *  5. fermer la fenêtre (ou « Quitter » près de l'horloge) arrête DrawCard.
  */
 using System;
 using System.IO;
@@ -17,12 +17,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace CardPro.Lanceur
+namespace DrawCard.Lanceur
 {
     /// <summary>Programme principal.</summary>
     internal static class Programme
     {
-        /// <summary>Démarre Card Pro.</summary>
+        /// <summary>Démarre DrawCard.</summary>
         /// <param name="arguments">« --apres-maj » quand l'exe vient d'être mis à jour.</param>
         [STAThread]
         private static void Main(string[] arguments)
@@ -30,7 +30,7 @@ namespace CardPro.Lanceur
             // Avant tout usage d'un type WebView2 (bibliothèques intégrées à l'exe).
             ChargementWebView2.Preparer();
             bool apresMaj = arguments.Contains(MiseAJour.ArgumentApresMaj);
-            using (Mutex unique = new Mutex(false, "Local\\CardProConfigurateur"))
+            using (Mutex unique = new Mutex(false, "Local\\DrawCardConfigurateur"))
             {
                 // Après une mise à jour, on attend que l'ancienne version se soit fermée.
                 if (!Obtenir(unique, apresMaj ? 20000 : 0))
@@ -80,8 +80,8 @@ namespace CardPro.Lanceur
                 catch (Exception erreur)
                 {
                     MessageBox.Show(
-                        "Card Pro n'a pas pu démarrer : " + erreur.Message + "\n\nDétails dans : " + Parametres.FichierJournal,
-                        "Card Pro Configurateur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        "DrawCard n'a pas pu démarrer : " + erreur.Message + "\n\nDétails dans : " + Parametres.FichierJournal,
+                        "DrawCard Configurateur", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
                 if (resultat == Demarrage.Relance) return; // La nouvelle version a pris le relais.
@@ -98,7 +98,7 @@ namespace CardPro.Lanceur
                     };
                     using (IconeBarre icone = new IconeBarre(serveur, afficher))
                     {
-                        // Fermer la fenêtre arrête Card Pro.
+                        // Fermer la fenêtre arrête DrawCard.
                         fenetre.FormClosed += (s, e) => icone.Quitter();
                         fenetre.Shown += async (s, e) =>
                         {
@@ -112,13 +112,13 @@ namespace CardPro.Lanceur
                                 avecFenetre = false;
                                 fenetre.Hide();
                                 Navigateur.Ouvrir(serveur.Adresse);
-                                icone.Bulle("Card Pro s'ouvre dans le navigateur",
-                                    "La fenêtre Card Pro a besoin de Microsoft Edge WebView2 (" + erreur.GetType().Name + "). Clic droit sur l'icône pour quitter.",
+                                icone.Bulle("DrawCard s'ouvre dans le navigateur",
+                                    "La fenêtre DrawCard a besoin de Microsoft Edge WebView2 (" + erreur.GetType().Name + "). Clic droit sur l'icône pour quitter.",
                                     ToolTipIcon.Warning);
                             }
                         };
                         EcouterSecondeOuverture(signalAffichage, fenetre, afficher);
-                        if (apresMaj) icone.Bulle("Card Pro est à jour", "Version " + Parametres.TexteVersion + " installée. Tes données sont conservées.", ToolTipIcon.Info);
+                        if (apresMaj) icone.Bulle("DrawCard est à jour", "Version " + Parametres.TexteVersion + " installée. Tes données sont conservées.", ToolTipIcon.Info);
                         icone.DemarrerVerificationsMiseAJour();
                         fenetre.Show();
                         Application.Run();
@@ -148,9 +148,9 @@ namespace CardPro.Lanceur
                 return Demarrage.Relance;
             }
 
-            fenetre.Etape("Préparation de Card Pro…");
+            fenetre.Etape("Préparation de DrawCard…");
             await Task.Run(() => serveur.PreparerFichiers());
-            fenetre.Etape("Lancement de Card Pro…");
+            fenetre.Etape("Lancement de DrawCard…");
             await Task.Run(() =>
             {
                 serveur.Demarrer();
@@ -226,10 +226,10 @@ namespace CardPro.Lanceur
         }
 
         // Signal envoyé par une seconde ouverture de l'exe : « remets la fenêtre au premier plan ».
-        private const string NomSignalAffichage = "Local\\CardProConfigurateurAfficher";
+        private const string NomSignalAffichage = "Local\\DrawCardConfigurateurAfficher";
 
         /// <summary>
-        /// Attend en arrière-plan qu'une seconde ouverture de Card Pro demande la fenêtre.
+        /// Attend en arrière-plan qu'une seconde ouverture de DrawCard demande la fenêtre.
         /// </summary>
         /// <param name="signal">Signal partagé entre les instances.</param>
         /// <param name="fenetre">Fenêtre (fournit le fil de l'interface).</param>
@@ -249,7 +249,7 @@ namespace CardPro.Lanceur
                 }
                 catch (ObjectDisposedException)
                 {
-                    // Card Pro se ferme : le signal ou la fenêtre n'existent plus.
+                    // DrawCard se ferme : le signal ou la fenêtre n'existent plus.
                 }
                 catch (InvalidOperationException)
                 {
@@ -259,7 +259,7 @@ namespace CardPro.Lanceur
             ecoute.Start();
         }
 
-        /// <summary>Card Pro tourne déjà : on remet sa fenêtre au premier plan.</summary>
+        /// <summary>DrawCard tourne déjà : on remet sa fenêtre au premier plan.</summary>
         private static void OuvrirInstanceExistante()
         {
             EventWaitHandle signal;
@@ -276,7 +276,7 @@ namespace CardPro.Lanceur
             }
             else
             {
-                MessageBox.Show("Card Pro est déjà lancé (icône près de l'horloge).", "Card Pro Configurateur", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("DrawCard est déjà lancé (icône près de l'horloge).", "DrawCard Configurateur", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 

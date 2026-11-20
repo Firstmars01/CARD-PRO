@@ -1,6 +1,6 @@
 /*
  * MainActivity.java
- * Écran principal de l'appli Card Pro : affiche le portefeuille (fichiers
+ * Écran principal de l'appli DrawCard : affiche le portefeuille (fichiers
  * web inclus dans l'appli) dans une WebView, servis en HTTPS local
  * (https://appassets.androidplatform.net) pour que la caméra et les modules
  * JavaScript fonctionnent.
@@ -8,7 +8,7 @@
  * depuis Internet ; tout autre lien (site, téléphone, e-mail) s'ouvre dans
  * l'appli adaptée du téléphone.
  */
-package fr.cardpro.portefeuille;
+package fr.drawcard.portefeuille;
 
 import android.Manifest;
 import android.app.Activity;
@@ -73,7 +73,7 @@ public class MainActivity extends Activity {
         reglages.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
         vue.setWebViewClient(new ClientPages());
         vue.setWebChromeClient(new ClientNavigateur());
-        vue.addJavascriptInterface(new PontJavascript(this, fichiersRecus), "CardProAndroid");
+        vue.addJavascriptInterface(new PontJavascript(this, fichiersRecus), "DrawCardAndroid");
         setContentView(vue);
 
         fichiersRecus.lireIntent(getIntent());
@@ -94,7 +94,7 @@ public class MainActivity extends Activity {
 
     /**
      * Pendant le partage NFC, ce téléphone ne doit pas « lire » l'autre :
-     * tout ce qu'il détecte est envoyé à Card Pro (et ignoré) au lieu
+     * tout ce qu'il détecte est envoyé à DrawCard (et ignoré) au lieu
      * d'ouvrir une autre appli (portefeuille de paiement, lecteur NFC…).
      *
      * @param bloquer true pour bloquer, false pour revenir au fonctionnement normal
@@ -122,7 +122,7 @@ public class MainActivity extends Activity {
         setIntent(intent);
         // Fichier reçu alors que l'appli est ouverte : on prévient le portefeuille.
         if (fichiersRecus.lireIntent(intent)) {
-            vue.evaluateJavascript("window.dispatchEvent(new Event('cardpro-fichiers'))", null);
+            vue.evaluateJavascript("window.dispatchEvent(new Event('drawcard-fichiers'))", null);
         }
     }
 

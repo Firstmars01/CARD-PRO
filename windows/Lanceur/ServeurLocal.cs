@@ -1,6 +1,6 @@
 /*
  * ServeurLocal.cs
- * Démarre et arrête le serveur Card Pro (Node.js), invisible :
+ * Démarre et arrête le serveur DrawCard (Node.js), invisible :
  *  - extrait l'appli intégrée à l'exe (une seule fois par version) ;
  *  - choisit un port libre sur ce PC (127.0.0.1 uniquement) ;
  *  - lance node.exe, écrit ses messages dans le journal ;
@@ -17,9 +17,9 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 
-namespace CardPro.Lanceur
+namespace DrawCard.Lanceur
 {
-    /// <summary>Serveur Card Pro lancé en arrière-plan.</summary>
+    /// <summary>Serveur DrawCard lancé en arrière-plan.</summary>
     internal sealed class ServeurLocal : IDisposable
     {
         private const int PremierPort = 48080;
@@ -90,7 +90,7 @@ namespace CardPro.Lanceur
             infos.EnvironmentVariables["HOTE"] = "127.0.0.1";
             infos.EnvironmentVariables["CHEMIN_BASE"] = Parametres.FichierBase;
             infos.EnvironmentVariables["LIEN_PORTEFEUILLE"] = Parametres.LienPortefeuille;
-            infos.EnvironmentVariables["CARDPRO_LANCEUR"] = "1";
+            infos.EnvironmentVariables["DRAWCARD_LANCEUR"] = "1";
             infos.EnvironmentVariables["NODE_ENV"] = "production";
 
             processus = new Process { StartInfo = infos, EnableRaisingEvents = true };

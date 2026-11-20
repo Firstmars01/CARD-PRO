@@ -7,7 +7,9 @@
 
 import { validerCarteStockee } from './Portefeuille.js';
 
-export const FORMAT_SAUVEGARDE = 'cardpro-portefeuille';
+export const FORMAT_SAUVEGARDE = 'drawcard-portefeuille';
+// Sauvegardes créées avant le nom DrawCard : encore acceptées.
+const FORMATS_ACCEPTES = [FORMAT_SAUVEGARDE, 'cardpro-portefeuille'];
 const VERSION_SAUVEGARDE = 1;
 export const TAILLE_MAX_SAUVEGARDE = 40 * 1024 * 1024;
 const CARTES_MAX = 2000;
@@ -25,17 +27,17 @@ export function creerSauvegarde(cartes) {
  * Lit une sauvegarde et revalide chaque carte.
  * @param {string} texte - Contenu du fichier (non fiable).
  * @returns {object[]} Cartes valides (identifiants uniques).
- * @throws {Error} Si le fichier n'est pas une sauvegarde Card Pro.
+ * @throws {Error} Si le fichier n'est pas une sauvegarde DrawCard.
  */
 export function lireSauvegarde(texte) {
   let donnees;
   try {
     donnees = JSON.parse(texte);
   } catch {
-    throw new Error("Ce fichier n'est pas une sauvegarde Card Pro.");
+    throw new Error("Ce fichier n'est pas une sauvegarde DrawCard.");
   }
-  if (donnees?.format !== FORMAT_SAUVEGARDE || !Array.isArray(donnees.cartes)) throw new Error("Ce fichier n'est pas une sauvegarde Card Pro.");
-  if (donnees.version > VERSION_SAUVEGARDE) throw new Error('Sauvegarde créée par une version plus récente : mets à jour Card Pro.');
+  if (!FORMATS_ACCEPTES.includes(donnees?.format) || !Array.isArray(donnees.cartes)) throw new Error("Ce fichier n'est pas une sauvegarde DrawCard.");
+  if (donnees.version > VERSION_SAUVEGARDE) throw new Error('Sauvegarde créée par une version plus récente : mets à jour DrawCard.');
   if (donnees.cartes.length > CARTES_MAX) throw new Error(`Maximum ${CARTES_MAX} cartes.`);
   const vues = new Set();
   return donnees.cartes.map(validerCarteStockee).filter((c) => {

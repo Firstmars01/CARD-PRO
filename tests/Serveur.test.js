@@ -84,7 +84,7 @@ test('protections : origine étrangère, mauvais format, fichiers sensibles', as
   const accueil = await fetch(`${base}/`);
   assert.equal(accueil.status, 200);
   assert.match(accueil.headers.get('content-security-policy'), /default-src 'self'/);
-  for (const chemin of ['/serveur/Serveur.js', '/package.json', '/.env', '/src/%2e%2e/serveur/Serveur.js', '/donnees/cardpro.sqlite']) {
+  for (const chemin of ['/serveur/Serveur.js', '/package.json', '/.env', '/src/%2e%2e/serveur/Serveur.js', '/donnees/drawcard.sqlite']) {
     assert.equal((await fetch(base + chemin)).status, 404, chemin);
   }
 });
@@ -122,7 +122,7 @@ test('sauvegarde : export, restauration complète et validation', async () => {
   await appeler('POST', '/api/personnes', { personne: { prenom: 'Zoé' } });
   const modele = (await appeler('POST', '/api/modeles', { modele: { nom: 'Sauvegardé' } })).donnees.modele;
   const sauvegarde = (await appeler('GET', '/api/sauvegarde')).donnees;
-  assert.equal(sauvegarde.format, 'cardpro-sauvegarde');
+  assert.equal(sauvegarde.format, 'drawcard-sauvegarde');
   assert.ok(sauvegarde.personnes.some((p) => p.personne.prenom === 'Zoé'));
 
   // Restauration : remplace tout, valide chaque entrée, ignore les modèles de base.
@@ -173,4 +173,10 @@ test('entreprises : création, carte reliée, suppression bloquée, design en lo
   // Une fois la carte détachée, la suppression passe.
   await appeler('PUT', `/api/personnes/${carte.id}`, { personne: carte.personne, modeleId: base2.id, entrepriseId: '' });
   assert.equal((await appeler('DELETE', `/api/entreprises/${entreprise.id}`)).statut, 200);
+});
+
+test('DrawCard : une sauvegarde créée sous l’ancien nom (cardpro-sauvegarde) se restaure', async () => {
+  const reponse = await appeler('POST', '/api/sauvegarde', { format: 'cardpro-sauvegarde', version: 1, modeles: [], personnes: [{ personne: { prenom: 'Ancienne' } }] });
+  assert.equal(reponse.statut, 200);
+  assert.equal(reponse.donnees.personnes, 1);
 });

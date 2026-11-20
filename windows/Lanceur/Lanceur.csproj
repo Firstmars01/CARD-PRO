@@ -1,6 +1,6 @@
 <!--
   Lanceur.csproj
-  CardPro-Configurateur.exe : lanceur Windows de Card Pro Configurateur. Il contient l'appli
+  DrawCard-Configurateur.exe : lanceur Windows de DrawCard Configurateur. Il contient l'appli
   (Node.js + serveur + page web) dans un paquet ZIP intégré, la démarre en
   local, l'affiche dans une fenêtre (WebView2) et met une icône près de l'horloge.
   Les bibliothèques WebView2 sont intégrées à l'exe (un seul fichier à télécharger).
@@ -11,12 +11,12 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net48</TargetFramework>
     <LangVersion>7.3</LangVersion>
-    <AssemblyName>CardPro-Configurateur</AssemblyName>
-    <RootNamespace>CardPro.Lanceur</RootNamespace>
+    <AssemblyName>DrawCard-Configurateur</AssemblyName>
+    <RootNamespace>DrawCard.Lanceur</RootNamespace>
     <ApplicationIcon>icone.ico</ApplicationIcon>
-    <Product>Card Pro Configurateur</Product>
-    <Company>Card Pro</Company>
-    <Description>Card Pro : création des cartes de visite</Description>
+    <Product>DrawCard Configurateur</Product>
+    <Company>DrawCard</Company>
+    <Description>DrawCard : création des cartes de visite</Description>
     <Version Condition="'$(Version)' == ''">0.0.0</Version>
     <!-- Paquet de l'appli (préparé par .github/workflows/Configurateur.yml). -->
     <PaquetAppli Condition="'$(PaquetAppli)' == ''">..\..\_paquet\app.zip</PaquetAppli>

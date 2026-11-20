@@ -2,7 +2,7 @@
  * PaquetCarte.js
  * « Paquet » d'une carte pour le portefeuille mobile : les informations de la
  * personne et le design complet de sa carte (recto, verso, images comprises),
- * réunis dans un bloc binaire compressé. C'est le contenu du fichier .cardpro,
+ * réunis dans un bloc binaire compressé. C'est le contenu du fichier .drawcard,
  * du GIF envoyé par e-mail et du QR code animé.
  *
  * Format :
@@ -21,14 +21,17 @@ import { compresser, decompresser } from '../Utilitaires/Compression.js';
 import { dataUrlVersOctets, octetsVersDataUrl } from '../Utilitaires/DataUrl.js';
 import { extraireDonneesGif } from '../Utilitaires/LectureGif.js';
 
-const SIGNATURE = [0x43, 0x50, 0x52, 0x4f]; // "CPRO"
+const SIGNATURE = [0x44, 0x52, 0x57, 0x43]; // "DRWC"
+// Signature des cartes créées avant le nom DrawCard (encore lues, jamais écrites).
+const SIGNATURE_ANCIENNE = [0x43, 0x50, 0x52, 0x4f]; // "CPRO"
 const VERSION_PAQUET = 1;
 export const TAILLE_MAX_PAQUET = 3 * 1024 * 1024; // Fichier reçu (3 Mo)
 const TAILLE_MAX_DECOMPRESSEE = 4 * 1024 * 1024; // Une fois décompressé (4 Mo)
 const IMAGES_MAX = 40;
 const PREFIXE_IMAGE = '#image:';
 // Identifiant du bloc de données caché dans le GIF envoyé par e-mail.
-export const IDENTIFIANT_GIF = 'CARDPRO1.0';
+export const IDENTIFIANT_GIF = 'DRAWCARD1.0';
+const IDENTIFIANT_GIF_ANCIEN = 'CARDPRO1.0';
 
 /**
  * Parcourt les objets du modèle qui peuvent contenir des images (fonds et éléments).
@@ -91,7 +94,7 @@ function replacerImages(modele, images) {
  * Crée le paquet binaire d'une carte.
  * @param {object} personne - Personne normalisée.
  * @param {object} modele - Modèle normalisé de sa carte.
- * @returns {Promise<Uint8Array>} Paquet (contenu du fichier .cardpro).
+ * @returns {Promise<Uint8Array>} Paquet (contenu du fichier .drawcard).
  */
 export async function creerPaquet(personne, modele) {
   const copie = structuredClone(modele);
@@ -121,26 +124,27 @@ export async function creerPaquet(personne, modele) {
 }
 
 /**
- * Indique si des octets ressemblent à un paquet Card Pro (signature).
+ * Indique si des octets ressemblent à un paquet DrawCard (signature).
  * @param {Uint8Array} octets - Données.
  * @returns {boolean} true si la signature est présente.
  */
 export function estPaquet(octets) {
-  return octets.length > 5 && SIGNATURE.every((o, i) => octets[i] === o);
+  return octets.length > 5 && [SIGNATURE, SIGNATURE_ANCIENNE].some((signature) => signature.every((o, i) => octets[i] === o));
 }
 
 /**
- * Retrouve le paquet d'une carte dans un fichier reçu : .cardpro, ou GIF de
+ * Retrouve le paquet d'une carte dans un fichier reçu : .drawcard, ou GIF de
  * portefeuille (la carte y est cachée).
  * @param {Uint8Array} octets - Contenu du fichier (source non fiable).
  * @returns {Uint8Array} Paquet de la carte.
- * @throws {Error} Si le fichier n'est ni un .cardpro ni un GIF Card Pro.
+ * @throws {Error} Si le fichier n'est ni un .drawcard ni un GIF DrawCard.
  */
 export function extrairePaquet(octets) {
   if (estPaquet(octets)) return octets;
-  const paquet = extraireDonneesGif(octets, IDENTIFIANT_GIF, TAILLE_MAX_PAQUET);
+  const paquet = extraireDonneesGif(octets, IDENTIFIANT_GIF, TAILLE_MAX_PAQUET)
+    || extraireDonneesGif(octets, IDENTIFIANT_GIF_ANCIEN, TAILLE_MAX_PAQUET);
   if (paquet) return paquet;
-  throw new Error("Ce fichier n'est pas une carte Card Pro (choisis le GIF ou le fichier .cardpro reçu).");
+  throw new Error("Ce fichier n'est pas une carte DrawCard (choisis le GIF ou le fichier .drawcard reçu).");
 }
 
 /**
@@ -150,9 +154,9 @@ export function extrairePaquet(octets) {
  * @throws {Error} Avec un message lisible si le paquet est invalide.
  */
 export async function lirePaquet(octets) {
-  if (!estPaquet(octets)) throw new Error("Ce fichier n'est pas une carte Card Pro.");
+  if (!estPaquet(octets)) throw new Error("Ce fichier n'est pas une carte DrawCard.");
   if (octets.length > TAILLE_MAX_PAQUET) throw new Error('Carte trop volumineuse.');
-  if (octets[4] !== VERSION_PAQUET) throw new Error('Carte créée avec une version plus récente de Card Pro.');
+  if (octets[4] !== VERSION_PAQUET) throw new Error('Carte créée avec une version plus récente de DrawCard.');
 
   const corps = await decompresser(octets.subarray(5), TAILLE_MAX_DECOMPRESSEE);
   let position = 0;

@@ -42,10 +42,10 @@ function sectionIndisponible() {
     contenu = [creerElement('p', { classe: 'Astuce', texte: "Ce téléphone n'a pas de NFC compatible avec le partage de carte." })];
   } else if (systeme() === 'android') {
     contenu = [
-      creerElement('p', { classe: 'Astuce', texte: "Le partage NFC fonctionne dans l'appli Android Card Pro (APK), pas dans la version web. Installe-la, puis réimporte tes cartes." }),
+      creerElement('p', { classe: 'Astuce', texte: "Le partage NFC fonctionne dans l'appli Android DrawCard (APK), pas dans la version web. Installe-la, puis réimporte tes cartes." }),
       creerElement('div', { classe: 'Actions' }, [creerElement('a', {
         classe: 'PBouton', texte: "Télécharger l'appli Android",
-        attributs: { href: '../telechargement/CardPro.apk', download: 'CardPro.apk', type: 'application/vnd.android.package-archive' },
+        attributs: { href: '../telechargement/DrawCard.apk', download: 'DrawCard.apk', type: 'application/vnd.android.package-archive' },
       })]),
     ];
   } else {

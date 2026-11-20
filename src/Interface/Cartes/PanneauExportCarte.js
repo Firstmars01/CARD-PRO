@@ -3,7 +3,7 @@
  * Boutons de téléchargement de la carte sélectionnée : images (PNG, JPG,
  * SVG) du recto et du verso, PDF, planche A4 recto-verso, PDF imprimeur
  * (fonds perdus), contact et ZIP ; fond Teams / Zoom ; et section « Portefeuille mobile » (QR
- * animé à scanner, GIF pour e-mail, fichier .cardpro).
+ * animé à scanner, GIF pour e-mail, fichier .drawcard).
  */
 
 import { creerElement } from '../../Utilitaires/Dom.js';
@@ -12,7 +12,7 @@ import { trouverPersonne } from '../../Metier/EtatApplication.js';
 import { personneSelectionnee, abonnerSelection } from './SelectionCarte.js';
 import {
   preparerCarte, fichierPng, fichierJpg, fichierSvg, fichierPdf, fichierPlanche, fichierImprimeur, fichierVcf, fichierZip,
-  fichierCardpro, fichierGifPortefeuille,
+  fichierDrawcard, fichierGifPortefeuille,
 } from './GenerateurFichiers.js';
 import { ouvrirAffichageTransfert } from './AffichageTransfert.js';
 import { fichierFondVisio } from '../Rendu/RenduFondVisio.js';
@@ -37,7 +37,7 @@ const EXPORTS = [
 // Boutons du portefeuille mobile (même format).
 const EXPORTS_PORTEFEUILLE = [
   ['GIF pour e-mail', '-portefeuille.gif', fichierGifPortefeuille],
-  ['Fichier .cardpro', '.cardpro', fichierCardpro],
+  ['Fichier .drawcard', '.drawcard', fichierDrawcard],
 ];
 
 /**
@@ -115,7 +115,7 @@ function creerSectionPortefeuille() {
     creerElement('div', { classe: 'GrilleBoutons' }, [afficher, ...creerBoutons(EXPORTS_PORTEFEUILLE)]),
     creerElement('p', {
       classe: 'Aide',
-      texte: "La carte complète (recto, verso, infos) passe dans l'application Card Pro Portefeuille : la personne scanne le QR animé, ou ouvre le GIF ou le fichier .cardpro reçu par e-mail. Ce QR est différent de celui imprimé sur la carte.",
+      texte: "La carte complète (recto, verso, infos) passe dans l'application DrawCard Portefeuille : la personne scanne le QR animé, ou ouvre le GIF ou le fichier .drawcard reçu par e-mail. Ce QR est différent de celui imprimé sur la carte.",
     }),
   );
   return section;

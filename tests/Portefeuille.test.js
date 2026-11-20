@@ -99,14 +99,14 @@ test('transfert QR : ordre quelconque, doublons, autre carte au milieu', async (
 test('GIF : QR animé lisible et carte cachée dans le fichier', async () => {
   const paquet = await creerPaquet(PERSONNE_EXEMPLE, modeleAvecImages());
   const images = encoderTrames(decouperPaquet(paquet)).map((qr) => qrEnPixels(qr, 2));
-  const gif = creerGifAnime(images, { delai: 20, application: { identifiant: 'CARDPRO1.0', octets: paquet } });
+  const gif = creerGifAnime(images, { delai: 20, application: { identifiant: 'DRAWCARD1.0', octets: paquet } });
   assert.equal(new TextDecoder().decode(gif.subarray(0, 6)), 'GIF89a');
   assert.equal(gif[gif.length - 1], 0x3b);
-  assert.deepEqual(extraireDonneesGif(gif, 'CARDPRO1.0', 5e6), paquet);
+  assert.deepEqual(extraireDonneesGif(gif, 'DRAWCARD1.0', 5e6), paquet);
   assert.equal(extraireDonneesGif(gif, 'AUTRE00001', 5e6), null);
-  assert.equal(extraireDonneesGif(gif.subarray(0, 400), 'CARDPRO1.0', 5e6), null);
-  assert.equal(extraireDonneesGif(new Uint8Array(50), 'CARDPRO1.0', 5e6), null);
-  assert.equal(extraireDonneesGif(gif, 'CARDPRO1.0', 100), null, 'taille maximale respectée');
+  assert.equal(extraireDonneesGif(gif.subarray(0, 400), 'DRAWCARD1.0', 5e6), null);
+  assert.equal(extraireDonneesGif(new Uint8Array(50), 'DRAWCARD1.0', 5e6), null);
+  assert.equal(extraireDonneesGif(gif, 'DRAWCARD1.0', 100), null, 'taille maximale respectée');
 });
 
 test('encodeur QR : mode alphanumérique plus compact et version minimale', () => {
@@ -184,4 +184,19 @@ test('portefeuille : tri (ma carte, favoris, puis ordre choisi) et sauvegarde re
   assert.equal(relues[1].maCarte, false);
   assert.throws(() => lireSauvegarde('{"format":"autre","cartes":[]}'), /pas une sauvegarde/);
   assert.throws(() => lireSauvegarde('pas du json'), /pas une sauvegarde/);
+});
+
+test('DrawCard : les cartes et sauvegardes créées sous l’ancien nom restent lisibles', async () => {
+  const { creerPaquet, lirePaquet, estPaquet } = await import('../src/Metier/PaquetCarte.js');
+  const { normaliserPersonne } = await import('../src/Metier/Personne.js');
+  const { normaliserModele } = await import('../src/Metier/ModeleCarte.js');
+  const { lireSauvegarde } = await import('../portefeuille/src/Metier/SauvegardePortefeuille.js');
+  const paquet = await creerPaquet(normaliserPersonne({ prenom: 'Lou' }), normaliserModele({ nom: 'M' }));
+  assert.equal(new TextDecoder().decode(paquet.subarray(0, 4)), 'DRWC');
+  const ancien = paquet.slice();
+  ancien.set([0x43, 0x50, 0x52, 0x4f], 0); // « CPRO »
+  assert.ok(estPaquet(ancien));
+  assert.equal((await lirePaquet(ancien)).personne.prenom, 'Lou');
+  const carte = { id: 'carte-ancienne1', ajouteLe: '', personne: { prenom: 'Ana' }, modele: {} };
+  assert.equal(lireSauvegarde(JSON.stringify({ format: 'cardpro-portefeuille', version: 1, cartes: [carte] })).length, 1);
 });
