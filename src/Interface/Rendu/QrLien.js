@@ -1,7 +1,7 @@
 /**
  * QrLien.js
  * QR code simple (noir sur blanc) qui ouvre une adresse web : utilisé pour
- * installer l'appli mobile (page des RH et page d'installation sur PC).
+ * installer l'appli mobile (page du Configurateur et page d'installation sur PC).
  */
 
 import { encoderTexteQr } from '../../Utilitaires/EncodeurQr.js';

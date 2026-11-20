@@ -1,6 +1,6 @@
 /**
  * VueScanner.js
- * Écran de scan : la caméra lit le QR code animé affiché par les RH et
+ * Écran de scan : la caméra lit le QR code animé affiché par le Configurateur et
  * reconstitue la carte complète. Une barre montre l'avancement.
  */
 
@@ -27,7 +27,7 @@ export function creerVueScanner() {
     creerElement('div', { classe: 'Scanner-cadre' }, [video]),
     barre,
     etat,
-    creerElement('p', { classe: 'Astuce', texte: "Vise le QR animé affiché sur l'écran des RH et garde le téléphone stable jusqu'à 100 %." }),
+    creerElement('p', { classe: 'Astuce', texte: "Vise le QR animé affiché sur l'écran du Configurateur et garde le téléphone stable jusqu'à 100 %." }),
     creerElement('div', { classe: 'Actions' }, [annuler]),
   ]);
 

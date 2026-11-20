@@ -1,6 +1,6 @@
 # Card Pro
 
-Application Windows (**CardPro-RH.exe**, sans installation) pour créer les **cartes de visite de toute une équipe** :
+Application Windows (**CardPro-Configurateur.exe**, sans installation) pour créer les **cartes de visite de toute une équipe** :
 - des **modèles** recto / verso entièrement personnalisables, créés dans un éditeur visuel ;
 - une **liste de personnes** (saisie ou import Excel/CSV) ;
 - pour chaque personne, une carte avec un **QR code** qui contient ses coordonnées : un scan permet de l'ajouter aux contacts, même sans internet ;
@@ -73,7 +73,7 @@ Application Windows (**CardPro-RH.exe**, sans installation) pour créer les **ca
 
 - **Navigateur** : HTML, CSS, JavaScript (modules ES), sans framework. Encodeur QR (modes octets et alphanumérique), ZIP, CSV, GIF animé et Base45 intégrés. [pdf-lib](https://pdf-lib.js.org/) 1.17.1 (MIT) embarquée.
 - **Serveur** : Node.js 22, **sans aucune dépendance npm**, avec la base **SQLite** intégrée à Node.
-- **Windows** : lanceur `CardPro-RH.exe` en C# (.NET Framework 4.8, déjà présent sur Windows) avec icône près de l'horloge ; il contient Node.js officiel et l'appli.
+- **Windows** : lanceur `CardPro-Configurateur.exe` en C# (.NET Framework 4.8, déjà présent sur Windows) avec icône près de l'horloge ; il contient Node.js officiel et l'appli.
 - **Portefeuille mobile** : application web installable (PWA), hors ligne, publiée sur **GitHub Pages** (HTTPS). Lecture des QR : lecteur intégré du navigateur (Android) ou [jsQR](https://github.com/cozmo/jsQR) 1.4.0 (Apache 2.0, iPhone), ajouté à la publication.
 - **Tests** : `node:test`.
 
@@ -84,10 +84,10 @@ CARD PRO/
 ├── index.html                 # Page unique (onglets Cartes et Modèles)
 ├── manifest.webmanifest       # Icône et nom de l'application
 ├── sw.js                      # Désactive l'ancien cache des versions précédentes
-├── windows/Lanceur/           # CardPro-RH.exe : démarrage, icône près de l'horloge, mises à jour (C#)
+├── windows/Lanceur/           # CardPro-Configurateur.exe : démarrage, icône près de l'horloge, mises à jour (C#)
 ├── accueil/                   # Page d'accueil du projet (racine du site GitHub Pages)
-├── rh/                        # Page GitHub Pages de téléchargement de l'exe
-├── .github/workflows/         # Portefeuille.yml : APK + GitHub Pages ; RH.yml : CardPro-RH.exe dans Releases
+├── configurateur/             # Page GitHub Pages de téléchargement de l'exe
+├── .github/workflows/         # Portefeuille.yml : APK + GitHub Pages ; Configurateur.yml : CardPro-Configurateur.exe dans Releases
 ├── android/                   # Appli Android (APK) : WebView du portefeuille + NFC
 │   └── app/src/main/java/fr/cardpro/portefeuille/
 │       ├── MainActivity.java  # Écran : portefeuille en HTTPS local, caméra, fichiers, liens externes
@@ -133,9 +133,9 @@ CARD PRO/
 
 ## Installation et lancement (Windows)
 
-1. Télécharge **CardPro-RH.exe** :
+1. Télécharge **CardPro-Configurateur.exe** :
    - depuis la page d'accueil du projet **https://firstmars01.github.io/CARD-PRO/** (bouton « Télécharger » sur PC ; sur téléphone, le même bouton ouvre l'appli mobile) ;
-   - ou depuis **https://firstmars01.github.io/CARD-PRO/rh/** ;
+   - ou depuis **https://firstmars01.github.io/CARD-PRO/configurateur/** ;
    - ou depuis la page **Releases** du dépôt GitHub.
 2. Double-clique dessus. Rien à installer (Windows 10 ou 11).
    Si Windows affiche « Windows a protégé votre ordinateur » : **Informations complémentaires → Exécuter quand même** (l'exe n'est pas signé par un certificat payant).
@@ -160,7 +160,7 @@ Puis, **Card Pro (exe) fermé**, copie ce fichier dans `%APPDATA%\CardPro\` (rem
 
 ### Publication de l'exe
 
-`.github/workflows/RH.yml` construit `CardPro-RH.exe` sur GitHub (Windows) à chaque `git push` qui touche l'appli, et le publie dans **Releases** sous le numéro de version de `package.json` (ex. `v4.3.0`), avec son empreinte SHA-256 (`CardPro-RH.exe.sha256`).
+`.github/workflows/Configurateur.yml` construit `CardPro-Configurateur.exe` sur GitHub (Windows) à chaque `git push` qui touche l'appli, et le publie dans **Releases** sous le numéro de version de `package.json` (ex. `v4.3.0`), avec son empreinte SHA-256 (`CardPro-Configurateur.exe.sha256`).
 
 > **Pour livrer une mise à jour**, augmente `version` dans `package.json` (ex. `4.3.0` → `4.3.1`) puis `git push` : les PC se mettent à jour tout seuls, l'appli web iPhone aussi (à chaque publication) ; sur Android, il faut retélécharger l'APK.
 
@@ -209,7 +209,7 @@ Depuis une carte ouverte, on peut aussi **transmettre le contact** à quelqu'un 
 
 ### Mise en ligne (une seule fois)
 
-L'appareil photo et l'installation d'une application web exigent le **HTTPS** : le portefeuille est donc publié gratuitement sur **GitHub Pages**. Seul son code est publié (ni le serveur, ni la page des RH, ni aucune donnée).
+L'appareil photo et l'installation d'une application web exigent le **HTTPS** : le portefeuille est donc publié gratuitement sur **GitHub Pages**. Seul son code est publié (ni le serveur, ni la page du Configurateur, ni aucune donnée).
 
 1. Sur GitHub, dans le dépôt : **Settings → Pages → Build and deployment → Source : « GitHub Actions »**.
 2. Pousse le code (`git push`). L'action « Publier le portefeuille » lance les tests puis publie le site.
@@ -232,9 +232,9 @@ L'icône Card Pro apparaît ensuite sur l'écran d'accueil comme une application
 
 **Mise à jour automatique (iPhone)** : à chaque ouverture et à chaque retour dans l'appli, si le téléphone est en ligne, elle vérifie s'il existe une nouvelle version, la télécharge et se recharge toute seule (jamais pendant un scan). Un message « Card Pro a été mis à jour » s'affiche.
 
-### Adresse de l'appli dans la page des RH
+### Adresse de l'appli dans le Configurateur
 
-`CardPro-RH.exe` connaît l'adresse de l'appli mobile (déduite du dépôt GitHub à la compilation) et l'affiche en **QR code d'installation** à côté du QR animé : la personne installe l'appli, puis scanne sa carte dans la foulée. En développement, la variable d'environnement `LIEN_PORTEFEUILLE` (HTTPS obligatoire) fait la même chose.
+`CardPro-Configurateur.exe` connaît l'adresse de l'appli mobile (déduite du dépôt GitHub à la compilation) et l'affiche en **QR code d'installation** à côté du QR animé : la personne installe l'appli, puis scanne sa carte dans la foulée. En développement, la variable d'environnement `LIEN_PORTEFEUILLE` (HTTPS obligatoire) fait la même chose.
 
 ### Donner une carte à quelqu'un
 
@@ -255,7 +255,7 @@ Pratique : dans l'e-mail, mets le lien du portefeuille (pour l'installer) **et**
 
 ### Essayer en local
 
-L'appli des RH sert aussi le portefeuille : **http://localhost:48080/portefeuille/**. Sur PC, il n'affiche que l'écran « Installe Card Pro sur ton téléphone » (c'est voulu). Pour tester l'appli elle-même, utilise l'adresse GitHub Pages sur un téléphone.
+Le Configurateur sert aussi le portefeuille : **http://localhost:48080/portefeuille/**. Sur PC, il n'affiche que l'écran « Installe Card Pro sur ton téléphone » (c'est voulu). Pour tester l'appli elle-même, utilise l'adresse GitHub Pages sur un téléphone.
 
 ## Appli Android (APK avec NFC)
 
@@ -326,7 +326,7 @@ Android exige que chaque version soit signée avec **la même clé**. Garde-la p
 - **Fichiers** : seule une liste blanche est servie (`index.html`, `assets/`, `src/`…). Le code du serveur, la base et les fichiers cachés sont inaccessibles, et la traversée de dossiers est bloquée.
 - **Erreurs** : messages génériques côté client, détails uniquement dans les journaux du serveur.
 - **En-têtes HTTP** : CSP, `X-Content-Type-Options`, `X-Frame-Options: DENY`, `Referrer-Policy`, `Permissions-Policy`, COOP/CORP.
-- **CardPro-RH.exe** : contient le `node.exe` officiel (empreinte SHA-256 vérifiée à la compilation) ; aucune permission administrateur ; extraction dans `%LOCALAPPDATA%` (les chemins qui sortiraient du dossier sont refusés) ; n'ouvre dans le navigateur que l'appli locale et GitHub ; la recherche de mise à jour lit seulement le numéro de la dernière version publique (rien n'est envoyé) ; arrêt propre du serveur à la fermeture.
+- **CardPro-Configurateur.exe** : contient le `node.exe` officiel (empreinte SHA-256 vérifiée à la compilation) ; aucune permission administrateur ; extraction dans `%LOCALAPPDATA%` (les chemins qui sortiraient du dossier sont refusés) ; n'ouvre dans le navigateur que l'appli locale et GitHub ; la recherche de mise à jour lit seulement le numéro de la dernière version publique (rien n'est envoyé) ; arrêt propre du serveur à la fermeture.
 - **Secrets** : aucun n'est nécessaire. `.env` est exclu de Git et de l'image.
 - **Portefeuille mobile** :
   - les cartes restent sur le téléphone (IndexedDB) ; l'application ne contacte aucun serveur (CSP `connect-src 'self'`) ;

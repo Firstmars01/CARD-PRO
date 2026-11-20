@@ -25,7 +25,7 @@ namespace CardPro.Lanceur
             if (LancerNavigateurParDefaut(adresse)) return;
             if (Essayer(new ProcessStartInfo(adresse) { UseShellExecute = true })) return;
             if (Essayer(new ProcessStartInfo("explorer.exe", "\"" + adresse + "\"") { UseShellExecute = false })) return;
-            MessageBox.Show("Ouvre cette adresse dans ton navigateur : " + adresse, "Card Pro RH", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show("Ouvre cette adresse dans ton navigateur : " + adresse, "Card Pro Configurateur", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         /// <summary>Lance directement le navigateur choisi dans Windows.</summary>

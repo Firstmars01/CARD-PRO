@@ -1,7 +1,7 @@
 /**
  * RenduCarte.js
  * Dessine une face de carte du portefeuille avec le même moteur que la page
- * web : la carte est identique à celle créée par les RH.
+ * web : la carte est identique à celle créée dans le Configurateur.
  */
 
 import { rendreFaceSvg } from '../../../src/Interface/Rendu/RenduFaceSvg.js';

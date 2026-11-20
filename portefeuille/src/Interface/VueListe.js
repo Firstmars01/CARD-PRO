@@ -69,7 +69,7 @@ export function creerVueListe() {
     creerElement('p', { texte: 'Aucune carte pour le moment.' }),
     creerElement('p', {
       classe: 'Astuce',
-      texte: "Scanne le QR animé affiché par les RH, ou importe le GIF / le fichier .cardpro reçu par e-mail (sur Android : « Partager » → Card Pro).",
+      texte: "Scanne le QR animé affiché par le Configurateur, ou importe le GIF / le fichier .cardpro reçu par e-mail (sur Android : « Partager » → Card Pro).",
     }),
   ]);
   const element = creerElement('section', { classe: 'Ecran', attributs: { 'aria-label': 'Mes cartes' } }, [

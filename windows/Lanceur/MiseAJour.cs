@@ -1,6 +1,6 @@
 /*
  * MiseAJour.cs
- * Mise à jour automatique de CardPro-RH.exe depuis les « Releases » GitHub :
+ * Mise à jour automatique de CardPro-Configurateur.exe depuis les « Releases » GitHub :
  *  1. lecture du numéro de la dernière version (rien n'est envoyé) ;
  *  2. téléchargement du nouvel exe à côté de l'actuel (« .nouveau ») ;
  *  3. vérification : empreinte SHA-256 publiée avec la version, en-tête
@@ -39,7 +39,7 @@ namespace CardPro.Lanceur
     /// <summary>Recherche, téléchargement et installation des mises à jour.</summary>
     internal static class MiseAJour
     {
-        private const string NomExe = "CardPro-RH.exe";
+        private const string NomExe = "CardPro-Configurateur.exe";
         private const long TailleMax = 300L * 1024 * 1024;
 
         /// <summary>Argument passé au nouvel exe après une mise à jour.</summary>
@@ -228,7 +228,7 @@ namespace CardPro.Lanceur
         private static HttpClient CreerClient(TimeSpan delai)
         {
             HttpClient client = new HttpClient { Timeout = delai };
-            client.DefaultRequestHeaders.UserAgent.ParseAdd("CardPro-RH/" + Parametres.TexteVersion);
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("CardPro-Configurateur/" + Parametres.TexteVersion);
             client.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github+json");
             return client;
         }

@@ -2,10 +2,10 @@
 # Publie l'appli mobile « Card Pro » sur GitHub Pages (HTTPS) :
 #  - le portefeuille web (iPhone) et la page « contact » (NFC vers iPhone) ;
 #  - la page d'accueil du projet (accueil/, copiée à la racine) ;
-#  - la page de téléchargement de l'appli des RH (rh/, l'exe est dans « Releases ») ;
+#  - la page de téléchargement du Configurateur (configurateur/, l'exe est dans « Releases ») ;
 #  - l'appli Android (APK signé, avec le NFC), construite ici.
-# Seuls les fichiers nécessaires sont publiés : ni le serveur, ni la page des
-# RH, ni aucune donnée de personne.
+# Seuls les fichiers nécessaires sont publiés : ni le serveur, ni la page du
+# Configurateur, ni aucune donnée de personne.
 # Réglages uniques sur GitHub :
 #  - Settings → Pages → Source : « GitHub Actions » ;
 #  - Settings → Secrets and variables → Actions : les 4 secrets ANDROID_* (voir README).
@@ -20,7 +20,7 @@ on:
       - "src/**"
       - "assets/**"
       - "contact/**"
-      - "rh/**"
+      - "configurateur/**"
       - "accueil/**"
       - "android/**"
       - ".github/workflows/Portefeuille.yml"
@@ -61,7 +61,7 @@ jobs:
       - name: Préparer le site
         run: |
           mkdir -p _site/src/Interface _site/assets
-          cp -r portefeuille contact rh _site/
+          cp -r portefeuille contact configurateur _site/
           cp -r assets/icons assets/styles assets/polices _site/assets/
           cp -r src/Metier src/Utilitaires _site/src/
           cp -r src/Interface/Rendu src/Interface/Themes.js src/Interface/Notifications.js _site/src/Interface/

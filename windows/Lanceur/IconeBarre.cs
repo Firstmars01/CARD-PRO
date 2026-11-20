@@ -47,7 +47,7 @@ namespace CardPro.Lanceur
             icone = new NotifyIcon
             {
                 Icon = ChargerIcone(),
-                Text = "Card Pro RH",
+                Text = "Card Pro Configurateur",
                 ContextMenuStrip = menu,
                 Visible = true,
             };
@@ -158,7 +158,7 @@ namespace CardPro.Lanceur
             }
             MessageBox.Show(
                 "La mise à jour n'a pas pu être installée (dossier de l'exe protégé ?). Card Pro va se fermer : relance-le.",
-                "Card Pro RH", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                "Card Pro Configurateur", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             icone.Visible = false;
             Application.Exit();
         }
@@ -169,7 +169,7 @@ namespace CardPro.Lanceur
             icone.Visible = false;
             MessageBox.Show(
                 "Card Pro s'est arrêté de façon inattendue.\nRelance-le. Détails dans : " + Parametres.FichierJournal,
-                "Card Pro RH", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                "Card Pro Configurateur", MessageBoxButtons.OK, MessageBoxIcon.Error);
             Application.Exit();
         }
 

@@ -25,10 +25,10 @@ export function pageVersions(depot) {
 }
 
 /**
- * Lien direct vers CardPro-RH.exe (dernière version).
+ * Lien direct vers CardPro-Configurateur.exe (dernière version).
  * @param {{compte:string, depot:string}} depot - Dépôt.
  * @returns {string} Adresse du fichier.
  */
-export function lienExeRh(depot) {
-  return `${pageVersions(depot)}/download/CardPro-RH.exe`;
+export function lienExeConfigurateur(depot) {
+  return `${pageVersions(depot)}/download/CardPro-Configurateur.exe`;
 }

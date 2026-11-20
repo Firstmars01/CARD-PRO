@@ -2,14 +2,14 @@
  * Main.js (accueil)
  * Page d'accueil du projet : présentation, fonctionnement et bouton de
  * téléchargement adapté à l'appareil :
- *  - PC : CardPro-RH.exe (appli des RH pour Windows) ;
+ *  - PC : CardPro-Configurateur.exe (Card Pro Configurateur pour Windows) ;
  *  - téléphone : l'appli mobile (page portefeuille/, qui propose l'APK
  *    sur Android et l'ajout à l'écran d'accueil sur iPhone).
  * Le texte est inséré avec textContent (aucune injection possible).
  */
 
 import { creerElement, obtenirElement } from '../../src/Utilitaires/Dom.js';
-import { depotGithub, pageVersions, lienExeRh } from '../../src/Utilitaires/DepotGithub.js';
+import { depotGithub, pageVersions, lienExeConfigurateur } from '../../src/Utilitaires/DepotGithub.js';
 import { initialiserTheme, creerBoutonTheme } from '../../src/Interface/Themes.js';
 import { creerQrLien } from '../../src/Interface/Rendu/QrLien.js';
 import { systeme } from '../../portefeuille/src/Utilitaires/Plateforme.js';
@@ -44,11 +44,11 @@ function liste(elements) {
 function creerBandeau(depot) {
   const surPc = systeme() === 'pc';
   const actions = surPc && depot
-    ? [bouton('Télécharger Card Pro RH (Windows)', lienExeRh(depot), true), bouton("Appli mobile : sur ton téléphone", '#mobile')]
-    : [bouton("Installer l'appli Card Pro", ADRESSE_MOBILE, true), bouton('Appli des RH (PC Windows)', '#rh')];
+    ? [bouton('Télécharger Card Pro Configurateur (Windows)', lienExeConfigurateur(depot), true), bouton("Appli mobile : sur ton téléphone", '#mobile')]
+    : [bouton("Installer l'appli Card Pro", ADRESSE_MOBILE, true), bouton('Card Pro Configurateur (PC Windows)', '#configurateur')];
   return creerElement('section', { classe: 'Bandeau' }, [
     creerElement('h2', { classe: 'Bandeau-titre', texte: "Les cartes de visite de toute l'équipe, sur papier et sur téléphone." }),
-    creerElement('p', { classe: 'Bandeau-texte', texte: "Les RH créent les cartes avec QR code. Chacun garde les siennes et celles des autres dans son téléphone, et partage son contact d'un geste : QR code, NFC ou message." }),
+    creerElement('p', { classe: 'Bandeau-texte', texte: "Le Configurateur crée les cartes avec QR code. Chacun garde les siennes et celles des autres dans son téléphone, et partage son contact d'un geste : QR code, NFC ou message." }),
     creerElement('div', { classe: 'Actions' }, actions),
     creerElement('p', { classe: 'Astuce', texte: surPc ? 'Windows 10 ou 11, rien à installer.' : 'Android (avec NFC) et iPhone.' }),
   ]);
@@ -60,7 +60,7 @@ function creerBandeau(depot) {
  */
 function creerFonctionnement() {
   const etapes = [
-    ['Créer', "Les RH dessinent les modèles (recto / verso, logo, couleurs, QR) et ajoutent les personnes, une par une ou depuis Excel."],
+    ['Créer', "Dans le Configurateur, on dessine les modèles (recto / verso, logo, couleurs, QR) et on ajoute les personnes, une par une ou depuis Excel."],
     ['Distribuer', "Chaque carte s'imprime (PDF, planche A4, imprimeur) ou s'envoie sur le téléphone : QR animé à scanner, ou GIF par e-mail."],
     ['Partager', "Sur le téléphone, la carte s'affiche recto / verso. On transmet son contact par QR code, NFC (Android) ou AirDrop / Quick Share."],
   ];
@@ -89,7 +89,7 @@ function creerAppli({ id, titre, texte, points, actions, complement }) {
 }
 
 /**
- * Section des deux applis : RH (Windows) et mobile.
+ * Section des deux applis : Configurateur (Windows) et mobile.
  * @param {{compte:string, depot:string}|null} depot - Dépôt GitHub.
  * @returns {HTMLElement} Section.
  */
@@ -99,8 +99,8 @@ function creerApplis(depot) {
     creerElement('h2', { classe: 'Bloc-titre', texte: 'Deux applis' }),
     creerElement('div', { classe: 'Applis' }, [
       creerAppli({
-        id: 'rh',
-        titre: 'Card Pro RH · PC Windows',
+        id: 'configurateur',
+        titre: 'Card Pro Configurateur · PC Windows',
         texte: 'Pour créer et gérer les cartes de toute l’équipe.',
         points: [
           'Éditeur visuel recto / verso : formes, icônes, dégradés, palette, formats',
@@ -109,7 +109,7 @@ function creerApplis(depot) {
           'QR animé et GIF pour envoyer la carte sur le téléphone',
           'Sauvegarde / restauration, mises à jour annoncées',
         ],
-        actions: depot ? [bouton('Télécharger CardPro-RH.exe', lienExeRh(depot), true), bouton('Toutes les versions', pageVersions(depot))] : [],
+        actions: depot ? [bouton('Télécharger CardPro-Configurateur.exe', lienExeConfigurateur(depot), true), bouton('Toutes les versions', pageVersions(depot))] : [],
         complement: creerElement('p', { classe: 'Astuce', texte: "Si Windows affiche « Windows a protégé votre ordinateur » : Informations complémentaires → Exécuter quand même. Ensuite, une icône Card Pro apparaît près de l'horloge." }),
       }),
       creerAppli({
@@ -141,8 +141,8 @@ function creerDonnees() {
   return creerElement('section', { classe: 'Bloc' }, [
     creerElement('h2', { classe: 'Bloc-titre', texte: 'Vos données restent chez vous' }),
     liste([
-      "Aucun compte, aucun serveur en ligne : les cartes sont sur le PC des RH et sur les téléphones.",
-      "L'appli des RH n'est accessible que depuis son PC.",
+      "Aucun compte, aucun serveur en ligne : les cartes sont sur le PC où tourne le Configurateur et sur les téléphones.",
+      "Le Configurateur n'est accessible que depuis son PC.",
       "Les cartes passent du PC au téléphone par QR code ou fichier, jamais par Internet.",
       'Le code est ouvert : il est publié sur GitHub.',
     ]),

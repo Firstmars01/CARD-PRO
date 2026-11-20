@@ -1,13 +1,13 @@
 /**
- * Main.js (rh)
- * Page de téléchargement de CardPro-RH.exe. L'adresse du fichier est
+ * Main.js (configurateur)
+ * Page de téléchargement de CardPro-Configurateur.exe. L'adresse du fichier est
  * déduite de l'adresse GitHub Pages (compte.github.io/depot/) : elle pointe
  * toujours vers la dernière version publiée dans « Releases ».
  */
 
 import { creerElement, obtenirElement } from '../../src/Utilitaires/Dom.js';
 import { initialiserTheme, creerBoutonTheme } from '../../src/Interface/Themes.js';
-import { depotGithub, pageVersions, lienExeRh } from '../../src/Utilitaires/DepotGithub.js';
+import { depotGithub, pageVersions, lienExeConfigurateur } from '../../src/Utilitaires/DepotGithub.js';
 
 /**
  * Crée une liste numérotée.
@@ -29,12 +29,12 @@ function demarrer() {
 
   principal.append(
     creerElement('h2', { classe: 'Titre-ecran', texte: 'Card Pro pour Windows' }),
-    creerElement('p', { texte: "L'appli des RH : modèles de cartes, liste des personnes, exports et QR pour le portefeuille mobile. Rien à installer, les données restent sur ton PC." }),
+    creerElement('p', { texte: "Card Pro Configurateur : modèles de cartes, liste des personnes, exports et QR pour le portefeuille mobile. Rien à installer, les données restent sur ton PC." }),
   );
   if (depot) {
     principal.append(
       creerElement('div', { classe: 'Actions' }, [
-        creerElement('a', { classe: 'PBouton PBouton--principal PBouton--grand', texte: 'Télécharger CardPro-RH.exe', attributs: { href: lienExeRh(depot) } }),
+        creerElement('a', { classe: 'PBouton PBouton--principal PBouton--grand', texte: 'Télécharger CardPro-Configurateur.exe', attributs: { href: lienExeConfigurateur(depot) } }),
       ]),
       creerElement('p', { classe: 'Astuce' }, [creerElement('a', { texte: 'Toutes les versions', attributs: { href: pageVersions(depot), rel: 'noopener noreferrer' } })]),
     );
@@ -42,7 +42,7 @@ function demarrer() {
     principal.append(creerElement('p', { classe: 'Astuce', texte: 'Lien de téléchargement disponible sur la page GitHub Pages du projet.' }));
   }
   principal.append(etapes([
-    'Télécharge CardPro-RH.exe (Windows 10 ou 11).',
+    'Télécharge CardPro-Configurateur.exe (Windows 10 ou 11).',
     "Double-clique dessus. Si Windows affiche « Windows a protégé votre ordinateur » : « Informations complémentaires » → « Exécuter quand même ».",
     "La page Card Pro s'ouvre dans ton navigateur, et une icône apparaît près de l'horloge.",
     "Clic sur l'icône : rouvrir la page. Clic droit : dossier des données, mise à jour, quitter.",

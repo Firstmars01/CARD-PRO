@@ -1,6 +1,6 @@
 /*
  * Programme.cs
- * Point d'entrée de CardPro-RH.exe :
+ * Point d'entrée de CardPro-Configurateur.exe :
  *  1. une seule instance (une seconde ouverture rouvre simplement la page) ;
  *  2. mise à jour automatique au démarrage si une nouvelle version existe,
  *     avec une fenêtre qui montre l'avancement ;
@@ -27,7 +27,7 @@ namespace CardPro.Lanceur
         private static void Main(string[] arguments)
         {
             bool apresMaj = arguments.Contains(MiseAJour.ArgumentApresMaj);
-            using (Mutex unique = new Mutex(false, "Local\\CardProRH"))
+            using (Mutex unique = new Mutex(false, "Local\\CardProConfigurateur"))
             {
                 // Après une mise à jour, on attend que l'ancienne version se soit fermée.
                 if (!Obtenir(unique, apresMaj ? 20000 : 0))
@@ -78,7 +78,7 @@ namespace CardPro.Lanceur
                 {
                     MessageBox.Show(
                         "Card Pro n'a pas pu démarrer : " + erreur.Message + "\n\nDétails dans : " + Parametres.FichierJournal,
-                        "Card Pro RH", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        "Card Pro Configurateur", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
                 if (resultat == Demarrage.Relance) return; // La nouvelle version a pris le relais.
@@ -204,7 +204,7 @@ namespace CardPro.Lanceur
             }
             else
             {
-                MessageBox.Show("Card Pro est déjà lancé (icône près de l'horloge).", "Card Pro RH", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Card Pro est déjà lancé (icône près de l'horloge).", "Card Pro Configurateur", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 

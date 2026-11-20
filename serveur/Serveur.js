@@ -85,7 +85,7 @@ async function traiterApi(req, res, chemin, application) {
 }
 
 /**
- * Démarre le serveur. Lancé par CardPro-RH.exe (CARDPRO_LANCEUR=1), il
+ * Démarre le serveur. Lancé par CardPro-Configurateur.exe (CARDPRO_LANCEUR=1), il
  * s'arrête proprement quand le lanceur ferme son entrée standard (« Quitter »).
  */
 function demarrer() {

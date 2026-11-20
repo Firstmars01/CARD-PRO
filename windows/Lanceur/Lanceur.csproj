@@ -1,6 +1,6 @@
 <!--
   Lanceur.csproj
-  CardPro-RH.exe : lanceur Windows de l'appli des RH. Il contient l'appli
+  CardPro-Configurateur.exe : lanceur Windows de Card Pro Configurateur. Il contient l'appli
   (Node.js + serveur + page web) dans un paquet ZIP intégré, la démarre en
   local, ouvre le navigateur et affiche une icône près de l'horloge.
   Cible .NET Framework 4.8, présent sur tous les Windows 10 et 11 : rien à installer.
@@ -10,14 +10,14 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net48</TargetFramework>
     <LangVersion>7.3</LangVersion>
-    <AssemblyName>CardPro-RH</AssemblyName>
+    <AssemblyName>CardPro-Configurateur</AssemblyName>
     <RootNamespace>CardPro.Lanceur</RootNamespace>
     <ApplicationIcon>icone.ico</ApplicationIcon>
-    <Product>Card Pro RH</Product>
+    <Product>Card Pro Configurateur</Product>
     <Company>Card Pro</Company>
     <Description>Card Pro : création des cartes de visite</Description>
     <Version Condition="'$(Version)' == ''">0.0.0</Version>
-    <!-- Paquet de l'appli (préparé par .github/workflows/RH.yml). -->
+    <!-- Paquet de l'appli (préparé par .github/workflows/Configurateur.yml). -->
     <PaquetAppli Condition="'$(PaquetAppli)' == ''">..\..\_paquet\app.zip</PaquetAppli>
   </PropertyGroup>
 
