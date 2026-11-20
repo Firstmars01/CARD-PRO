@@ -25,7 +25,7 @@ const MESSAGES = {
 };
 const SECTIONS = [
   { titre: 'Identité', cles: ['prenom', 'nom', 'poste', 'entreprise'] },
-  { titre: 'Coordonnées', cles: ['telephoneMobile', 'telephonePro', 'telephoneStandard', 'whatsapp', 'email', 'siteWeb'] },
+  { titre: 'Coordonnées', cles: ['telephoneMobile', 'telephoneSupport', 'whatsapp', 'email', 'siteWeb'] },
   { titre: 'Réseaux et rendez-vous', cles: ['linkedin', 'linkedinEntreprise', 'rendezVous'], fermee: true },
   { titre: 'Adresse', cles: ['rue', 'codePostal', 'ville', 'pays'], fermee: true },
   { titre: 'Note', cles: ['note'], fermee: true },

@@ -83,7 +83,7 @@ export function creerSignature(personne, { couleur, logo }) {
     personne.poste && ligne([personne.poste], `color:${couleur};font-weight:bold;`),
     personne.entreprise && ligne([personne.entreprise]),
     ligne(relier([
-      telephone('M.', personne.telephoneMobile, GRIS), telephone('T.', personne.telephonePro, GRIS), telephone('Std.', personne.telephoneStandard, GRIS),
+      telephone('M.', personne.telephoneMobile, GRIS), telephone('Support', personne.telephoneSupport, GRIS),
     ]), 'padding-top:6px;'),
     personne.email && ligne([lien(personne.email, `mailto:${personne.email}`, couleur)]),
     ligne(relier([

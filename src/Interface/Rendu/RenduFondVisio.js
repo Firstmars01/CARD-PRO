@@ -95,7 +95,7 @@ export function creerFondVisioSvg({ personne, modele }) {
     texte('Scannez pour enregistrer', 110, 32, 0.95);
     texte('mon contact', 152, 32, 0.95);
     texte(personne.email, 215, 26, 0.75);
-    texte(personne.telephoneMobile || personne.telephonePro, 255, 26, 0.75);
+    texte(personne.telephoneMobile || personne.telephoneSupport, 255, 26, 0.75);
   }
   return svg;
 }

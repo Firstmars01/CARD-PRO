@@ -15,7 +15,7 @@ export const ENTREPRISES_MAX = 100;
 // Champs d'une entreprise → champ de la personne qu'ils remplissent.
 export const CHAMPS_ENTREPRISE = [
   { cle: 'nom', libelle: "Nom de l'entreprise", type: 'texte', max: 80, champPersonne: 'entreprise' },
-  { cle: 'telephone', libelle: 'Standard', type: 'tel', max: 25, champPersonne: 'telephoneStandard' },
+  { cle: 'telephone', libelle: 'Support', type: 'tel', max: 25, champPersonne: 'telephoneSupport' },
   { cle: 'siteWeb', libelle: 'Site web', type: 'url', max: 300, champPersonne: 'siteWeb' },
   { cle: 'linkedin', libelle: "LinkedIn de l'entreprise", type: 'url', max: 300, champPersonne: 'linkedinEntreprise' },
   { cle: 'rue', libelle: 'Adresse', type: 'texte', max: 100, champPersonne: 'rue' },

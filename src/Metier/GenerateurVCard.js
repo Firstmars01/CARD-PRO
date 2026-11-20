@@ -43,8 +43,7 @@ export function genererVCard(carte) {
   if (carte.entreprise) lignes.push(`ORG:${e(carte.entreprise)}`);
   if (carte.poste) lignes.push(`TITLE:${e(carte.poste)}`);
   if (carte.telephoneMobile) lignes.push(`TEL;TYPE=CELL:${e(carte.telephoneMobile)}`);
-  if (carte.telephonePro) lignes.push(`TEL;TYPE=WORK,VOICE:${e(carte.telephonePro)}`);
-  if (carte.telephoneStandard) lignes.push(`TEL;TYPE=WORK,MAIN:${e(carte.telephoneStandard)}`);
+  if (carte.telephoneSupport) lignes.push(`TEL;TYPE=WORK,VOICE:${e(carte.telephoneSupport)}`);
   if (carte.email) lignes.push(`EMAIL;TYPE=INTERNET:${e(carte.email)}`);
   if (carte.siteWeb) lignes.push(`URL:${urlSurUneLigne(carte.siteWeb)}`);
   if (carte.rue || carte.ville || carte.codePostal || carte.pays) {

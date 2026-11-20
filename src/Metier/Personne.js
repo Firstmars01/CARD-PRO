@@ -18,8 +18,7 @@ export const CHAMPS_PERSONNE = [
   { cle: 'poste', libelle: 'Poste', type: 'texte', max: 80 },
   { cle: 'entreprise', libelle: 'Entreprise', type: 'texte', max: 80 },
   { cle: 'telephoneMobile', libelle: 'Téléphone mobile', type: 'tel', max: 25 },
-  { cle: 'telephonePro', libelle: 'Téléphone fixe', type: 'tel', max: 25 },
-  { cle: 'telephoneStandard', libelle: 'Standard', type: 'tel', max: 25 },
+  { cle: 'telephoneSupport', libelle: 'Support', type: 'tel', max: 25 },
   { cle: 'whatsapp', libelle: 'WhatsApp (numéro)', type: 'tel', max: 25 },
   { cle: 'email', libelle: 'E-mail', type: 'email', max: 254 },
   { cle: 'siteWeb', libelle: 'Site web', type: 'url', max: 300 },
@@ -36,14 +35,31 @@ export const CHAMPS_PERSONNE = [
 // Champs utilisables dans un élément texte du modèle.
 export const CHAMPS_AFFICHABLES = [
   ['nomComplet', 'Prénom + nom'], ['prenom', 'Prénom'], ['nom', 'Nom'], ['poste', 'Poste'],
-  ['entreprise', 'Entreprise'], ['telephoneMobile', 'Téléphone mobile'], ['telephonePro', 'Téléphone fixe'],
-  ['telephoneStandard', 'Standard'], ['whatsapp', 'WhatsApp'],
+  ['entreprise', 'Entreprise'], ['telephoneMobile', 'Téléphone mobile'], ['telephoneSupport', 'Support'], ['whatsapp', 'WhatsApp'],
   ['email', 'E-mail'], ['siteWeb', 'Site web'], ['linkedin', 'LinkedIn'], ['linkedinEntreprise', "LinkedIn de l'entreprise"],
   ['rendezVous', 'Prise de rendez-vous'], ['adresse', 'Adresse complète'], ['rue', 'Rue'],
   ['villeComplete', 'Code postal + ville'], ['pays', 'Pays'], ['note', 'Note'], ['liens', 'Liens (noms)'],
   // Nom d'un lien précis (légende sous un QR code de lien).
   ...Array.from({ length: LIENS_MAX }, (_, i) => [`lien${i + 1}`, `Lien ${i + 1} (nom)`]),
 ];
+
+// Champs des anciennes versions → champ actuel (v4.8 : « Téléphone fixe » et
+// « Standard » sont regroupés dans « Support »).
+export const ANCIENS_CHAMPS = { telephoneStandard: 'telephoneSupport', telephonePro: 'telephoneSupport' };
+
+/**
+ * Reprend les valeurs des anciens champs (cartes, sauvegardes et fichiers
+ * créés par une version précédente).
+ * @param {object} source - Personne brute.
+ * @returns {object} Personne brute avec les champs actuels.
+ */
+function reprendreAnciensChamps(source) {
+  const resultat = { ...source };
+  Object.entries(ANCIENS_CHAMPS).forEach(([ancien, actuel]) => {
+    if (!resultat[actuel] && typeof source[ancien] === 'string' && source[ancien].trim()) resultat[actuel] = source[ancien];
+  });
+  return resultat;
+}
 
 /**
  * Crée une personne vide.
@@ -89,7 +105,7 @@ export function normaliserLien(lien) {
  * @returns {object} Personne propre.
  */
 export function normaliserPersonne(brut) {
-  const source = brut && typeof brut === 'object' ? brut : {};
+  const source = reprendreAnciensChamps(brut && typeof brut === 'object' ? brut : {});
   const personne = personneVide();
   CHAMPS_PERSONNE.forEach((champ) => { personne[champ.cle] = normaliserChamp(champ, source[champ.cle]); });
   personne.liens = (Array.isArray(source.liens) ? source.liens : []).map(normaliserLien).filter(Boolean).slice(0, LIENS_MAX);
@@ -140,8 +156,8 @@ export function valeurChamp(personne, champ) {
 // Personne fictive affichée dans l'éditeur de modèles.
 export const PERSONNE_EXEMPLE = Object.freeze(normaliserPersonne({
   prenom: 'Camille', nom: 'Durand', poste: 'Responsable commerciale', entreprise: 'Entreprise Exemple',
-  telephoneMobile: '06 12 34 56 78', telephonePro: '01 23 45 67 89', email: 'camille.durand@exemple.fr',
-  telephoneStandard: '01 23 45 67 00', whatsapp: '06 12 34 56 78',
+  telephoneMobile: '06 12 34 56 78', telephoneSupport: '01 23 45 67 89', email: 'camille.durand@exemple.fr',
+  whatsapp: '06 12 34 56 78',
   siteWeb: 'exemple.fr', linkedin: 'https://linkedin.com/in/camille-durand',
   linkedinEntreprise: 'https://linkedin.com/company/exemple', rendezVous: 'https://calendly.com/camille-durand', rue: '12 rue des Lilas', codePostal: '75011', ville: 'Paris', pays: 'France',
   liens: [

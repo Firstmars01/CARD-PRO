@@ -234,7 +234,7 @@ test('entreprise : infos imposées à la carte reliée, logo remplacé, liens ca
   assert.equal(effective.entreprise, 'ACME');
   assert.equal(effective.ville, 'Lyon');
   assert.equal(effective.rue, '');
-  assert.equal(effective.telephoneStandard, '01 02 03 04 05');
+  assert.equal(effective.telephoneSupport, '01 02 03 04 05');
   assert.equal(effective.prenom, 'Lou');
   assert.equal(appliquerEntreprisePersonne(personne, null), personne);
 
@@ -247,7 +247,7 @@ test('entreprise : infos imposées à la carte reliée, logo remplacé, liens ca
   assert.equal(lienWhatsapp('+44 20 7946 0000'), 'https://wa.me/442079460000');
   assert.ok(lienItineraire(personne).includes(encodeURIComponent('1 rue A')));
   assert.equal(adresseQrElement(personne, { contenu: 'whatsapp' }), 'https://wa.me/33611223344');
-  assert.match(genererVCard(effective), /TEL;TYPE=WORK,MAIN:01 02 03 04 05/);
+  assert.match(genererVCard(effective), /TEL;TYPE=WORK,VOICE:01 02 03 04 05/);
   assert.match(genererVCard(effective), /X-ABLabel:WhatsApp/);
 });
 
@@ -285,4 +285,15 @@ test('identité visuelle : couleur d’accent, logo et texte lisible', async () 
   assert.equal(logoCarte(modele), logo);
   assert.equal(couleurTexteSur('#101820'), '#ffffff');
   assert.equal(couleurTexteSur('#f5f5f5'), '#14181f');
+});
+
+test('v4.8 : fixe et standard regroupés dans « Support » (cartes et modèles anciens)', async () => {
+  const { normaliserPersonne } = await import('../src/Metier/Personne.js');
+  const { normaliserElement } = await import('../src/Metier/Elements.js');
+  assert.equal(normaliserPersonne({ telephonePro: '01 02 03 04 05' }).telephoneSupport, '01 02 03 04 05');
+  assert.equal(normaliserPersonne({ telephoneStandard: '01 99 99 99 99', telephonePro: '01 02 03 04 05' }).telephoneSupport, '01 99 99 99 99');
+  assert.equal(normaliserPersonne({ telephoneSupport: '01 11 11 11 11', telephonePro: '01 02 03 04 05' }).telephoneSupport, '01 11 11 11 11');
+  assert.equal(normaliserPersonne({ telephonePro: '01 02 03 04 05' }).telephonePro, undefined);
+  assert.equal(normaliserElement({ type: 'texte', champ: 'telephonePro' }).champ, 'telephoneSupport');
+  assert.equal(normaliserElement({ type: 'texte', champ: 'telephoneStandard' }).champ, 'telephoneSupport');
 });

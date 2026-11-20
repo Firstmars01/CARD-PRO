@@ -37,8 +37,7 @@ export function creerCoordonnees(personne) {
   const lignes = [];
   const telephone = (numero) => `tel:${numero.replace(/[^\d+]/g, '')}`;
   if (personne.telephoneMobile) lignes.push(ligneLien('Mobile', personne.telephoneMobile, telephone(personne.telephoneMobile)));
-  if (personne.telephonePro) lignes.push(ligneLien('Fixe', personne.telephonePro, telephone(personne.telephonePro)));
-  if (personne.telephoneStandard) lignes.push(ligneLien('Standard', personne.telephoneStandard, telephone(personne.telephoneStandard)));
+  if (personne.telephoneSupport) lignes.push(ligneLien('Support', personne.telephoneSupport, telephone(personne.telephoneSupport)));
   if (personne.whatsapp) lignes.push(ligneLien('WhatsApp', personne.whatsapp, lienWhatsapp(personne.whatsapp)));
   if (personne.email) lignes.push(ligneLien('E-mail', personne.email, `mailto:${personne.email}`));
   [['Site', 'siteWeb'], ['LinkedIn', 'linkedin'], ['LinkedIn entreprise', 'linkedinEntreprise'], ['Rendez-vous', 'rendezVous']]

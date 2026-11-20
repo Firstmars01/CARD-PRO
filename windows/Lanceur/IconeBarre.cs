@@ -1,7 +1,7 @@
 /*
  * IconeBarre.cs
  * Icône Card Pro près de l'horloge, avec son menu :
- * ouvrir l'appli, dossier des données, mise à jour, quitter.
+ * afficher la fenêtre, dossier des données, mise à jour, quitter.
  * Toutes les 6 heures, elle cherche une nouvelle version, la télécharge en
  * arrière-plan et propose de redémarrer ; sinon elle s'installe au prochain lancement.
  */
@@ -18,17 +18,21 @@ namespace CardPro.Lanceur
     internal sealed class IconeBarre : IDisposable
     {
         private readonly ServeurLocal serveur;
+        private readonly Action ouvrirAppli;
         private readonly NotifyIcon icone;
         private readonly ToolStripMenuItem elementMiseAJour;
         private readonly SynchronizationContext contexte;
         private readonly System.Windows.Forms.Timer minuterie = new System.Windows.Forms.Timer { Interval = 6 * 60 * 60 * 1000 };
         private bool rechercheEnCours;
+        private bool quitte;
 
         /// <summary>Crée l'icône et son menu.</summary>
         /// <param name="serveur">Serveur Card Pro en cours.</param>
-        public IconeBarre(ServeurLocal serveur)
+        /// <param name="ouvrirAppli">Affiche l'appli (fenêtre Card Pro, ou navigateur en secours).</param>
+        public IconeBarre(ServeurLocal serveur, Action ouvrirAppli)
         {
             this.serveur = serveur;
+            this.ouvrirAppli = ouvrirAppli;
             ContextMenuStrip menu = new ContextMenuStrip();
             ToolStripMenuItem ouvrir = new ToolStripMenuItem("Ouvrir Card Pro", null, (s, e) => OuvrirAppli());
             ouvrir.Font = new Font(ouvrir.Font, FontStyle.Bold);
@@ -117,10 +121,10 @@ namespace CardPro.Lanceur
             icone.Dispose();
         }
 
-        /// <summary>Ouvre l'appli dans le navigateur.</summary>
+        /// <summary>Affiche l'appli.</summary>
         private void OuvrirAppli()
         {
-            Navigateur.Ouvrir(serveur.Adresse);
+            ouvrirAppli();
         }
 
         /// <summary>Ouvre le dossier des données dans l'Explorateur.</summary>
@@ -129,9 +133,12 @@ namespace CardPro.Lanceur
             Process.Start(new ProcessStartInfo("explorer.exe", "\"" + Parametres.DossierDonnees + "\"") { UseShellExecute = true });
         }
 
-        /// <summary>Arrête le serveur et ferme le lanceur.</summary>
-        private void Quitter()
+        /// <summary>Arrête le serveur et ferme Card Pro (menu, ou fermeture de la fenêtre).</summary>
+        public void Quitter()
         {
+            // Appelé une seule fois (fermer la fenêtre déclenche aussi Quitter).
+            if (quitte) return;
+            quitte = true;
             serveur.Arreter();
             icone.Visible = false;
             Application.Exit();

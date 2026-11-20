@@ -1,12 +1,13 @@
 /*
  * Programme.cs
  * Point d'entrée de CardPro-Configurateur.exe :
- *  1. une seule instance (une seconde ouverture rouvre simplement la page) ;
+ *  1. une seule instance (une seconde ouverture remet la fenêtre au premier plan) ;
  *  2. mise à jour automatique au démarrage si une nouvelle version existe,
  *     avec une fenêtre qui montre l'avancement ;
  *  3. démarrage du serveur Card Pro en arrière-plan ;
- *  4. ouverture de la page dans le navigateur ;
- *  5. icône près de l'horloge jusqu'à « Quitter ».
+ *  4. affichage de l'appli dans la fenêtre Card Pro (WebView2) ; si le moteur
+ *     WebView2 manque, ouverture dans le navigateur par défaut ;
+ *  5. fermer la fenêtre (ou « Quitter » près de l'horloge) arrête Card Pro.
  */
 using System;
 using System.IO;
@@ -26,6 +27,8 @@ namespace CardPro.Lanceur
         [STAThread]
         private static void Main(string[] arguments)
         {
+            // Avant tout usage d'un type WebView2 (bibliothèques intégrées à l'exe).
+            ChargementWebView2.Preparer();
             bool apresMaj = arguments.Contains(MiseAJour.ArgumentApresMaj);
             using (Mutex unique = new Mutex(false, "Local\\CardProConfigurateur"))
             {
@@ -72,7 +75,7 @@ namespace CardPro.Lanceur
                 try
                 {
                     // Fenêtre visible pendant tout le démarrage (mise à jour comprise).
-                    resultat = FenetreProgression.Executer(fenetre => Demarrer(fenetre, serveur, apresMaj));
+                    resultat = FenetreProgression.Executer(progression => Demarrer(progression, serveur, apresMaj));
                 }
                 catch (Exception erreur)
                 {
@@ -84,13 +87,42 @@ namespace CardPro.Lanceur
                 if (resultat == Demarrage.Relance) return; // La nouvelle version a pris le relais.
 
                 File.WriteAllText(Parametres.FichierPort, serveur.Port.ToString());
-                using (IconeBarre icone = new IconeBarre(serveur))
+                using (FenetreAppli fenetre = new FenetreAppli(serveur.Adresse))
+                using (EventWaitHandle signalAffichage = new EventWaitHandle(false, EventResetMode.AutoReset, NomSignalAffichage))
                 {
-                    Navigateur.Ouvrir(serveur.Adresse);
-                    if (apresMaj) icone.Bulle("Card Pro est à jour", "Version " + Parametres.TexteVersion + " installée. Tes données sont conservées.", ToolTipIcon.Info);
-                    else icone.Bulle("Card Pro est lancé", "Clique sur l'icône pour ouvrir l'appli, clic droit pour quitter.", ToolTipIcon.Info);
-                    icone.DemarrerVerificationsMiseAJour();
-                    Application.Run();
+                    bool avecFenetre = true;
+                    Action afficher = () =>
+                    {
+                        if (avecFenetre) fenetre.Afficher();
+                        else Navigateur.Ouvrir(serveur.Adresse);
+                    };
+                    using (IconeBarre icone = new IconeBarre(serveur, afficher))
+                    {
+                        // Fermer la fenêtre arrête Card Pro.
+                        fenetre.FormClosed += (s, e) => icone.Quitter();
+                        fenetre.Shown += async (s, e) =>
+                        {
+                            try
+                            {
+                                await fenetre.OuvrirAsync();
+                            }
+                            catch (Exception erreur)
+                            {
+                                // Moteur WebView2 absent ou en panne : l'appli s'ouvre dans le navigateur.
+                                avecFenetre = false;
+                                fenetre.Hide();
+                                Navigateur.Ouvrir(serveur.Adresse);
+                                icone.Bulle("Card Pro s'ouvre dans le navigateur",
+                                    "La fenêtre Card Pro a besoin de Microsoft Edge WebView2 (" + erreur.GetType().Name + "). Clic droit sur l'icône pour quitter.",
+                                    ToolTipIcon.Warning);
+                            }
+                        };
+                        EcouterSecondeOuverture(signalAffichage, fenetre, afficher);
+                        if (apresMaj) icone.Bulle("Card Pro est à jour", "Version " + Parametres.TexteVersion + " installée. Tes données sont conservées.", ToolTipIcon.Info);
+                        icone.DemarrerVerificationsMiseAJour();
+                        fenetre.Show();
+                        Application.Run();
+                    }
                 }
                 SupprimerSansErreur(Parametres.FichierPort);
             }
@@ -193,9 +225,49 @@ namespace CardPro.Lanceur
             }
         }
 
-        /// <summary>Card Pro tourne déjà : on rouvre simplement sa page.</summary>
+        // Signal envoyé par une seconde ouverture de l'exe : « remets la fenêtre au premier plan ».
+        private const string NomSignalAffichage = "Local\\CardProConfigurateurAfficher";
+
+        /// <summary>
+        /// Attend en arrière-plan qu'une seconde ouverture de Card Pro demande la fenêtre.
+        /// </summary>
+        /// <param name="signal">Signal partagé entre les instances.</param>
+        /// <param name="fenetre">Fenêtre (fournit le fil de l'interface).</param>
+        /// <param name="afficher">Affiche l'appli.</param>
+        private static void EcouterSecondeOuverture(EventWaitHandle signal, Form fenetre, Action afficher)
+        {
+            Thread ecoute = new Thread(() =>
+            {
+                try
+                {
+                    while (true)
+                    {
+                        signal.WaitOne();
+                        if (fenetre.IsDisposed) return;
+                        fenetre.BeginInvoke(afficher);
+                    }
+                }
+                catch (ObjectDisposedException)
+                {
+                    // Card Pro se ferme : le signal ou la fenêtre n'existent plus.
+                }
+                catch (InvalidOperationException)
+                {
+                    // Idem (fenêtre détruite).
+                }
+            }) { IsBackground = true };
+            ecoute.Start();
+        }
+
+        /// <summary>Card Pro tourne déjà : on remet sa fenêtre au premier plan.</summary>
         private static void OuvrirInstanceExistante()
         {
+            EventWaitHandle signal;
+            if (EventWaitHandle.TryOpenExisting(NomSignalAffichage, out signal))
+            {
+                using (signal) signal.Set();
+                return;
+            }
             int port;
             string texte = File.Exists(Parametres.FichierPort) ? File.ReadAllText(Parametres.FichierPort).Trim() : "";
             if (int.TryParse(texte, out port) && port > 0 && port < 65536)

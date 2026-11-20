@@ -4,7 +4,8 @@
  * ouvert ou non. Le navigateur par défaut est lu dans les réglages de
  * Windows et lancé directement avec l'adresse ; en secours, on passe par
  * Windows (ouverture du lien, puis l'Explorateur).
- * Seule l'appli locale (http://localhost:…) peut être ouverte.
+ * Sert de secours si la fenêtre Card Pro (WebView2) est indisponible, et
+ * pour ouvrir les liens externes (https uniquement) de la fenêtre.
  */
 using System;
 using System.Diagnostics;
@@ -26,6 +27,19 @@ namespace CardPro.Lanceur
             if (Essayer(new ProcessStartInfo(adresse) { UseShellExecute = true })) return;
             if (Essayer(new ProcessStartInfo("explorer.exe", "\"" + adresse + "\"") { UseShellExecute = false })) return;
             MessageBox.Show("Ouvre cette adresse dans ton navigateur : " + adresse, "Card Pro Configurateur", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        /// <summary>
+        /// Ouvre un lien externe (https uniquement) dans le navigateur par défaut :
+        /// liens de la fenêtre Card Pro (GitHub, LinkedIn…).
+        /// </summary>
+        /// <param name="adresse">Lien demandé par la page.</param>
+        public static void OuvrirLienExterne(string adresse)
+        {
+            Uri uri;
+            if (!Uri.TryCreate(adresse, UriKind.Absolute, out uri) || uri.Scheme != Uri.UriSchemeHttps) return;
+            if (LancerNavigateurParDefaut(uri.AbsoluteUri)) return;
+            Essayer(new ProcessStartInfo(uri.AbsoluteUri) { UseShellExecute = true });
         }
 
         /// <summary>Lance directement le navigateur choisi dans Windows.</summary>

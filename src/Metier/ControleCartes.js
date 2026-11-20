@@ -66,7 +66,7 @@ export function controlerCartes(cartes) {
     const { personne, modele } = carte;
     const problemes = [];
     if (!nomComplet(personne)) problemes.push('Prénom et nom vides.');
-    if (!personne.telephoneMobile && !personne.telephonePro && !personne.telephoneStandard && !personne.email) {
+    if (!personne.telephoneMobile && !personne.telephoneSupport && !personne.email) {
       problemes.push('Aucun téléphone ni e-mail.');
     }
     if (noms.get(cleNom(carte)) > 1) problemes.push('Même nom qu’une autre carte (doublon ?).');

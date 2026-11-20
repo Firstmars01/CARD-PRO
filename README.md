@@ -13,8 +13,8 @@ Application Windows (**CardPro-Configurateur.exe**, sans installation) pour cré
 
 ### Onglet « Cartes »
 - Ajout, modification et suppression des personnes, avec sauvegarde automatique.
-- Informations : identité, téléphones (mobile, fixe, standard), WhatsApp, e-mail, site, LinkedIn, LinkedIn de l'entreprise, lien de prise de rendez-vous, adresse, note et jusqu'à 8 liens.
-- **Entreprises** : nom, standard, site, LinkedIn, adresse et **logo** saisis une seule fois. Chaque carte est reliée à une entreprise **ou** en « réglage personnalisé » :
+- Informations : identité, téléphones (mobile, support), WhatsApp, e-mail, site, LinkedIn, LinkedIn de l'entreprise, lien de prise de rendez-vous, adresse, note et jusqu'à 8 liens.
+- **Entreprises** : nom, support (téléphone), site, LinkedIn, adresse et **logo** saisis une seule fois. Chaque carte est reliée à une entreprise **ou** en « réglage personnalisé » :
   - carte reliée : elle prend toutes les infos de l'entreprise (champs grisés, non modifiables) ; modifier l'entreprise met à jour toutes ses cartes ;
   - le logo de l'entreprise remplace les images du modèle cochées « Remplacer par le logo de l'entreprise » (cochée par défaut) ;
   - repasser une carte en réglage personnalisé recopie les infos de l'entreprise dans la carte, où elles deviennent modifiables ;
@@ -82,7 +82,7 @@ Application Windows (**CardPro-Configurateur.exe**, sans installation) pour cré
 
 - **Navigateur** : HTML, CSS, JavaScript (modules ES), sans framework. Encodeur QR (modes octets et alphanumérique), ZIP, CSV, GIF animé et Base45 intégrés. [pdf-lib](https://pdf-lib.js.org/) 1.17.1 (MIT) embarquée.
 - **Serveur** : Node.js 22, **sans aucune dépendance npm**, avec la base **SQLite** intégrée à Node.
-- **Windows** : lanceur `CardPro-Configurateur.exe` en C# (.NET Framework 4.8, déjà présent sur Windows) avec icône près de l'horloge ; il contient Node.js officiel et l'appli.
+- **Windows** : lanceur `CardPro-Configurateur.exe` en C# (.NET Framework 4.8, déjà présent sur Windows) : fenêtre de bureau **WebView2** (bibliothèques intégrées à l'exe) et icône près de l'horloge ; il contient Node.js officiel et l'appli.
 - **Portefeuille mobile** : application web installable (PWA), hors ligne, publiée sur **GitHub Pages** (HTTPS). Lecture des QR : lecteur intégré du navigateur (Android) ou [jsQR](https://github.com/cozmo/jsQR) 1.4.0 (Apache 2.0, iPhone), ajouté à la publication.
 - **Tests** : `node:test`.
 
@@ -149,9 +149,12 @@ CARD PRO/
    - ou depuis la page **Releases** du dépôt GitHub.
 2. Double-clique dessus. Rien à installer (Windows 10 ou 11).
    Si Windows affiche « Windows a protégé votre ordinateur » : **Informations complémentaires → Exécuter quand même** (l'exe n'est pas signé par un certificat payant).
-3. Une petite fenêtre montre le démarrage (et la mise à jour éventuelle, avec son pourcentage). Puis la page Card Pro s'ouvre dans ton **navigateur par défaut**, même s'il était fermé, et une **icône Card Pro** apparaît près de l'horloge :
-   - **clic** : rouvrir la page ;
-   - **clic droit** : dossier des données, rechercher une mise à jour, version, **Quitter Card Pro**.
+3. Une petite fenêtre montre le démarrage (et la mise à jour éventuelle, avec son pourcentage). Puis Card Pro s'ouvre dans **sa propre fenêtre**, comme une application de bureau (sans barre d'adresse), et une **icône Card Pro** apparaît près de l'horloge :
+   - **fermer la fenêtre** arrête Card Pro ; relancer l'exe (ou cliquer sur l'icône) remet la fenêtre au premier plan ;
+   - **téléchargements** : Card Pro demande à chaque fois où enregistrer le fichier ;
+   - les liens externes (GitHub, LinkedIn…) s'ouvrent dans ton navigateur ;
+   - **clic droit** sur l'icône : dossier des données, rechercher une mise à jour, version, **Quitter Card Pro**.
+   La fenêtre utilise **Microsoft Edge WebView2**, déjà présent sur Windows 10 et 11. S'il manque, Card Pro s'ouvre dans ton navigateur par défaut (installable ici : https://developer.microsoft.com/microsoft-edge/webview2/).
 
 Bon à savoir :
 - L'appli n'est accessible **que depuis ce PC** (adresse `http://localhost:48080`, ou le port libre suivant).
@@ -307,7 +310,7 @@ Android exige que chaque version soit signée avec **la même clé**. Garde-la p
 
 1. **Modèles** → choisis un modèle de base → **Dupliquer**.
 2. Donne-lui un nom, ajoute ton logo (« + Image »), place les éléments à la souris, règle le verso, puis **Enregistrer**.
-3. **Cartes** → « Entreprises » → **+ Ajouter une entreprise** : nom, adresse, standard, site, logo.
+3. **Cartes** → « Entreprises » → **+ Ajouter une entreprise** : nom, adresse, support, site, logo.
 4. **Cartes** → « Importer une liste » → télécharge le fichier modèle, remplis-le dans Excel, enregistre-le en CSV et importe-le en choisissant ton modèle. Pour chaque carte, choisis son **entreprise** dans le formulaire (les cartes ajoutées ensuite reprennent celle de la carte sélectionnée).
 5. « Contrôle avant export » → **Contrôler toutes les cartes**, et corrige ce qui est signalé.
 6. Sélectionne une personne pour vérifier sa carte, puis télécharge :
@@ -341,6 +344,7 @@ Android exige que chaque version soit signée avec **la même clé**. Garde-la p
 - **Fichiers** : seule une liste blanche est servie (`index.html`, `assets/`, `src/`…). Le code du serveur, la base et les fichiers cachés sont inaccessibles, et la traversée de dossiers est bloquée.
 - **Erreurs** : messages génériques côté client, détails uniquement dans les journaux du serveur.
 - **En-têtes HTTP** : CSP, `X-Content-Type-Options`, `X-Frame-Options: DENY`, `Referrer-Policy`, `Permissions-Policy`, COOP/CORP.
+- **Fenêtre de bureau (WebView2)** : n'affiche que l'appli locale (`http://localhost:<port>/`) ; toute autre adresse est bloquée, et seuls les liens `https` sont transmis au navigateur ; outils de développement désactivés ; données du moteur dans `%LOCALAPPDATA%\CardPro\fenetre`.
 - **CardPro-Configurateur.exe** : contient le `node.exe` officiel (empreinte SHA-256 vérifiée à la compilation) ; aucune permission administrateur ; extraction dans `%LOCALAPPDATA%` (les chemins qui sortiraient du dossier sont refusés) ; n'ouvre dans le navigateur que l'appli locale et GitHub ; la recherche de mise à jour lit seulement le numéro de la dernière version publique (rien n'est envoyé) ; arrêt propre du serveur à la fermeture.
 - **Secrets** : aucun n'est nécessaire. `.env` est exclu de Git et de l'image.
 - **Portefeuille mobile** :

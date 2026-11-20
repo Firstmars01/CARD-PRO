@@ -7,7 +7,7 @@
  */
 
 import { normaliserObjet, nouvelId, idValide } from '../Utilitaires/Schema.js';
-import { CHAMPS_AFFICHABLES, valeurChamp } from './Personne.js';
+import { CHAMPS_AFFICHABLES, ANCIENS_CHAMPS, valeurChamp } from './Personne.js';
 import { OPTIONS_POLICES } from './Polices.js';
 import { OPTIONS_ICONES } from './IconesCarte.js';
 
@@ -163,7 +163,9 @@ export function normaliserElement(brut) {
   if (!brut || typeof brut !== 'object' || !Object.hasOwn(SPECIFIQUES, brut.type)) return null;
   const defauts = { ...DEFAUTS.commun, ...DEFAUTS[brut.type] };
   // Anciens modèles : l'option « sans remplissage » devient le remplissage « aucun ».
-  const source = brut.type === 'forme' && brut.sansRemplissage === true && !brut.typeRemplissage ? { ...brut, typeRemplissage: 'aucun' } : brut;
+  let source = brut.type === 'forme' && brut.sansRemplissage === true && !brut.typeRemplissage ? { ...brut, typeRemplissage: 'aucun' } : brut;
+  // Anciens modèles : un texte lié au fixe ou au standard affiche désormais le support.
+  if (brut.type === 'texte' && Object.hasOwn(ANCIENS_CHAMPS, brut.champ)) source = { ...source, champ: ANCIENS_CHAMPS[brut.champ] };
   return {
     id: idValide(brut.id) ? brut.id : nouvelId('e'),
     type: brut.type,

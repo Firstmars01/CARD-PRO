@@ -63,7 +63,7 @@ function forme(forme, [x, y, largeur, hauteur], style = {}) {
 function coordonnees(x, y, largeur, style) {
   return [
     champ('telephoneMobile', [x, y, largeur, 30], { prefixe: 'M. ', ...style }),
-    champ('telephonePro', [x, y + 32, largeur, 30], { prefixe: 'T. ', ...style }),
+    champ('telephoneSupport', [x, y + 32, largeur, 30], { prefixe: 'T. ', ...style }),
     champ('email', [x, y + 64, largeur, 30], style),
     champ('siteWeb', [x, y + 96, largeur, 30], style),
   ];
