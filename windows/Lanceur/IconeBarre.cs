@@ -90,7 +90,7 @@ namespace CardPro.Lanceur
                 {
                     InfoVersion info = await MiseAJour.ChercherAsync(TimeSpan.FromSeconds(10));
                     if (info == null) message = "Card Pro est à jour.";
-                    else if (await MiseAJour.TelechargerAsync(info)) prete = info.Version;
+                    else if (await MiseAJour.TelechargerAsync(info, null)) prete = info.Version;
                     else message = "La mise à jour téléchargée est invalide : elle a été ignorée.";
                 }
             }

@@ -138,7 +138,7 @@ CARD PRO/
    - ou depuis la page **Releases** du dépôt GitHub.
 2. Double-clique dessus. Rien à installer (Windows 10 ou 11).
    Si Windows affiche « Windows a protégé votre ordinateur » : **Informations complémentaires → Exécuter quand même** (l'exe n'est pas signé par un certificat payant).
-3. La page Card Pro s'ouvre dans le navigateur, et une **icône Card Pro** apparaît près de l'horloge :
+3. Une petite fenêtre montre le démarrage (et la mise à jour éventuelle, avec son pourcentage). Puis la page Card Pro s'ouvre dans ton **navigateur par défaut**, même s'il était fermé, et une **icône Card Pro** apparaît près de l'horloge :
    - **clic** : rouvrir la page ;
    - **clic droit** : dossier des données, rechercher une mise à jour, version, **Quitter Card Pro**.
 

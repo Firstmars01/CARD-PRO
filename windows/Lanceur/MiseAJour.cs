@@ -102,8 +102,9 @@ namespace CardPro.Lanceur
 
         /// <summary>Télécharge et vérifie le nouvel exe (prêt à installer).</summary>
         /// <param name="info">Version à télécharger.</param>
+        /// <param name="progression">Reçoit l'avancement du téléchargement (peut être null).</param>
         /// <returns>true si le fichier est prêt et vérifié.</returns>
-        public static async Task<bool> TelechargerAsync(InfoVersion info)
+        public static async Task<bool> TelechargerAsync(InfoVersion info, IProgress<Avancement> progression)
         {
             string partiel = CheminNouveau + ".part";
             using (HttpClient client = CreerClient(TimeSpan.FromMinutes(5)))
@@ -115,6 +116,7 @@ namespace CardPro.Lanceur
                 using (HttpResponseMessage reponse = await client.GetAsync(info.AdresseExe, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false))
                 {
                     reponse.EnsureSuccessStatusCode();
+                    long taille = reponse.Content.Headers.ContentLength ?? 0;
                     using (Stream entree = await reponse.Content.ReadAsStreamAsync().ConfigureAwait(false))
                     using (FileStream sortie = File.Create(partiel))
                     {
@@ -126,6 +128,7 @@ namespace CardPro.Lanceur
                             total += lus;
                             if (total > TailleMax) throw new InvalidDataException("Fichier trop volumineux.");
                             await sortie.WriteAsync(tampon, 0, lus).ConfigureAwait(false);
+                            if (progression != null) progression.Report(new Avancement { Recus = total, Total = taille });
                         }
                     }
                 }

@@ -2,7 +2,8 @@
  * Programme.cs
  * Point d'entrée de CardPro-RH.exe :
  *  1. une seule instance (une seconde ouverture rouvre simplement la page) ;
- *  2. mise à jour automatique au démarrage si une nouvelle version existe ;
+ *  2. mise à jour automatique au démarrage si une nouvelle version existe,
+ *     avec une fenêtre qui montre l'avancement ;
  *  3. démarrage du serveur Card Pro en arrière-plan ;
  *  4. ouverture de la page dans le navigateur ;
  *  5. icône près de l'horloge jusqu'à « Quitter ».
@@ -12,6 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace CardPro.Lanceur
@@ -44,6 +46,16 @@ namespace CardPro.Lanceur
             }
         }
 
+        /// <summary>Résultat du démarrage.</summary>
+        private enum Demarrage
+        {
+            /// <summary>Le serveur est prêt.</summary>
+            Pret,
+
+            /// <summary>Une nouvelle version a été installée et lancée : cet exe se ferme.</summary>
+            Relance,
+        }
+
         /// <summary>Lance l'appli (instance unique déjà obtenue).</summary>
         /// <param name="apresMaj">true si l'exe vient d'être mis à jour.</param>
         private static void Executer(bool apresMaj)
@@ -54,19 +66,13 @@ namespace CardPro.Lanceur
             Directory.CreateDirectory(Parametres.DossierDonnees);
             Directory.CreateDirectory(Parametres.DossierProgrammes);
 
-            if (apresMaj) MiseAJour.Nettoyer();
-            else if (MettreAJourAuDemarrage()) return; // La nouvelle version a pris le relais.
-
             using (ServeurLocal serveur = new ServeurLocal())
             {
+                Demarrage resultat;
                 try
                 {
-                    serveur.PreparerFichiers();
-                    serveur.Demarrer();
-                    if (!serveur.AttendrePret(TimeSpan.FromSeconds(30)))
-                    {
-                        throw new InvalidOperationException("le serveur ne répond pas.");
-                    }
+                    // Fenêtre visible pendant tout le démarrage (mise à jour comprise).
+                    resultat = FenetreProgression.Executer(fenetre => Demarrer(fenetre, serveur, apresMaj));
                 }
                 catch (Exception erreur)
                 {
@@ -75,6 +81,7 @@ namespace CardPro.Lanceur
                         "Card Pro RH", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
+                if (resultat == Demarrage.Relance) return; // La nouvelle version a pris le relais.
 
                 File.WriteAllText(Parametres.FichierPort, serveur.Port.ToString());
                 using (IconeBarre icone = new IconeBarre(serveur))
@@ -90,17 +97,57 @@ namespace CardPro.Lanceur
         }
 
         /// <summary>
+        /// Étapes du démarrage, affichées dans la fenêtre : mise à jour éventuelle,
+        /// préparation des fichiers, lancement du serveur.
+        /// </summary>
+        /// <param name="fenetre">Fenêtre de progression.</param>
+        /// <param name="serveur">Serveur à démarrer.</param>
+        /// <param name="apresMaj">true si l'exe vient d'être mis à jour.</param>
+        /// <returns>Pret, ou Relance si une nouvelle version a été lancée.</returns>
+        private static async Task<Demarrage> Demarrer(FenetreProgression fenetre, ServeurLocal serveur, bool apresMaj)
+        {
+            if (apresMaj)
+            {
+                fenetre.Etape("Fin de la mise à jour…");
+                await Task.Run(() => MiseAJour.Nettoyer());
+            }
+            else if (await MettreAJour(fenetre))
+            {
+                return Demarrage.Relance;
+            }
+
+            fenetre.Etape("Préparation de Card Pro…");
+            await Task.Run(() => serveur.PreparerFichiers());
+            fenetre.Etape("Lancement de Card Pro…");
+            await Task.Run(() =>
+            {
+                serveur.Demarrer();
+                if (!serveur.AttendrePret(TimeSpan.FromSeconds(30))) throw new InvalidOperationException("le serveur ne répond pas.");
+            });
+            fenetre.Etape("Ouverture de la page…");
+            return Demarrage.Pret;
+        }
+
+        /// <summary>
         /// Installe une mise à jour avant de démarrer : celle déjà téléchargée, sinon
         /// la dernière version en ligne (si Internet répond vite).
         /// </summary>
+        /// <param name="fenetre">Fenêtre de progression.</param>
         /// <returns>true si la nouvelle version a été lancée (cet exe doit se fermer).</returns>
-        private static bool MettreAJourAuDemarrage()
+        private static async Task<bool> MettreAJour(FenetreProgression fenetre)
         {
-            if (MiseAJour.VersionPrete() != null) return MiseAJour.Installer();
+            Version prete = MiseAJour.VersionPrete();
+            if (prete != null)
+            {
+                fenetre.Etape("Installation de la version " + prete + "…");
+                return MiseAJour.Installer();
+            }
+
+            fenetre.Etape("Recherche de mise à jour…");
             InfoVersion info;
             try
             {
-                info = MiseAJour.ChercherAsync(TimeSpan.FromSeconds(4)).Result;
+                info = await MiseAJour.ChercherAsync(TimeSpan.FromSeconds(4));
             }
             catch (Exception)
             {
@@ -108,21 +155,25 @@ namespace CardPro.Lanceur
             }
             if (info == null) return false;
 
-            using (NotifyIcon attente = new NotifyIcon { Icon = IconeBarre.ChargerIcone(), Text = "Card Pro : mise à jour…", Visible = true })
+            fenetre.Etape("Nouvelle version " + info.Version + " trouvée…");
+            try
             {
-                attente.ShowBalloonTip(5000, "Mise à jour de Card Pro", "Installation de la version " + info.Version + "…", ToolTipIcon.Info);
-                try
+                bool telechargee = await MiseAJour.TelechargerAsync(info, new Progress<Avancement>(fenetre.Telechargement));
+                if (!telechargee)
                 {
-                    return MiseAJour.TelechargerAsync(info).Result && MiseAJour.Installer();
+                    fenetre.Etape("Mise à jour invalide, ignorée. Démarrage de la version actuelle…");
+                    await Task.Delay(2000);
+                    return false;
                 }
-                catch (Exception)
-                {
-                    return false; // Téléchargement interrompu : on réessaiera plus tard.
-                }
-                finally
-                {
-                    attente.Visible = false;
-                }
+                fenetre.Etape("Installation de la version " + info.Version + "…");
+                await Task.Delay(500);
+                return MiseAJour.Installer();
+            }
+            catch (Exception)
+            {
+                fenetre.Etape("Téléchargement interrompu. Démarrage de la version actuelle…");
+                await Task.Delay(2000);
+                return false; // On réessaiera plus tard.
             }
         }
 
