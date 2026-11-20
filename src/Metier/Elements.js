@@ -11,6 +11,14 @@ import { CHAMPS_AFFICHABLES, ANCIENS_CHAMPS, valeurChamp } from './Personne.js';
 import { OPTIONS_POLICES } from './Polices.js';
 import { OPTIONS_ICONES } from './IconesCarte.js';
 
+// Origine d'une image : l'image choisie, ou remplacée par le logo de
+// l'entreprise / la photo de la personne quand la carte en a un(e).
+const ORIGINES_IMAGE = [
+  ['fixe', 'Image choisie'],
+  ['logo', "Logo de l'entreprise (sinon l'image choisie)"],
+  ['photo', "Photo de la personne (sinon l'image choisie)"],
+];
+
 export const TYPES_ELEMENT = { texte: 'Texte', qr: 'QR code', image: 'Image', forme: 'Forme', icone: 'Icône' };
 
 // Réglages communs à tous les éléments (position, rotation, verrouillage).
@@ -88,7 +96,7 @@ const SPECIFIQUES = {
   ],
   image: [
     { cle: 'image', type: 'image', libelle: 'Image (PNG, JPEG, WebP)', groupe: 'Image' },
-    { cle: 'logoEntreprise', type: 'booleen', libelle: "Remplacer par le logo de l'entreprise de la carte", groupe: 'Image' },
+    { cle: 'origine', type: 'choix', libelle: 'Image affichée', groupe: 'Image', options: ORIGINES_IMAGE },
     { cle: 'ajustement', type: 'choix', libelle: 'Ajustement', groupe: 'Image', options: [['contain', 'Entière'], ['cover', 'Remplir (recadrée)']] },
     { cle: 'cadrage', type: 'choix', libelle: 'Forme', groupe: 'Image', options: [['rectangle', 'Rectangle'], ['arrondi', 'Coins arrondis'], ['cercle', 'Rond (photo de profil)']] },
     { cle: 'arrondiImage', type: 'plage', libelle: 'Arrondi des coins', groupe: 'Image', min: 0, max: 200, visibleSi: (e) => e.cadrage === 'arrondi' },
@@ -137,7 +145,7 @@ const DEFAUTS = {
     largeur: 300, hauteur: 300, contenu: 'vcard', numeroLien: 1, styleModules: 'carre', styleYeux: 'carre', couleur: '#000000',
     couleurYeux: '#000000', fond: '#ffffff', marge: 2, arrondi: 14, logo: '', tailleLogo: 22,
   },
-  image: { largeur: 200, hauteur: 100, image: '', logoEntreprise: true, ajustement: 'contain', cadrage: 'rectangle', arrondiImage: 20, bordure: 0, bordureCouleur: '#ffffff', noirEtBlanc: false },
+  image: { largeur: 200, hauteur: 100, image: '', origine: 'logo', ajustement: 'contain', cadrage: 'rectangle', arrondiImage: 20, bordure: 0, bordureCouleur: '#ffffff', noirEtBlanc: false },
   forme: {
     largeur: 200, hauteur: 120, forme: 'rectangle', cotes: 5, arrondi: 0, arrondiParCoin: false, arrondiHG: 0, arrondiHD: 0, arrondiBD: 0, arrondiBG: 0,
     typeRemplissage: 'uni', remplissage: '#2563eb', remplissage2: '#1aa3a3', angleDegrade: 90, contour: '#1d2430', epaisseurContour: 0,
@@ -164,6 +172,8 @@ export function normaliserElement(brut) {
   const defauts = { ...DEFAUTS.commun, ...DEFAUTS[brut.type] };
   // Anciens modèles : l'option « sans remplissage » devient le remplissage « aucun ».
   let source = brut.type === 'forme' && brut.sansRemplissage === true && !brut.typeRemplissage ? { ...brut, typeRemplissage: 'aucun' } : brut;
+  // v4.6 / v4.7 : la case « Remplacer par le logo de l'entreprise » devient l'origine de l'image.
+  if (brut.type === 'image' && !brut.origine && typeof brut.logoEntreprise === 'boolean') source = { ...source, origine: brut.logoEntreprise ? 'logo' : 'fixe' };
   // Anciens modèles : un texte lié au fixe ou au standard affiche désormais le support.
   if (brut.type === 'texte' && Object.hasOwn(ANCIENS_CHAMPS, brut.champ)) source = { ...source, champ: ANCIENS_CHAMPS[brut.champ] };
   return {
@@ -207,7 +217,7 @@ export function decrireElement(element) {
 // Réglages de contenu ou de position : jamais copiés avec le style.
 const CLES_HORS_STYLE = [
   'x', 'y', 'largeur', 'hauteur', 'rotation', 'visible', 'verrouille', 'source', 'champ', 'texte', 'prefixe', 'image', 'forme',
-  'cotes', 'contenu', 'numeroLien', 'logo', 'icone', 'logoEntreprise',
+  'cotes', 'contenu', 'numeroLien', 'logo', 'icone', 'origine',
 ];
 
 /**

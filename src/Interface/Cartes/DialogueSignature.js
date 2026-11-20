@@ -1,26 +1,30 @@
 /**
  * DialogueSignature.js
  * Fenêtre « Signature Outlook » : aperçu de la signature de la personne,
- * choix de la couleur et du logo, bouton « Copier » (HTML + texte) et
+ * choix de la couleur, de l'image (photo de profil ronde, logo ou aucune)
+ * et des icônes devant les infos, bouton « Copier » (HTML + texte) et
  * guide pour la coller dans Outlook.
  */
 
 import { creerElement, vider } from '../../Utilitaires/Dom.js';
 import { telechargerBlob } from '../../Utilitaires/Telechargement.js';
-import { reduireImage } from '../../Utilitaires/Image.js';
+import { reduireImage, decouperEnRond } from '../../Utilitaires/Image.js';
+import { iconesPng } from '../Rendu/IconesPng.js';
 import { dataUrlVersOctets } from '../../Utilitaires/DataUrl.js';
 import { couleurAccent, logoCarte } from '../../Metier/IdentiteVisuelle.js';
 import { creerChamp } from '../Champs.js';
 import { notifier } from '../Notifications.js';
-import { creerSignature } from './Signature.js';
+import { creerSignature, ICONES_SIGNATURE } from './Signature.js';
 
-// Hauteur du logo dans la signature (pixels, ×2 pour les écrans haute densité).
-const HAUTEUR_LOGO = 128;
+// Tailles des images (pixels, ×2 pour les écrans haute densité).
+const HAUTEUR_LOGO = 144;
+const TAILLE_PHOTO = 144;
+const TAILLE_ICONE = 28;
 
 const GUIDE = [
   ['Nouvel Outlook / Outlook sur le web', '⚙ Paramètres → Comptes → Signatures → « + Nouvelle signature » → donne un nom → colle (Ctrl + V) → Enregistrer, puis choisis-la comme signature par défaut.'],
   ['Outlook classique (Windows)', 'Fichier → Options → Courrier → Signatures… → Nouveau → donne un nom → clique dans la zone du bas et colle (Ctrl + V) → OK.'],
-  ['Si le logo n’apparaît pas', 'Dans l’éditeur de signature, clique sur le bouton Image et choisis le logo téléchargé avec « Télécharger le logo ».'],
+  ['Si une image n’apparaît pas', 'Dans l’éditeur de signature, clique sur le bouton Image et choisis l’image téléchargée avec « Télécharger l’image ».'],
 ];
 
 /**
@@ -49,26 +53,49 @@ async function copierSignature(signature) {
 }
 
 /**
+ * Prépare les images possibles à gauche de la signature.
+ * @param {{personne:object, modele:object}} carte - Carte préparée.
+ * @returns {Promise<{photo:string, logo:string}>} Photo ronde et logo réduits ('' si absents).
+ */
+async function preparerImages(carte) {
+  const logoOriginal = logoCarte(carte.modele);
+  const [photo, logo] = await Promise.all([
+    carte.personne.photo ? decouperEnRond(carte.personne.photo, TAILLE_PHOTO) : '',
+    logoOriginal ? reduireImage(logoOriginal, HAUTEUR_LOGO) : '',
+  ]);
+  return { photo, logo };
+}
+
+/**
  * Ouvre la fenêtre de signature d'une carte.
  * @param {{nom:string, personne:object, modele:object}} carte - Carte préparée (infos d'entreprise appliquées).
  * @returns {Promise<void>}
  */
 export async function ouvrirDialogueSignature(carte) {
-  const logoOriginal = logoCarte(carte.modele);
-  const logo = logoOriginal ? await reduireImage(logoOriginal, HAUTEUR_LOGO) : '';
+  const images = await preparerImages(carte);
   const couleur = creerElement('input', { attributs: { type: 'color', id: 'signature-couleur', value: couleurAccent(carte.modele) } });
-  const avecLogo = creerElement('input', { attributs: { type: 'checkbox', id: 'signature-logo', checked: Boolean(logo), disabled: !logo } });
+  const choixImage = creerElement('select', { attributs: { id: 'signature-image' } }, [
+    images.photo && creerElement('option', { texte: 'Photo de profil', attributs: { value: 'photo' } }),
+    images.logo && creerElement('option', { texte: 'Logo', attributs: { value: 'logo' } }),
+    creerElement('option', { texte: 'Aucune image', attributs: { value: '' } }),
+  ]);
+  const avecIcones = creerElement('input', { attributs: { type: 'checkbox', id: 'signature-icones', checked: true } });
   const apercu = creerElement('div', { classe: 'Signature-apercu', attributs: { 'aria-label': 'Aperçu de la signature' } });
   let signature = null;
+  let tour = 0;
 
-  const dessiner = () => {
+  // Redessine la signature (les icônes sont recalculées à la couleur choisie).
+  const dessiner = async () => {
+    tour += 1;
+    const monTour = tour;
+    const icones = avecIcones.checked ? await iconesPng(Object.values(ICONES_SIGNATURE), couleur.value, TAILLE_ICONE) : {};
+    if (monTour !== tour) return; // Un autre changement est arrivé entre-temps.
     vider(apercu);
-    signature = creerSignature(carte.personne, { couleur: couleur.value, logo: avecLogo.checked ? logo : '' });
+    signature = creerSignature(carte.personne, { couleur: couleur.value, image: images[choixImage.value] || '', icones });
     apercu.append(signature);
   };
-  couleur.addEventListener('input', dessiner);
-  avecLogo.addEventListener('change', dessiner);
-  dessiner();
+  [couleur, choixImage, avecIcones].forEach((c) => c.addEventListener(c === couleur ? 'input' : 'change', dessiner));
+  await dessiner();
 
   const copier = creerElement('button', { classe: 'Bouton Bouton--principal', texte: 'Copier la signature', attributs: { type: 'button' } });
   copier.addEventListener('click', async () => {
@@ -79,9 +106,13 @@ export async function ouvrirDialogueSignature(carte) {
       notifier(erreur.message || 'Copie impossible.', 'erreur');
     }
   });
-  const telechargerLogo = creerElement('button', {
-    classe: 'Bouton Bouton--secondaire', texte: 'Télécharger le logo', attributs: { type: 'button', disabled: !logo },
-    surClic: () => telechargerBlob(new Blob([dataUrlVersOctets(logo).octets], { type: 'image/png' }), `${carte.nom}-logo-signature.png`),
+  const telechargerImage = creerElement('button', {
+    classe: 'Bouton Bouton--secondaire', texte: "Télécharger l'image", attributs: { type: 'button' },
+    surClic: () => {
+      const image = images[choixImage.value];
+      if (!image) return;
+      telechargerBlob(new Blob([dataUrlVersOctets(image).octets], { type: 'image/png' }), `${carte.nom}-${choixImage.value}-signature.png`);
+    },
   });
   const fermer = creerElement('button', { classe: 'Bouton Bouton--secondaire', texte: 'Fermer', attributs: { type: 'button' } });
 
@@ -90,10 +121,11 @@ export async function ouvrirDialogueSignature(carte) {
     apercu,
     creerElement('div', { classe: 'Choix-ligne' }, [
       creerChamp('Couleur', couleur).bloc,
-      creerElement('label', { classe: 'Choix' }, [avecLogo, creerElement('span', { texte: logo ? 'Afficher le logo' : 'Pas de logo sur cette carte' })]),
+      creerChamp('Image à gauche', choixImage).bloc,
+      creerElement('label', { classe: 'Choix' }, [avecIcones, creerElement('span', { texte: 'Icônes devant les infos' })]),
     ]),
     creerElement('ol', { classe: 'Signature-guide' }, GUIDE.map(([titre, texte]) => creerElement('li', {}, [creerElement('strong', { texte: `${titre} : ` }), texte]))),
-    creerElement('div', { classe: 'Transfert-actions' }, [fermer, telechargerLogo, copier]),
+    creerElement('div', { classe: 'Transfert-actions' }, [fermer, telechargerImage, copier]),
   ]);
   fermer.addEventListener('click', () => dialogue.close());
   dialogue.addEventListener('close', () => dialogue.remove());

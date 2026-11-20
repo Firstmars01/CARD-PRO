@@ -278,7 +278,7 @@ test('identité visuelle : couleur d’accent, logo et texte lisible', async () 
   const modele = normaliserModele({ nom: 'M', recto: { elements: [
     { type: 'texte', source: 'champ', champ: 'poste', couleur: '#ffffff' },
     { type: 'texte', source: 'champ', champ: 'entreprise', couleur: '#c2410c' },
-    { type: 'image', image: logo, logoEntreprise: false },
+    { type: 'image', image: logo, origine: 'fixe' },
   ] } });
   assert.equal(couleurAccent(modele), '#c2410c'); // Le blanc (poste) est trop clair : couleur suivante.
   assert.equal(couleurAccent(normaliserModele({ nom: 'Vide' })), '#2563eb');
@@ -296,4 +296,22 @@ test('v4.8 : fixe et standard regroupés dans « Support » (cartes et modèles 
   assert.equal(normaliserPersonne({ telephonePro: '01 02 03 04 05' }).telephonePro, undefined);
   assert.equal(normaliserElement({ type: 'texte', champ: 'telephonePro' }).champ, 'telephoneSupport');
   assert.equal(normaliserElement({ type: 'texte', champ: 'telephoneStandard' }).champ, 'telephoneSupport');
+});
+
+test('photo de profil : validée, hors QR / NFC, dans le .vcf ; origine des images', async () => {
+  const { normaliserPersonne } = await import('../src/Metier/Personne.js');
+  const { genererVCard } = await import('../src/Metier/GenerateurVCard.js');
+  const { normaliserElement } = await import('../src/Metier/Elements.js');
+  const png = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+  assert.equal(normaliserPersonne({ photo: png }).photo, png);
+  assert.equal(normaliserPersonne({ photo: 'data:image/svg+xml;base64,PHN2Zz4=' }).photo, '');
+  assert.equal(normaliserPersonne({ photo: `data:image/png;base64,${'A'.repeat(200000)}` }).photo, '');
+  const personne = normaliserPersonne({ prenom: 'Lou', photo: png });
+  assert.ok(!genererVCard(personne).includes('PHOTO'));
+  const vcf = genererVCard(personne, { photoJpeg: 'A'.repeat(300) });
+  assert.match(vcf, /PHOTO;ENCODING=b;TYPE=JPEG:/);
+  assert.ok(vcf.split('\r\n').every((l) => l.length <= 75));
+  assert.ok(!genererVCard(personne, { photoJpeg: 'x\r\nNOTE:pirate' }).includes('pirate'));
+  assert.equal(normaliserElement({ type: 'image', logoEntreprise: true }).origine, 'logo');
+  assert.equal(normaliserElement({ type: 'image', origine: 'photo' }).origine, 'photo');
 });

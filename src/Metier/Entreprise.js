@@ -64,7 +64,7 @@ export function appliquerEntreprisePersonne(personne, entreprise) {
 
 /**
  * Met le logo de l'entreprise dans les images du modèle prévues pour
- * (« Remplacer par le logo de l'entreprise »).
+ * (origine « Logo de l'entreprise »).
  * @param {object} modele - Modèle normalisé.
  * @param {object|null} entreprise - Entreprise reliée.
  * @returns {object} Modèle à afficher (inchangé sans logo d'entreprise).
@@ -73,7 +73,7 @@ export function appliquerEntrepriseModele(modele, entreprise) {
   if (!entreprise?.logo) return modele;
   const face = (f) => ({
     ...f,
-    elements: f.elements.map((e) => (e.type === 'image' && e.logoEntreprise ? { ...e, image: entreprise.logo } : e)),
+    elements: f.elements.map((e) => (e.type === 'image' && e.origine === 'logo' ? { ...e, image: entreprise.logo } : e)),
   });
   return { ...modele, recto: face(modele.recto), verso: face(modele.verso) };
 }

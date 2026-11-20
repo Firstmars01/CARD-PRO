@@ -100,3 +100,66 @@ export async function reduireImage(dataUrl, hauteurMax) {
   canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
   return canvas.toDataURL('image/png');
 }
+
+const COTE_PHOTO = 240; // Photo de profil : 240 × 240 px (≈ 20 mm à 300 dpi).
+
+/**
+ * Charge une image choisie comme photo de profil : vérifiée comme les autres
+ * images, recadrée en carré au centre puis réduite (fichier léger).
+ * @param {File} fichier - Image choisie par l'utilisateur.
+ * @returns {Promise<string>} Data URL (WebP, ou JPEG si WebP indisponible).
+ */
+export async function chargerPhotoProfil(fichier) {
+  const image = new Image();
+  image.src = await chargerImage(fichier);
+  await image.decode();
+  const cote = Math.min(image.naturalWidth, image.naturalHeight);
+  const canvas = document.createElement('canvas');
+  canvas.width = COTE_PHOTO;
+  canvas.height = COTE_PHOTO;
+  canvas.getContext('2d').drawImage(image, (image.naturalWidth - cote) / 2, (image.naturalHeight - cote) / 2, cote, cote, 0, 0, COTE_PHOTO, COTE_PHOTO);
+  const webp = canvas.toDataURL('image/webp', 0.85);
+  return webp.startsWith('data:image/webp') ? webp : canvas.toDataURL('image/jpeg', 0.85);
+}
+
+/**
+ * Découpe une image en rond (coins transparents), en PNG : la signature
+ * e-mail ne peut pas arrondir une image elle-même dans Outlook.
+ * @param {string} dataUrl - Image source (carrée de préférence).
+ * @param {number} taille - Côté en pixels.
+ * @returns {Promise<string>} Data URL PNG.
+ */
+export async function decouperEnRond(dataUrl, taille) {
+  const image = new Image();
+  image.src = dataUrl;
+  await image.decode();
+  const canvas = document.createElement('canvas');
+  canvas.width = taille;
+  canvas.height = taille;
+  const ctx = canvas.getContext('2d');
+  ctx.beginPath();
+  ctx.arc(taille / 2, taille / 2, taille / 2, 0, Math.PI * 2);
+  ctx.clip();
+  const cote = Math.min(image.naturalWidth, image.naturalHeight);
+  ctx.drawImage(image, (image.naturalWidth - cote) / 2, (image.naturalHeight - cote) / 2, cote, cote, 0, 0, taille, taille);
+  return canvas.toDataURL('image/png');
+}
+
+/**
+ * Convertit une image (data URL) en JPEG, format de photo lu par tous les carnets d'adresses.
+ * @param {string} dataUrl - Image source.
+ * @returns {Promise<string>} Contenu JPEG en Base64 (sans « data:… »).
+ */
+export async function convertirEnJpegBase64(dataUrl) {
+  const image = new Image();
+  image.src = dataUrl;
+  await image.decode();
+  const canvas = document.createElement('canvas');
+  canvas.width = image.naturalWidth;
+  canvas.height = image.naturalHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(image, 0, 0);
+  return canvas.toDataURL('image/jpeg', 0.85).split(',')[1];
+}

@@ -1,8 +1,8 @@
 /**
  * FormulairePersonne.js
  * Formulaire de la personne sélectionnée : modèle de carte, entreprise
- * reliée (ou réglage personnalisé), informations, liens ajoutables et
- * suppression. Sauvegarde automatique. Quand la carte est reliée à une
+ * reliée (ou réglage personnalisé), photo de profil, informations, liens
+ * ajoutables et suppression. Sauvegarde automatique. Quand la carte est reliée à une
  * entreprise, les infos de l'entreprise sont affichées et non modifiables.
  */
 
@@ -15,6 +15,8 @@ import {
 } from '../../Metier/EtatApplication.js';
 import { personneSelectionnee, selectionnerPersonne, abonnerSelection } from './SelectionCarte.js';
 import { creerChamp, afficherErreur, creerSection } from '../Champs.js';
+import { creerControleImage } from '../Modeles/ControlesSchema.js';
+import { chargerPhotoProfil } from '../../Utilitaires/Image.js';
 import { notifier } from '../Notifications.js';
 
 const TYPES_INPUT = { tel: 'tel', email: 'email', url: 'url', texte: 'text' };
@@ -102,6 +104,7 @@ function construireFormulaire(conteneur, entree) {
     formulaire.append(section);
   });
   const liens = creerSectionLiens(formulaire, entree.personne.liens);
+  creerSectionPhoto(formulaire, id);
 
   // Toute saisie met à jour la personne (validée par le modèle).
   const enregistrer = (cible) => {
@@ -150,6 +153,26 @@ function creerChoixModele(entree) {
   liste.addEventListener('change', () => modifierPersonne(entree.id, { modeleId: liste.value }));
   remplir();
   return { bloc: creerChamp('Modèle de la carte', liste, 'Champ--large Champ--modele').bloc, remplir };
+}
+
+/**
+ * Crée la section « Photo de profil » : la photo s'affiche sur la carte (images
+ * du modèle réglées sur « Photo de la personne ») et dans la signature.
+ * @param {HTMLElement} conteneur - Formulaire.
+ * @param {string} id - Identifiant de la carte.
+ */
+function creerSectionPhoto(conteneur, id) {
+  const { section, contenu } = creerSection('Photo de profil', false);
+  const controle = creerControleImage({ libelle: 'Photo (recadrée en carré au centre)' }, 'champ-photo', (photo) => {
+    modifierPersonne(id, { personne: { ...trouverPersonne(id).personne, photo } });
+    controle.afficher(photo);
+  }, () => {}, chargerPhotoProfil);
+  controle.afficher(trouverPersonne(id).personne.photo);
+  contenu.append(controle.bloc, creerElement('p', {
+    classe: 'Aide',
+    texte: "Pour l'afficher sur la carte : onglet Modèles → ajoute une image → « Image affichée : Photo de la personne » (cadrage « Rond » conseillé).",
+  }));
+  conteneur.append(section);
 }
 
 /**

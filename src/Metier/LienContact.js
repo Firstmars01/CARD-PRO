@@ -14,12 +14,13 @@ const TAILLE_MAX = 16 * 1024; // Fiche contact une fois décompressée
 const LONGUEUR_MAX_LIEN = 6000; // Caractères après le « # »
 
 /**
- * Garde seulement les champs remplis (lien plus court).
+ * Garde seulement les champs remplis, sans la photo (lien plus court).
  * @param {object} personne - Personne normalisée.
  * @returns {object} Champs non vides.
  */
 function champsRemplis(personne) {
-  return Object.fromEntries(Object.entries(personne).filter(([, v]) => (Array.isArray(v) ? v.length : v)));
+  // Sans la photo : le lien doit rester court (puce NFC).
+  return Object.fromEntries(Object.entries(personne).filter(([cle, v]) => cle !== 'photo' && (Array.isArray(v) ? v.length : v)));
 }
 
 /**

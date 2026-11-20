@@ -51,54 +51,66 @@ function ligne(contenu, style = '') {
   return styler('div', `font-family:${POLICE};font-size:13px;line-height:19px;color:${GRIS};${style}`, {}, contenu);
 }
 
+// Icône de chaque information (clés de IconesCarte.js). Nom, prénom et poste n'en ont pas.
+export const ICONES_SIGNATURE = {
+  entreprise: 'entreprise', mobile: 'mobile', support: 'telephone', email: 'email', site: 'web',
+  linkedin: 'mallette', whatsapp: 'message', rendezVous: 'calendrier', adresse: 'adresse',
+};
+
 /**
- * Relie des éléments par un séparateur « · ».
- * @param {Array<Node>} morceaux - Éléments (les vides sont ignorés).
- * @returns {Array<Node|string>} Contenu de ligne.
+ * Ligne d'information précédée de son icône.
+ * @param {string} icone - Data URL de l'icône ('' : pas d'icône).
+ * @param {Node|string} contenu - Texte ou lien.
+ * @param {string} [style] - Styles en plus.
+ * @returns {HTMLDivElement} Ligne.
  */
-function relier(morceaux) {
-  return morceaux.filter(Boolean).flatMap((m, i) => (i ? ['  ·  ', m] : [m]));
+function ligneIcone(icone, contenu, style = '') {
+  const image = icone && styler('img', 'width:14px;height:14px;vertical-align:-2px;margin-right:7px;border:0;', { attributs: { src: icone, width: 14, height: 14, alt: '' } });
+  return ligne([image, contenu], style);
 }
 
 /**
  * Lien d'appel d'un numéro.
- * @param {string} prefixe - « M. », « T. »…
  * @param {string} numero - Numéro validé.
  * @param {string} couleur - Couleur du lien.
- * @returns {HTMLAnchorElement|null} Lien, ou null sans numéro.
+ * @returns {HTMLAnchorElement} Lien.
  */
-function telephone(prefixe, numero, couleur) {
-  return numero ? lien(`${prefixe} ${numero}`, `tel:${numero.replace(/[^\d+]/g, '')}`, couleur) : null;
+function telephone(numero, couleur) {
+  return lien(numero, `tel:${numero.replace(/[^\d+]/g, '')}`, couleur);
 }
 
 /**
  * Crée la signature d'une personne.
  * @param {object} personne - Personne à afficher (infos d'entreprise appliquées).
- * @param {{couleur:string, logo:string}} options - Couleur d'accent et logo (data URL, '' sans logo).
+ * @param {{couleur:string, image:string, icones:Object<string, string>}} options - Couleur d'accent,
+ *   image de gauche (photo ronde ou logo, '' sans image) et icônes PNG (vides : sans icônes).
  * @returns {HTMLTableElement} Signature.
  */
-export function creerSignature(personne, { couleur, logo }) {
-  const infos = styler('td', `vertical-align:top;padding-left:${logo ? 16 : 0}px;${logo ? `border-left:2px solid ${couleur};` : ''}`, {}, [
+export function creerSignature(personne, { couleur, image, icones }) {
+  const ic = (cle) => icones[ICONES_SIGNATURE[cle]] || '';
+  const adresse = valeurChamp(personne, 'adresse');
+  const details = [
+    personne.entreprise && ligneIcone(ic('entreprise'), personne.entreprise),
+    personne.telephoneMobile && ligneIcone(ic('mobile'), telephone(personne.telephoneMobile, GRIS)),
+    personne.telephoneSupport && ligneIcone(ic('support'), telephone(personne.telephoneSupport, GRIS)),
+    personne.email && ligneIcone(ic('email'), lien(personne.email, `mailto:${personne.email}`, couleur)),
+    personne.siteWeb && ligneIcone(ic('site'), lien(urlLisible(personne.siteWeb), personne.siteWeb, couleur)),
+    personne.linkedin && ligneIcone(ic('linkedin'), lien('LinkedIn', personne.linkedin, couleur)),
+    personne.whatsapp && ligneIcone(ic('whatsapp'), lien('WhatsApp', lienWhatsapp(personne.whatsapp), couleur)),
+    personne.rendezVous && ligneIcone(ic('rendezVous'), lien('Prendre rendez-vous', personne.rendezVous, couleur)),
+    adresse && ligneIcone(ic('adresse'), adresse, 'font-size:12px;'),
+  ].filter(Boolean);
+
+  const infos = styler('td', `vertical-align:top;padding-left:${image ? 16 : 0}px;${image ? `border-left:2px solid ${couleur};` : ''}`, {}, [
     ligne([nomComplet(personne) || ' '], 'font-size:16px;line-height:22px;font-weight:bold;color:#14181f;'),
-    personne.poste && ligne([personne.poste], `color:${couleur};font-weight:bold;`),
-    personne.entreprise && ligne([personne.entreprise]),
-    ligne(relier([
-      telephone('M.', personne.telephoneMobile, GRIS), telephone('Support', personne.telephoneSupport, GRIS),
-    ]), 'padding-top:6px;'),
-    personne.email && ligne([lien(personne.email, `mailto:${personne.email}`, couleur)]),
-    ligne(relier([
-      personne.siteWeb && lien(urlLisible(personne.siteWeb), personne.siteWeb, couleur),
-      personne.linkedin && lien('LinkedIn', personne.linkedin, couleur),
-      personne.whatsapp && lien('WhatsApp', lienWhatsapp(personne.whatsapp), couleur),
-      personne.rendezVous && lien('Prendre rendez-vous', personne.rendezVous, couleur),
-    ])),
-    valeurChamp(personne, 'adresse') && ligne([valeurChamp(personne, 'adresse')], 'font-size:12px;'),
+    personne.poste && ligne([personne.poste], `color:${couleur};font-weight:bold;padding-bottom:6px;`),
+    ...details,
   ].filter((e) => e && e.textContent.trim()));
 
   const cellules = [infos];
-  if (logo) {
+  if (image) {
     cellules.unshift(styler('td', 'vertical-align:top;padding-right:16px;', {}, [
-      styler('img', 'display:block;height:64px;width:auto;border:0;', { attributs: { src: logo, alt: personne.entreprise || 'Logo', height: 64 } }),
+      styler('img', 'display:block;height:72px;width:auto;border:0;', { attributs: { src: image, alt: '', height: 72 } }),
     ]));
   }
   return styler('table', 'border-collapse:collapse;', { attributs: { cellpadding: 0, cellspacing: 0, border: 0, role: 'presentation' } }, [

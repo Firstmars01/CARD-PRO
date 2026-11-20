@@ -2,7 +2,8 @@
  * GenerateurVCard.js
  * Construit une vCard 3.0 (format le mieux reconnu par iPhone et Android)
  * à partir d'une personne normalisée. C'est ce texte qui est mis dans le
- * QR code de la carte et dans le fichier .vcf.
+ * QR code de la carte et dans le fichier .vcf. La photo de profil n'est
+ * ajoutée qu'au fichier .vcf (trop lourde pour un QR code ou une puce NFC).
  */
 
 import { nomComplet, lienWhatsapp } from './Personne.js';
@@ -31,11 +32,23 @@ function urlSurUneLigne(url) {
 }
 
 /**
+ * Coupe une longue ligne vCard en lignes de 75 caractères (suite précédée d'un espace).
+ * @param {string} ligne - Ligne complète.
+ * @returns {string} Ligne repliée.
+ */
+function replier(ligne) {
+  const morceaux = [];
+  for (let i = 0; i < ligne.length; i += 74) morceaux.push(ligne.slice(i, i + 74));
+  return morceaux.join('\r\n ');
+}
+
+/**
  * Génère le texte vCard d'une personne.
  * @param {object} carte - Personne normalisée.
+ * @param {{photoJpeg?:string}} [options] - photoJpeg : photo de profil en JPEG (Base64), pour le fichier .vcf.
  * @returns {string} vCard (lignes séparées par CRLF).
  */
-export function genererVCard(carte) {
+export function genererVCard(carte, options = {}) {
   const e = echapperVCard;
   const lignes = ['BEGIN:VCARD', 'VERSION:3.0'];
   lignes.push(`N:${e(carte.nom)};${e(carte.prenom)};;;`);
@@ -60,6 +73,7 @@ export function genererVCard(carte) {
     lignes.push(`item${i + 1}.X-ABLabel:${e(libelle)}`);
   });
   if (carte.note) lignes.push(`NOTE:${e(carte.note)}`);
+  if (options.photoJpeg && /^[A-Za-z0-9+/]+={0,2}$/.test(options.photoJpeg)) lignes.push(replier(`PHOTO;ENCODING=b;TYPE=JPEG:${options.photoJpeg}`));
   lignes.push('END:VCARD');
   return lignes.join('\r\n');
 }

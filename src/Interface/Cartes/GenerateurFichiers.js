@@ -11,6 +11,7 @@ import { svgVersTexte, svgVersImage } from '../../Utilitaires/ExportImages.js';
 import { creerPdfCarte, creerPdfPlanche, creerPdfImprimeur } from '../../Utilitaires/ExportPdf.js';
 import { dimensionsModele, enPixels, FOND_PERDU } from '../../Metier/Formats.js';
 import { creerZip } from '../../Utilitaires/Zip.js';
+import { convertirEnJpegBase64 } from '../../Utilitaires/Image.js';
 import { nomComplet } from '../../Metier/Personne.js';
 import { genererVCard } from '../../Metier/GenerateurVCard.js';
 import { genererQrPersonne } from '../../Metier/ContenuQr.js';
@@ -113,9 +114,10 @@ export async function fichierImprimeur(carte) {
   return creerPdfImprimeur(recto, verso, carte.dimensions);
 }
 
-/** @param {object} carte - Carte préparée. @returns {Blob} Fichier contact (.vcf). */
-export function fichierVcf(carte) {
-  return new Blob([genererVCard(carte.personne)], { type: 'text/vcard;charset=utf-8' });
+/** @param {object} carte - Carte préparée. @returns {Promise<Blob>} Fichier contact (.vcf), avec la photo de profil. */
+export async function fichierVcf(carte) {
+  const photoJpeg = carte.personne.photo ? await convertirEnJpegBase64(carte.personne.photo) : '';
+  return new Blob([genererVCard(carte.personne, { photoJpeg })], { type: 'text/vcard;charset=utf-8' });
 }
 
 /** @param {object} carte - Carte préparée. @returns {Promise<Blob>} Fichier .cardpro (carte complète pour le portefeuille). */
@@ -166,7 +168,7 @@ async function fichiersCarte(carte, dossier = '') {
     { nom: `${dossier}${carte.nom}.pdf`, donnees: await octets(await creerPdfCarte(rectoOctets, versoOctets, carte.dimensions)) },
     { nom: `${dossier}${carte.nom}-planche-a4.pdf`, donnees: await octets(await creerPdfPlanche(rectoOctets, versoOctets, carte.dimensions)) },
     { nom: `${dossier}${carte.nom}-imprimeur.pdf`, donnees: await octets(await fichierImprimeur(carte)) },
-    { nom: `${dossier}${carte.nom}.vcf`, donnees: await octets(fichierVcf(carte)) },
+    { nom: `${dossier}${carte.nom}.vcf`, donnees: await octets(await fichierVcf(carte)) },
     { nom: `${dossier}${carte.nom}.cardpro`, donnees: await octets(await fichierCardpro(carte)) },
     { nom: `${dossier}${carte.nom}-portefeuille.gif`, donnees: await octets(await fichierGifPortefeuille(carte)) },
   ];

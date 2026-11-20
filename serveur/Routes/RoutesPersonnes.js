@@ -12,7 +12,8 @@ import { lireCorpsJson } from '../Http/Requete.js';
 import { envoyerJson } from '../Http/Reponse.js';
 import { transaction } from '../Donnees/BaseDeDonnees.js';
 
-const LIMITE_CORPS = 32 * 1024;
+// Une personne peut contenir une photo de profil (≈ 90 Ko maximum).
+const LIMITE_CORPS = 160 * 1024;
 const LIMITE_IMPORT = 2 * 1024 * 1024;
 const IMPORT_MAX = 500;
 export const PERSONNES_MAX = 5000;

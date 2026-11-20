@@ -43,7 +43,7 @@ export function couleurAccent(modele) {
  */
 export function logoCarte(modele) {
   const images = elementsVisibles(modele).filter((e) => e.type === 'image' && e.image);
-  return (images.find((e) => e.logoEntreprise) || images[0])?.image || '';
+  return (images.find((e) => e.origine === 'logo') || images[0])?.image || '';
 }
 
 /**

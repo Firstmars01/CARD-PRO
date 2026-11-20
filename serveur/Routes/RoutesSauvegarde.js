@@ -20,8 +20,8 @@ import { PERSONNES_MAX } from './RoutesPersonnes.js';
 
 export const FORMAT_SAUVEGARDE = 'cardpro-sauvegarde';
 const VERSION_SAUVEGARDE = 2;
-// 200 modèles avec images + 5 000 personnes.
-const LIMITE_CORPS = 64 * 1024 * 1024;
+// 200 modèles avec images + 5 000 personnes (avec photos de profil).
+const LIMITE_CORPS = 256 * 1024 * 1024;
 
 /** GET /api/sauvegarde : toutes les données. @param {object} ctx - Contexte. */
 function exporter(ctx) {

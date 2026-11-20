@@ -6,10 +6,13 @@
  */
 
 import {
-  nettoyerTexte, nettoyerTexteMultiligne, normaliserEmail, normaliserTelephone, normaliserUrl,
+  nettoyerTexte, nettoyerTexteMultiligne, normaliserEmail, normaliserTelephone, normaliserUrl, normaliserImageDataUrl,
 } from '../Utilitaires/Validation.js';
 
 export const LIENS_MAX = 8;
+// Photo de profil : petite image carrée (≈ 240 px), pour que la carte reste légère
+// à transmettre au portefeuille mobile.
+export const PHOTO_MAX = 90000;
 
 // Champs saisissables, dans l'ordre du formulaire et de l'import CSV.
 export const CHAMPS_PERSONNE = [
@@ -66,7 +69,7 @@ function reprendreAnciensChamps(source) {
  * @returns {object} Personne avec tous les champs vides.
  */
 export function personneVide() {
-  const personne = { liens: [] };
+  const personne = { liens: [], photo: '' };
   CHAMPS_PERSONNE.forEach(({ cle }) => { personne[cle] = ''; });
   return personne;
 }
@@ -109,6 +112,7 @@ export function normaliserPersonne(brut) {
   const personne = personneVide();
   CHAMPS_PERSONNE.forEach((champ) => { personne[champ.cle] = normaliserChamp(champ, source[champ.cle]); });
   personne.liens = (Array.isArray(source.liens) ? source.liens : []).map(normaliserLien).filter(Boolean).slice(0, LIENS_MAX);
+  personne.photo = source.photo ? normaliserImageDataUrl(source.photo, PHOTO_MAX) || '' : '';
   return personne;
 }
 

@@ -11,7 +11,7 @@ import { lireSauvegarde, restaurerSauvegarde } from '../../Donnees/DepotSauvegar
 import { creerSection } from '../Champs.js';
 import { notifier } from '../Notifications.js';
 
-const POIDS_MAX = 64 * 1024 * 1024;
+const POIDS_MAX = 256 * 1024 * 1024;
 
 /**
  * Télécharge la sauvegarde complète.

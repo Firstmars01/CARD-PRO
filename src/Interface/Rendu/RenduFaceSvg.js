@@ -182,7 +182,9 @@ function dessinerElementQr(groupe, el, ctx) {
  * @param {object} ctx - Contexte de rendu.
  */
 function dessinerImage(groupe, el, ctx) {
-  if (!el.image) {
+  // Photo de la personne à la place de l'image choisie, si elle en a une.
+  const image = el.origine === 'photo' && ctx.personne.photo ? ctx.personne.photo : el.image;
+  if (!image) {
     if (ctx.edition) creerSvg('rect', { ...rect(el), fill: '#e5e7eb', stroke: '#9ca3af', 'stroke-dasharray': '6 5' }, groupe);
     return;
   }
@@ -200,7 +202,7 @@ function dessinerImage(groupe, el, ctx) {
     creerSvg(forme.balise, forme.attributs, creerSvg('clipPath', { id: clip }, ctx.defs));
   }
   creerSvg('image', {
-    ...rect(el), href: el.image, 'clip-path': clip ? `url(#${clip})` : undefined,
+    ...rect(el), href: image, 'clip-path': clip ? `url(#${clip})` : undefined,
     preserveAspectRatio: el.ajustement === 'cover' || el.cadrage === 'cercle' ? 'xMidYMid slice' : 'xMidYMid meet',
   }, groupe);
   if (el.bordure > 0) creerSvg(forme.balise, { ...forme.attributs, fill: 'none', stroke: el.bordureCouleur, 'stroke-width': el.bordure }, groupe);

@@ -16,7 +16,7 @@ Application Windows (**CardPro-Configurateur.exe**, sans installation) pour cré
 - Informations : identité, téléphones (mobile, support), WhatsApp, e-mail, site, LinkedIn, LinkedIn de l'entreprise, lien de prise de rendez-vous, adresse, note et jusqu'à 8 liens.
 - **Entreprises** : nom, support (téléphone), site, LinkedIn, adresse et **logo** saisis une seule fois. Chaque carte est reliée à une entreprise **ou** en « réglage personnalisé » :
   - carte reliée : elle prend toutes les infos de l'entreprise (champs grisés, non modifiables) ; modifier l'entreprise met à jour toutes ses cartes ;
-  - le logo de l'entreprise remplace les images du modèle cochées « Remplacer par le logo de l'entreprise » (cochée par défaut) ;
+  - le logo de l'entreprise remplace les images du modèle réglées sur « Image affichée : Logo de l'entreprise » (réglage par défaut d'une nouvelle image) ;
   - repasser une carte en réglage personnalisé recopie les infos de l'entreprise dans la carte, où elles deviennent modifiables ;
   - une entreprise encore reliée à des cartes ne peut pas être supprimée.
 - Choix du modèle pour chaque carte, et **changement de design en lot** (toutes les cartes du design A passent au design B).
@@ -25,7 +25,8 @@ Application Windows (**CardPro-Configurateur.exe**, sans installation) pour cré
 - QR codes possibles : contact (vCard), site web, LinkedIn, LinkedIn de l'entreprise, **WhatsApp** (ouvre la discussion), **prise de rendez-vous**, **itinéraire** vers l'adresse (Google Maps / Plans), ou un lien de la personne.
 - **Import d'une liste** (CSV exporté d'Excel) avec un fichier modèle à télécharger.
 - **Import d'une carte** (`.cardpro` ou GIF de portefeuille) : la personne est ajoutée avec, au choix, un **nouveau modèle** créé à partir du design de la carte ou un **modèle existant** ; si elle est déjà dans la liste (même prénom, nom et e-mail), Card Pro demande s'il faut **mettre à jour** sa fiche ou en **créer une nouvelle**.
-- **Signature Outlook** : aux couleurs de la carte (couleur d'accent modifiable, logo de la carte ou de l'entreprise), avec nom, poste, entreprise, téléphones, e-mail, site, LinkedIn, WhatsApp, prise de rendez-vous et adresse. Bouton **Copier la signature**, puis collage dans Outlook (guide affiché pour le nouvel Outlook, Outlook sur le web et Outlook classique). Police Arial pour un rendu identique chez tous les destinataires.
+- **Photo de profil** (fiche de la personne → « Photo de profil ») : recadrée en carré et allégée. Sur la carte, une image du modèle réglée sur « Image affichée : Photo de la personne » l'affiche (cadrage « Rond » conseillé) ; elle est aussi dans la signature et dans le fichier `.vcf`, mais pas dans le QR ni le NFC (trop lourde).
+- **Signature Outlook** : aux couleurs de la carte (couleur d'accent modifiable), avec à gauche la **photo de profil** (ronde), le logo ou rien, et des **icônes** devant chaque info (sauf nom et poste) : entreprise, mobile, support, e-mail, site, LinkedIn, WhatsApp, prise de rendez-vous et adresse. Bouton **Copier la signature**, puis collage dans Outlook (guide affiché pour le nouvel Outlook, Outlook sur le web et Outlook classique). Police Arial pour un rendu identique chez tous les destinataires.
 - **Fond Teams / Zoom** : image PNG 1920 × 1080 aux couleurs du recto, avec logo, nom, poste, entreprise et QR « contact » à gauche ; le centre reste libre pour la personne filmée (Teams affiche ton propre fond en miroir, mais les autres le voient à l'endroit).
 - **Téléchargements** : recto/verso en PNG, JPG et SVG (300 dpi), PDF recto + verso au format de la carte, planche A4 recto-verso, **PDF imprimeur** (fonds perdus 3 mm + traits de coupe), contact `.vcf`, ZIP de la carte, et **ZIP de toutes les cartes** (un dossier par personne).
 
@@ -324,7 +325,7 @@ Android exige que chaque version soit signée avec **la même clé**. Garde-la p
 
 - **Usage local** : pas de comptes. Le serveur n'écoute que sur **127.0.0.1** : il est inaccessible depuis le réseau.
 - **DNS rebinding** : le nom d'hôte de chaque requête doit être `localhost` / `127.0.0.1` / `[::1]` avec le bon port ; un site malveillant qui ferait pointer son propre nom vers ce PC est refusé (code 421).
-- **Sauvegarde** : la restauration revalide chaque modèle, chaque entreprise et chaque personne (mêmes règles que le reste), dans une seule transaction (tout ou rien), après confirmation ; taille limitée à 64 Mo.
+- **Sauvegarde** : la restauration revalide chaque modèle, chaque entreprise et chaque personne (mêmes règles que le reste), dans une seule transaction (tout ou rien), après confirmation ; taille limitée à 256 Mo.
 - **Anti-CSRF** : toute requête qui modifie des données doit venir de l'application elle-même (contrôle de l'en-tête `Origin`). Un site malveillant ouvert dans le navigateur ne peut donc rien modifier.
 - **Injection SQL** : uniquement des **requêtes préparées**.
 - **Validation** : toutes les données (formulaire, import CSV, modèles JSON, API) sont **revalidées par le serveur** avec le même code que le navigateur, à partir de schémas :

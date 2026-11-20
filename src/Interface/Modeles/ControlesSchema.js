@@ -131,9 +131,10 @@ function creerControle(reglage, surChangement, avantModification, palette) {
  * @param {string} id - Identifiant du champ.
  * @param {Function} surChangement - Appelée avec la nouvelle image.
  * @param {Function} avantModification - Appelée avant la modification.
+ * @param {Function} [charger=chargerImage] - Vérifie et prépare le fichier choisi (renvoie une data URL).
  * @returns {{bloc:HTMLElement, afficher:Function}} Contrôle.
  */
-export function creerControleImage(reglage, id, surChangement, avantModification) {
+export function creerControleImage(reglage, id, surChangement, avantModification, charger = chargerImage) {
   const entree = creerElement('input', { attributs: { id, type: 'file', accept: 'image/png,image/jpeg,image/webp' } });
   const miniature = creerElement('img', { classe: 'Miniature', attributs: { alt: '' } });
   const retirer = creerElement('button', {
@@ -145,7 +146,7 @@ export function creerControleImage(reglage, id, surChangement, avantModification
     entree.value = '';
     if (!fichier) return;
     try {
-      const image = await chargerImage(fichier);
+      const image = await charger(fichier);
       avantModification();
       surChangement(image);
     } catch (erreur) {
