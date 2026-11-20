@@ -496,3 +496,21 @@
     padding-bottom: 8px;
   }
 }
+
+/* Nom d'un calque : icônes verrou / groupe devant le libellé. */
+.Calque-nom {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.Calque-nom span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.Calque-nom .Icone {
+  width: 14px;
+  height: 14px;
+  color: var(--texte-doux);
+}

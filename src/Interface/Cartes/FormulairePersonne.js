@@ -16,6 +16,7 @@ import {
 import { personneSelectionnee, selectionnerPersonne, abonnerSelection } from './SelectionCarte.js';
 import { creerChamp, afficherErreur, creerSection } from '../Champs.js';
 import { creerControleImage } from '../Modeles/ControlesSchema.js';
+import { icone } from '../Icones.js';
 import { chargerPhotoProfil } from '../../Utilitaires/Image.js';
 import { notifier } from '../Notifications.js';
 
@@ -253,9 +254,9 @@ function creerSectionLiens(conteneur, liensInitiaux) {
     const erreur = creerElement('p', { classe: 'Champ-erreur', attributs: { hidden: true } });
     champUrl.addEventListener('input', () => verifierChamp({ type: 'url' }, champUrl, erreur));
     const ligne = creerElement('div', { classe: 'Lien' }, [champLibelle, champUrl, creerElement('button', {
-      classe: 'Bouton Bouton--icone', texte: '✕', attributs: { type: 'button', 'aria-label': 'Supprimer ce lien' },
+      classe: 'Bouton Bouton--icone', attributs: { type: 'button', 'aria-label': 'Supprimer ce lien' },
       surClic: () => { ligne.remove(); rafraichir(); apresSuppression(); },
-    }), erreur]);
+    }, [icone('fermer')]), erreur]);
     liste.append(ligne);
     rafraichir();
     if (focus) (libelle ? champUrl : champLibelle).focus();

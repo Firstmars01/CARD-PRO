@@ -30,7 +30,7 @@ export function monterSectionControle(conteneur) {
     vider(resultat);
     const aVerifier = controlerToutesLesCartes();
     if (!aVerifier.length) {
-      resultat.append(creerElement('p', { classe: 'Aide', texte: `✓ ${obtenirEtat().personnes.length} carte(s) contrôlée(s) : rien à signaler.` }));
+      resultat.append(creerElement('p', { classe: 'Aide', texte: `${obtenirEtat().personnes.length} carte(s) contrôlée(s) : rien à signaler.` }));
       return;
     }
     resultat.append(

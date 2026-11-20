@@ -5,6 +5,8 @@
  * force un thème, mémorisé sur cet appareil (localStorage).
  */
 
+import { icone } from './Icones.js';
+
 const CLE_STOCKAGE = 'cardpro-theme';
 const THEMES = ['clair', 'sombre'];
 const requeteSombre = typeof matchMedia === 'function' ? matchMedia('(prefers-color-scheme: dark)') : null;
@@ -73,7 +75,7 @@ export function creerBoutonTheme() {
   bouton.className = 'BoutonTheme';
   const actualiser = () => {
     const sombre = themeActuel() === 'sombre';
-    bouton.textContent = sombre ? '☀' : '☾';
+    bouton.replaceChildren(icone(sombre ? 'soleil' : 'lune'));
     bouton.setAttribute('aria-label', sombre ? 'Passer au thème clair' : 'Passer au thème sombre');
     bouton.title = bouton.getAttribute('aria-label');
   };

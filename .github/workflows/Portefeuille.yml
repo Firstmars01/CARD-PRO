@@ -64,7 +64,7 @@ jobs:
           cp -r portefeuille contact configurateur _site/
           cp -r assets/icons assets/styles assets/polices _site/assets/
           cp -r src/Metier src/Utilitaires _site/src/
-          cp -r src/Interface/Rendu src/Interface/Themes.js src/Interface/Notifications.js _site/src/Interface/
+          cp -r src/Interface/Rendu src/Interface/Themes.js src/Interface/Notifications.js src/Interface/Icones.js _site/src/Interface/
           # Lecteur de QR code pour iPhone : jsQR 1.4.0 (licence Apache 2.0), version figée.
           npm pack jsqr@1.4.0 --silent
           tar -xzf jsqr-1.4.0.tgz

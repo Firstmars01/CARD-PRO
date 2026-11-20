@@ -2,12 +2,12 @@
  * TriCartes.js
  * Ordre d'affichage des cartes du portefeuille : « ma carte » d'abord, puis
  * les favoris, puis les autres, chaque groupe trié selon le choix (plus
- * récentes, A → Z, ou par entreprise).
+ * récentes, de A à Z, ou par entreprise).
  */
 
 import { nomComplet } from '../../../src/Metier/Personne.js';
 
-export const ORDRES = [['recentes', 'Plus récentes'], ['az', 'A → Z'], ['entreprise', 'Par entreprise']];
+export const ORDRES = [['recentes', 'Plus récentes'], ['az', 'De A à Z'], ['entreprise', 'Par entreprise']];
 export const ORDRE_PAR_DEFAUT = 'recentes';
 
 /**

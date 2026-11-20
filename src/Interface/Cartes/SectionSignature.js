@@ -26,7 +26,7 @@ import {
 const DELAI_ENREGISTREMENT = 600;
 
 const GUIDE = [
-  ['Nouvel Outlook / Outlook sur le web', '⚙ Paramètres → Comptes → Signatures → « + Nouvelle signature » → donne un nom → colle (Ctrl + V) → Enregistrer, puis choisis-la comme signature par défaut.'],
+  ['Nouvel Outlook / Outlook sur le web', 'Paramètres (roue dentée) → Comptes → Signatures → « + Nouvelle signature » → donne un nom → colle (Ctrl + V) → Enregistrer, puis choisis-la comme signature par défaut.'],
   ['Outlook classique (Windows)', 'Fichier → Options → Courrier → Signatures… → Nouveau → donne un nom → clique dans la zone du bas et colle (Ctrl + V) → OK.'],
   ['Si une image n’apparaît pas', 'Dans l’éditeur de signature, clique sur le bouton Image et choisis l’image téléchargée avec « Télécharger les images ».'],
 ];

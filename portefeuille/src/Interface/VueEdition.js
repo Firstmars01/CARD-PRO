@@ -14,6 +14,7 @@ import {
 } from '../../../src/Metier/Personne.js';
 import { trouverCarte, modifierCarte } from '../Metier/Portefeuille.js';
 import { revenirALaListe } from './Navigation.js';
+import { boutonIcone } from './BoutonIcone.js';
 
 // Infos modifiables sur le téléphone, dans l'ordre affiché.
 const CLES = ['prenom', 'nom', 'poste', 'telephoneMobile', 'telephoneSupport', 'whatsapp', 'email', 'siteWeb', 'linkedin', 'rendezVous'];
@@ -54,16 +55,15 @@ function creerChampMobile(champ, valeur) {
  */
 function creerLiens(liens) {
   const liste = creerElement('div', { classe: 'Edition-liens' });
-  const ajouter = creerElement('button', { classe: 'PBouton', texte: '+ Ajouter un lien', attributs: { type: 'button' } });
+  const ajouter = boutonIcone('ajouter', 'Ajouter un lien');
   const ligne = (libelle = '', url = '') => {
     if (liste.children.length >= LIENS_MAX) return;
     const nom = creerElement('input', { attributs: { type: 'text', maxlength: 30, placeholder: 'Ex. : Instagram', 'aria-label': 'Nom du lien' } });
     const adresse = creerElement('input', { attributs: { type: 'url', maxlength: 300, placeholder: 'https://…', 'aria-label': 'Adresse du lien', inputmode: 'url' } });
     nom.value = libelle;
     adresse.value = url;
-    const element = creerElement('div', { classe: 'Edition-lien' }, [nom, adresse, creerElement('button', {
-      classe: 'PBouton', texte: '✕', attributs: { type: 'button', 'aria-label': 'Supprimer ce lien' },
-      surClic: () => { element.remove(); ajouter.disabled = false; },
+    const element = creerElement('div', { classe: 'Edition-lien' }, [nom, adresse, boutonIcone('fermer', '', {
+      aideLecture: 'Supprimer ce lien', surClic: () => { element.remove(); ajouter.disabled = false; },
     })]);
     liste.append(element);
     ajouter.disabled = liste.children.length >= LIENS_MAX;
@@ -88,7 +88,7 @@ function creerPhoto(photo) {
   let actuelle = photo;
   const apercu = creerElement('img', { classe: 'Edition-photo', attributs: { alt: 'Photo de profil' } });
   const entree = creerElement('input', { attributs: { type: 'file', accept: 'image/png,image/jpeg,image/webp', hidden: true } });
-  const retirer = creerElement('button', { classe: 'PBouton', texte: 'Retirer', attributs: { type: 'button' } });
+  const retirer = boutonIcone('supprimer', 'Retirer');
   const afficher = () => {
     apercu.hidden = !actuelle;
     retirer.hidden = !actuelle;
@@ -110,7 +110,7 @@ function creerPhoto(photo) {
   return {
     bloc: creerElement('fieldset', { classe: 'Edition-groupe' }, [
       creerElement('legend', { texte: 'Photo de profil' }), apercu, entree,
-      creerElement('div', { classe: 'Actions' }, [creerElement('button', { classe: 'PBouton', texte: 'Choisir une photo', attributs: { type: 'button' }, surClic: () => entree.click() }), retirer]),
+      creerElement('div', { classe: 'Actions' }, [boutonIcone('image', 'Choisir une photo', { surClic: () => entree.click() }), retirer]),
     ]),
     lire: () => actuelle,
   };
@@ -137,7 +137,7 @@ export function creerVueEdition() {
     const champs = CLES.map((cle) => CHAMPS_PERSONNE.find((c) => c.cle === cle)).map((champ) => ({ champ, ...creerChampMobile(champ, carte.personne[champ.cle]) }));
     const liens = creerLiens(carte.personne.liens);
     const photo = creerPhoto(carte.personne.photo);
-    const enregistrer = creerElement('button', { classe: 'PBouton PBouton--principal', texte: 'Enregistrer', attributs: { type: 'button' } });
+    const enregistrer = boutonIcone('coche', 'Enregistrer', { classe: 'PBouton PBouton--principal' });
     enregistrer.addEventListener('click', async () => {
       if (!champs.every((c) => c.valide())) {
         notifier('Corrige les champs en rouge.', 'erreur');
@@ -152,7 +152,7 @@ export function creerVueEdition() {
         notifier(erreur.message, 'erreur');
       }
     });
-    const annuler = creerElement('button', { classe: 'PBouton', texte: 'Annuler', attributs: { type: 'button' }, surClic: () => history.back() });
+    const annuler = boutonIcone('retour', 'Annuler', { surClic: () => history.back() });
     element.append(
       creerElement('h2', { classe: 'Titre-ecran', texte: 'Modifier ma carte' }),
       creerElement('p', { classe: 'Astuce', texte: 'Le design ne change pas. Les modifications restent sur ce téléphone (elles ne remontent pas au Configurateur).' }),

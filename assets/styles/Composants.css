@@ -556,3 +556,12 @@ textarea::placeholder {
   display: grid;
   gap: 8px;
 }
+
+/* Volet de droite (onglet Cartes) : même écart entre toutes les sections. */
+.Cartes-droite > * + * {
+  margin-top: 10px;
+}
+
+.Cartes-droite > :empty {
+  display: none;
+}

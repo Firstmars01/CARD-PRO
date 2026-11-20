@@ -85,7 +85,7 @@ export function monterListeModeles(conteneur) {
     const deBase = estModeleDeBase(modele);
     boutonSupprimer.disabled = deBase || !obtenirEtat().modeles.some((m) => m.id === modele.id);
     if (deBase) etatEnregistrement.textContent = modifie ? '● Modèle de base modifié : « Enregistrer » crée ta copie' : 'Modèle de base (lecture seule)';
-    else etatEnregistrement.textContent = modifie ? '● Modifications non enregistrées' : '✓ Enregistré';
+    else etatEnregistrement.textContent = modifie ? 'Modifications non enregistrées' : 'Enregistré';
     etatEnregistrement.classList.toggle('Etat-enregistrement--modifie', modifie);
   };
   abonnerEdition((type) => { if (type !== 'selection' && type !== 'cote') actualiser(); });

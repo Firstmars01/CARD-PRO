@@ -2,11 +2,13 @@
  * ListeCalques.js
  * Liste des éléments de la face (du premier plan à l'arrière-plan) :
  * sélection (Ctrl + clic pour en choisir plusieurs), ordre, visibilité,
- * verrouillage et suppression. 🔒 = verrouillé, ▣ = fait partie d'un groupe.
+ * verrouillage et suppression. Icône cadenas = verrouillé, icône groupe =
+ * fait partie d'un groupe.
  */
 
 import { creerElement, vider } from '../../Utilitaires/Dom.js';
 import { decrireElement } from '../../Metier/Elements.js';
+import { icone } from '../Icones.js';
 import {
   obtenirEdition, abonnerEdition, elementsFace, selectionner, modifierElement, memoriser, deplacerCalque, supprimerElements,
 } from './EtatEdition.js';
@@ -24,24 +26,27 @@ export function monterListeCalques(conteneur) {
       conteneur.append(creerElement('p', { classe: 'Aide', texte: 'Aucun élément : ajoute-en avec la barre d\'outils.' }));
       return;
     }
-    const bouton = (texte, titre, action) => creerElement('button', {
-      classe: 'Bouton Bouton--icone Bouton--petit', texte, attributs: { type: 'button', title: titre, 'aria-label': titre },
+    const bouton = (nomIcone, titre, action) => creerElement('button', {
+      classe: 'Bouton Bouton--icone Bouton--petit', attributs: { type: 'button', title: titre, 'aria-label': titre },
       surClic: (e) => { e.stopPropagation(); action(); },
-    });
+    }, [icone(nomIcone)]);
     conteneur.append(creerElement('ul', { classe: 'Calques' }, elements.map((element) => creerElement('li', {
       classe: `Calque${selectionIds.includes(element.id) ? ' Calque--actif' : ''}${element.visible ? '' : ' Calque--masque'}`,
     }, [
       creerElement('button', {
         classe: 'Calque-nom',
-        texte: `${element.verrouille ? '🔒 ' : ''}${element.groupe ? '▣ ' : ''}${decrireElement(element)}`,
         attributs: { type: 'button', title: 'Clic : sélectionner · Ctrl + clic : ajouter à la sélection' },
         surClic: (e) => selectionner(element.id, e.ctrlKey || e.metaKey || e.shiftKey),
-      }),
-      bouton('↑', 'Passer devant', () => deplacerCalque(element.id, 1)),
-      bouton('↓', 'Passer derrière', () => deplacerCalque(element.id, -1)),
-      bouton(element.visible ? '◉' : '○', element.visible ? 'Masquer' : 'Afficher', () => { memoriser(); modifierElement(element.id, { visible: !element.visible }); }),
-      bouton(element.verrouille ? '🔒' : '🔓', element.verrouille ? 'Déverrouiller' : 'Verrouiller', () => { memoriser(); modifierElement(element.id, { verrouille: !element.verrouille }); }),
-      bouton('✕', 'Supprimer', () => supprimerElements([element.id])),
+      }, [
+        element.verrouille ? icone('cadenas') : null,
+        element.groupe ? icone('grouper') : null,
+        creerElement('span', { texte: decrireElement(element) }),
+      ]),
+      bouton('monter', 'Passer devant', () => deplacerCalque(element.id, 1)),
+      bouton('descendre', 'Passer derrière', () => deplacerCalque(element.id, -1)),
+      bouton(element.visible ? 'oeil' : 'oeilBarre', element.visible ? 'Masquer' : 'Afficher', () => { memoriser(); modifierElement(element.id, { visible: !element.visible }); }),
+      bouton(element.verrouille ? 'cadenas' : 'cadenasOuvert', element.verrouille ? 'Déverrouiller' : 'Verrouiller', () => { memoriser(); modifierElement(element.id, { verrouille: !element.verrouille }); }),
+      bouton('fermer', 'Supprimer', () => supprimerElements([element.id])),
     ]))));
   };
   abonnerEdition((type) => { if (type !== 'options') afficher(); });

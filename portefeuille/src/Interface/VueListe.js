@@ -11,6 +11,8 @@ import { notifier } from '../../../src/Interface/Notifications.js';
 import { obtenirCartes, abonnerCartes, importerFichier, titreCarte } from '../Metier/Portefeuille.js';
 import { dessinerFace } from './RenduCarte.js';
 import { allerA } from './Navigation.js';
+import { boutonIcone } from './BoutonIcone.js';
+import { icone } from '../../../src/Interface/Icones.js';
 import { trierCartes, ORDRES, ORDRE_PAR_DEFAUT } from '../Metier/TriCartes.js';
 import { estSauvegarde, sauvegarderPortefeuille, restaurerPortefeuille } from './SauvegardeTelephone.js';
 
@@ -57,12 +59,13 @@ export async function importerFichiers(fichiers) {
  */
 function creerVignette(carte) {
   const { personne } = carte;
-  let marque = '';
-  if (carte.maCarte) marque = 'Ma carte · ';
-  else if (carte.favori) marque = '★ ';
+  // Marque de la vignette : icône « personne » pour ma carte, étoile pour un favori.
+  let marque = null;
+  if (carte.maCarte) marque = icone('personne');
+  else if (carte.favori) marque = icone('etoile', true);
   const vignette = creerElement('button', { classe: 'Vignette', attributs: { type: 'button' } }, [
     dessinerFace(carte, 'recto'),
-    creerElement('span', { classe: 'Vignette-nom', texte: `${marque}${titreCarte(carte)}` }),
+    creerElement('span', { classe: 'Vignette-nom' }, [marque, creerElement('span', { texte: titreCarte(carte) })]),
     creerElement('span', { classe: 'Vignette-detail', texte: [personne.poste, personne.entreprise].filter(Boolean).join(' · ') }),
   ]);
   vignette.addEventListener('click', () => allerA('carte', carte.id));
@@ -82,12 +85,12 @@ export function creerVueListe() {
     entree.value = '';
     await importerFichiers(fichiers);
   });
-  const importer = creerElement('button', { classe: 'PBouton', texte: 'Importer un fichier', attributs: { type: 'button' } });
+  const importer = boutonIcone('importer', 'Importer un fichier');
   importer.addEventListener('click', () => entree.click());
-  const scanner = creerElement('button', { classe: 'PBouton PBouton--principal', texte: 'Scanner un QR', attributs: { type: 'button' } });
+  const scanner = boutonIcone('scanner', 'Scanner un QR', { classe: 'PBouton PBouton--principal' });
   scanner.addEventListener('click', () => allerA('scanner'));
 
-  const sauvegarder = creerElement('button', { classe: 'PBouton', texte: 'Sauvegarder mes cartes', attributs: { type: 'button' } });
+  const sauvegarder = boutonIcone('sauvegarder', 'Sauvegarder mes cartes');
   sauvegarder.addEventListener('click', () => sauvegarderPortefeuille().catch((e) => notifier(e.message || 'Sauvegarde impossible.', 'erreur')));
   const ordre = creerElement('select', { classe: 'Tri', attributs: { 'aria-label': 'Trier les cartes' } },
     ORDRES.map(([cle, libelle]) => creerElement('option', { texte: libelle, attributs: { value: cle } })));

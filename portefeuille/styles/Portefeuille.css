@@ -636,3 +636,28 @@ a.PBouton {
   border-radius: 50%;
   object-fit: cover;
 }
+
+/* Boutons avec icône (icônes du Configurateur, jamais d'emoji) */
+.PBouton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.PBouton .Icone,
+.Vignette-nom .Icone {
+  flex: none;
+}
+
+.Vignette-nom {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.Vignette-nom .Icone {
+  width: 16px;
+  height: 16px;
+  color: var(--accent);
+}

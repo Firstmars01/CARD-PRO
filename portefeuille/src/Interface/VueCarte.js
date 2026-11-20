@@ -14,6 +14,7 @@ import { revenirALaListe, allerA } from './Navigation.js';
 import { montrerContact, envoyerContact, ajouterAuxContacts } from './PartageContact.js';
 import { creerCoordonnees } from './Coordonnees.js';
 import { creerSectionNfc } from './PartageNfc.js';
+import { boutonIcone } from './BoutonIcone.js';
 
 /**
  * Crée l'écran « carte ».
@@ -79,8 +80,8 @@ export function creerVueCarte() {
     });
     nfc = creerSectionNfc(carte);
     // Favori et « ma carte » : interrupteurs, enregistrés tout de suite.
-    const basculer = (texte, cle) => {
-      const bouton = creerElement('button', { classe: 'PBouton', texte, attributs: { type: 'button', 'aria-pressed': String(carte[cle]) } });
+    const basculer = (nomIcone, texte, cle) => {
+      const bouton = boutonIcone(nomIcone, texte, { pleine: nomIcone === 'etoile' && carte[cle], attributs: { 'aria-pressed': String(carte[cle]) } });
       bouton.addEventListener('click', async () => {
         try {
           await modifierCarte(carte.id, { [cle]: !carte[cle] });
@@ -91,12 +92,10 @@ export function creerVueCarte() {
       });
       return bouton;
     };
-    const favori = basculer(carte.favori ? '★ Favori' : '☆ Ajouter aux favoris', 'favori');
-    const maCarte = basculer(carte.maCarte ? '✓ C\'est ma carte' : 'C\'est ma carte', 'maCarte');
-    const modifier = carte.maCarte && creerElement('button', {
-      classe: 'PBouton PBouton--principal', texte: 'Modifier ma carte', attributs: { type: 'button' }, surClic: () => allerA('edition', carte.id),
-    });
-    const retour = creerElement('button', { classe: 'PBouton', texte: '← Mes cartes', attributs: { type: 'button' } });
+    const favori = basculer('etoile', carte.favori ? 'Favori' : 'Ajouter aux favoris', 'favori');
+    const maCarte = basculer(carte.maCarte ? 'coche' : 'personne', 'C\'est ma carte', 'maCarte');
+    const modifier = carte.maCarte && boutonIcone('crayon', 'Modifier ma carte', { classe: 'PBouton PBouton--principal', surClic: () => allerA('edition', carte.id) });
+    const retour = boutonIcone('retour', 'Mes cartes');
     retour.addEventListener('click', () => history.back());
 
     element.append(

@@ -1,6 +1,7 @@
 /**
  * Icones.js
- * Petites icônes vectorielles (tracés SVG) utilisées dans les boutons.
+ * Petites icônes vectorielles (tracés SVG) utilisées dans les boutons du
+ * Configurateur et du portefeuille (pas d'emoji : rendu identique partout).
  * Elles prennent la couleur du texte du bouton (currentColor).
  */
 
@@ -36,16 +37,35 @@ const TRACES = {
   grouper: 'M3 3h8v8H3z M13 13h8v8h-8z M11 7h6v6 M7 11v6h6',
   degrouper: 'M3 3h8v8H3z M13 13h8v8h-8z',
   cadenas: 'M6 11h12v10H6z M8 11V7a4 4 0 0 1 8 0v4',
+  etoile: 'M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z',
+  personne: 'M12 4a4 4 0 1 0 0 8a4 4 0 1 0 0-8 M4 21c1-4.5 4.5-7 8-7s7 2.5 8 7',
+  coche: 'M4 12l5 5L20 6',
+  crayon: 'M4 20h4L19 9l-4-4L4 16z M13 7l4 4',
+  retour: 'M10 6l-6 6 6 6 M4 12h16',
+  fermer: 'M6 6l12 12 M18 6L6 18',
+  sauvegarder: 'M12 3v12 M7 10l5 5 5-5 M4 17v3h16v-3',
+  importer: 'M12 15V3 M7 8l5-5 5 5 M4 17v3h16v-3',
+  ajouter: 'M12 5v14 M5 12h14',
+  scanner: 'M4 8V4h4 M16 4h4v4 M20 16v4h-4 M8 20H4v-4 M7 12h10',
+  monter: 'M12 19V5 M6 11l6-6 6 6',
+  descendre: 'M12 5v14 M6 13l6 6 6-6',
+  oeil: 'M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z M12 9a3 3 0 1 0 0 6a3 3 0 1 0 0-6',
+  oeilBarre: 'M2 12s3.5-7 10-7c2 0 3.7.7 5.1 1.6 M22 12s-3.5 7-10 7c-2 0-3.7-.7-5.1-1.6 M3 3l18 18',
+  cadenasOuvert: 'M6 11h12v10H6z M8 11V7a4 4 0 0 1 7.5-2',
+  soleil: 'M12 8a4 4 0 1 0 0 8a4 4 0 1 0 0-8 M12 2v2 M12 20v2 M2 12h2 M20 12h2 M4.9 4.9l1.4 1.4 M17.7 17.7l1.4 1.4 M4.9 19.1l1.4-1.4 M17.7 6.3l1.4-1.4',
+  lune: 'M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z',
+  rond: 'M12 6a6 6 0 1 0 0 12a6 6 0 1 0 0-12',
 };
 
 /**
  * Crée une icône.
  * @param {string} nom - Nom de l'icône (clé de TRACES).
+ * @param {boolean} [pleine=false] - Remplie (ex. étoile d'un favori).
  * @returns {SVGSVGElement} Icône de 18 px.
  */
-export function icone(nom) {
+export function icone(nom, pleine = false) {
   const svg = creerSvg('svg', {
-    viewBox: '0 0 24 24', width: 18, height: 18, fill: 'none', stroke: 'currentColor',
+    viewBox: '0 0 24 24', width: 18, height: 18, fill: pleine ? 'currentColor' : 'none', stroke: 'currentColor',
     'stroke-width': 1.8, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'aria-hidden': 'true', class: 'Icone',
   });
   creerSvg('path', { d: TRACES[nom] }, svg);
