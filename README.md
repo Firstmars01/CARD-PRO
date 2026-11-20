@@ -33,7 +33,14 @@ Application Windows (**CardPro-Configurateur.exe**, sans installation) pour cré
   - réseaux (LinkedIn, WhatsApp, rendez-vous, liens) en petites icônes cliquables ;
   - texte libre en bas (slogan, mention légale…).
 - **Fond Teams / Zoom** : image PNG 1920 × 1080 aux couleurs du recto, avec logo, nom, poste, entreprise et QR « contact » à gauche ; le centre reste libre pour la personne filmée (Teams affiche ton propre fond en miroir, mais les autres le voient à l'endroit).
-- **Téléchargements** : recto/verso en PNG, JPG et SVG (300 dpi), PDF recto + verso au format de la carte, planche A4 recto-verso, **PDF imprimeur** (fonds perdus 3 mm + traits de coupe), contact `.vcf`, ZIP de la carte, et **ZIP de toutes les cartes** (un dossier par personne).
+- **Téléchargements** : recto/verso en PNG, JPG et SVG (300 dpi), PDF recto + verso au format de la carte, planche A4 recto-verso, **PDF imprimeur** (fonds perdus 3 mm + traits de coupe), contact `.vcf`, fond Teams / Zoom.
+- **Kit complet (ZIP)** d'une personne, ou **kits de toutes les cartes** (un dossier par personne), rangé par usage :
+  - `Carte/` : recto et verso en PNG, JPG, SVG ;
+  - `Impression/` : PDF recto + verso, planche A4, PDF imprimeur ;
+  - `Contact/` : fiche `.vcf` (avec la photo de profil) ;
+  - `Signature Outlook/` : signature `.htm` + dossier d'images (format des signatures d'Outlook classique) + `LISEZMOI.txt` ;
+  - `Teams - Zoom/` : fond d'écran 1920 × 1080 ;
+  - `Portefeuille mobile/` : fichier `.cardpro` et GIF du QR animé.
 
 ### Onglet « Modèles »
 - L'onglet tient dans la fenêtre : la carte s'adapte à la place disponible et seul le volet de droite (propriétés, calques) défile.
@@ -324,7 +331,7 @@ Android exige que chaque version soit signée avec **la même clé**. Garde-la p
    - **Recto PNG** : pour l'envoyer par e-mail ;
    - **PDF recto + verso** : pour un imprimeur ;
    - **Planche A4** : pour imprimer toi-même. Imprime en recto-verso « bord long », puis découpe le long des traits.
-7. **Toutes les cartes (ZIP)** : tous les fichiers de toute l'équipe en une fois.
+7. **Kits de toutes les cartes (ZIP)** : le kit complet de toute l'équipe (cartes, impression, contact, signature, fond Teams, portefeuille) en une fois.
 8. Nouveau design pour tout le monde : « Changer le design de plusieurs cartes » → design actuel → nouveau design → **Appliquer**.
 
 ## Sécurité

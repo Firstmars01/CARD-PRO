@@ -3,7 +3,8 @@
  * Produit les fichiers d'une carte (recto et verso), au format de son
  * modèle : SVG, PNG et JPG en 300 dpi, PDF, planche A4, PDF imprimeur
  * (fonds perdus), vCard, fichiers du portefeuille mobile (.cardpro et GIF
- * du QR animé), et archives ZIP.
+ * du QR animé), et le kit complet en ZIP (avec signature Outlook et fond
+ * Teams / Zoom), pour une personne ou pour toutes.
  */
 
 import { nomFichierSur } from '../../Utilitaires/Validation.js';
@@ -21,6 +22,8 @@ import { creerPaquet, IDENTIFIANT_GIF } from '../../Metier/PaquetCarte.js';
 import { decouperPaquet, encoderTrames } from '../../Metier/TransfertQr.js';
 import { creerGifAnime } from '../../Utilitaires/EncodeurGif.js';
 import { qrEnPixels } from '../../Utilitaires/ImageQr.js';
+import { fichierFondVisio } from '../Rendu/RenduFondVisio.js';
+import { fichiersSignature } from './GenerateurSignature.js';
 
 const DELAI_GIF = 20; // 1/5 de seconde par QR code
 
@@ -38,6 +41,7 @@ export function preparerCarte(entree) {
   const perdu = { largeur: dimensions.largeur + 2 * FOND_PERDU, hauteur: dimensions.hauteur + 2 * FOND_PERDU };
   return {
     nom: nomFichierSur(nomComplet(personne), 'carte-de-visite'),
+    entree,
     personne,
     modele,
     dimensions,
@@ -151,26 +155,36 @@ export async function fichierGifPortefeuille(carte) {
 }
 
 /**
- * Liste tous les fichiers d'une carte, éventuellement dans un dossier.
+ * Kit complet d'une carte, rangé par usage :
+ *  - Carte : images recto / verso (PNG, JPG, SVG) ;
+ *  - Impression : PDF recto + verso, planche A4, PDF imprimeur ;
+ *  - Contact : fiche .vcf (avec la photo de profil) ;
+ *  - Signature Outlook : signature .htm + images + mode d'emploi ;
+ *  - Teams - Zoom : fond d'écran 1920 × 1080 ;
+ *  - Portefeuille mobile : fichier .cardpro et GIF du QR animé.
  * @param {object} carte - Carte préparée.
- * @param {string} [dossier=""] - Préfixe de dossier dans le ZIP.
+ * @param {string} [dossier=""] - Dossier de la personne dans le ZIP (avec « / » final).
  * @returns {Promise<{nom:string, donnees:Uint8Array}[]>} Fichiers.
  */
 async function fichiersCarte(carte, dossier = '') {
   const [rectoOctets, versoOctets] = await pngFaces(carte);
+  const n = carte.nom;
+  const d = (sousDossier) => `${dossier}${sousDossier}/`;
   return [
-    { nom: `${dossier}${carte.nom}-recto.png`, donnees: rectoOctets },
-    { nom: `${dossier}${carte.nom}-verso.png`, donnees: versoOctets },
-    { nom: `${dossier}${carte.nom}-recto.jpg`, donnees: await octets(await fichierJpg(carte, 'recto')) },
-    { nom: `${dossier}${carte.nom}-verso.jpg`, donnees: await octets(await fichierJpg(carte, 'verso')) },
-    { nom: `${dossier}${carte.nom}-recto.svg`, donnees: await octets(fichierSvg(carte, 'recto')) },
-    { nom: `${dossier}${carte.nom}-verso.svg`, donnees: await octets(fichierSvg(carte, 'verso')) },
-    { nom: `${dossier}${carte.nom}.pdf`, donnees: await octets(await creerPdfCarte(rectoOctets, versoOctets, carte.dimensions)) },
-    { nom: `${dossier}${carte.nom}-planche-a4.pdf`, donnees: await octets(await creerPdfPlanche(rectoOctets, versoOctets, carte.dimensions)) },
-    { nom: `${dossier}${carte.nom}-imprimeur.pdf`, donnees: await octets(await fichierImprimeur(carte)) },
-    { nom: `${dossier}${carte.nom}.vcf`, donnees: await octets(await fichierVcf(carte)) },
-    { nom: `${dossier}${carte.nom}.cardpro`, donnees: await octets(await fichierCardpro(carte)) },
-    { nom: `${dossier}${carte.nom}-portefeuille.gif`, donnees: await octets(await fichierGifPortefeuille(carte)) },
+    { nom: `${d('Carte')}${n}-recto.png`, donnees: rectoOctets },
+    { nom: `${d('Carte')}${n}-verso.png`, donnees: versoOctets },
+    { nom: `${d('Carte')}${n}-recto.jpg`, donnees: await octets(await fichierJpg(carte, 'recto')) },
+    { nom: `${d('Carte')}${n}-verso.jpg`, donnees: await octets(await fichierJpg(carte, 'verso')) },
+    { nom: `${d('Carte')}${n}-recto.svg`, donnees: await octets(fichierSvg(carte, 'recto')) },
+    { nom: `${d('Carte')}${n}-verso.svg`, donnees: await octets(fichierSvg(carte, 'verso')) },
+    { nom: `${d('Impression')}${n}.pdf`, donnees: await octets(await creerPdfCarte(rectoOctets, versoOctets, carte.dimensions)) },
+    { nom: `${d('Impression')}${n}-planche-a4.pdf`, donnees: await octets(await creerPdfPlanche(rectoOctets, versoOctets, carte.dimensions)) },
+    { nom: `${d('Impression')}${n}-imprimeur.pdf`, donnees: await octets(await fichierImprimeur(carte)) },
+    { nom: `${d('Contact')}${n}.vcf`, donnees: await octets(await fichierVcf(carte)) },
+    ...await fichiersSignature(carte, carte.entree, d('Signature Outlook')),
+    { nom: `${d('Teams - Zoom')}${n}-fond-visio.png`, donnees: await octets(await fichierFondVisio(carte)) },
+    { nom: `${d('Portefeuille mobile')}${n}.cardpro`, donnees: await octets(await fichierCardpro(carte)) },
+    { nom: `${d('Portefeuille mobile')}${n}-portefeuille.gif`, donnees: await octets(await fichierGifPortefeuille(carte)) },
   ];
 }
 

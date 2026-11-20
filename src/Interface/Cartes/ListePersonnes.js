@@ -21,7 +21,7 @@ import { notifier } from '../Notifications.js';
 export function monterListePersonnes(conteneur) {
   const liste = creerElement('ul', { classe: 'Personnes', attributs: { 'aria-label': 'Personnes' } });
   const compteur = creerElement('p', { classe: 'Aide' });
-  const boutonZip = creerElement('button', { classe: 'Bouton Bouton--secondaire', texte: 'Toutes les cartes (ZIP)', attributs: { type: 'button' } });
+  const boutonZip = creerElement('button', { classe: 'Bouton Bouton--secondaire', texte: 'Kits de toutes les cartes (ZIP)', attributs: { type: 'button' } });
   boutonZip.addEventListener('click', () => exporterTout(boutonZip));
 
   conteneur.append(
@@ -85,7 +85,7 @@ async function exporterTout(bouton) {
   const texte = bouton.textContent;
   try {
     const zip = await fichierZipTous(personnes, (fait, total) => { bouton.textContent = `Génération… ${fait}/${total}`; });
-    telechargerBlob(zip, 'cartes-de-visite.zip');
+    telechargerBlob(zip, 'cartes-de-visite-kits.zip');
     notifier(`${personnes.length} cartes exportées.`, 'succes');
   } catch (erreur) {
     notifier(erreur.message || 'Export impossible.', 'erreur');

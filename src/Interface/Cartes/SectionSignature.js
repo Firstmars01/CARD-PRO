@@ -9,26 +9,20 @@
 
 import { creerElement, vider } from '../../Utilitaires/Dom.js';
 import { telechargerBlob } from '../../Utilitaires/Telechargement.js';
-import { reduireImage, decouperEnRond } from '../../Utilitaires/Image.js';
 import { dataUrlVersOctets } from '../../Utilitaires/DataUrl.js';
-import { couleurAccent, couleurNomCarte, logoCarte } from '../../Metier/IdentiteVisuelle.js';
-import {
-  SCHEMA_SIGNATURE, normaliserReglagesSignature, policeSignature, tailleSignature,
-} from '../../Metier/ReglagesSignature.js';
+import { SCHEMA_SIGNATURE, normaliserReglagesSignature } from '../../Metier/ReglagesSignature.js';
 import {
   abonner, trouverPersonne, trouverEntreprise, modifierPersonne, enregistrerEntreprise, obtenirEtat,
 } from '../../Metier/EtatApplication.js';
 import { creerSection } from '../Champs.js';
 import { notifier } from '../Notifications.js';
 import { creerFormulaireSchema } from '../Modeles/ControlesSchema.js';
-import { iconesPng } from '../Rendu/IconesPng.js';
 import { personneSelectionnee, abonnerSelection } from './SelectionCarte.js';
 import { preparerCarte } from './GenerateurFichiers.js';
-import { creerSignature, ICONES_SIGNATURE } from './Signature.js';
+import {
+  reglagesDe, preparerImages, imagesSignature, signatureCarte,
+} from './GenerateurSignature.js';
 
-// Images en double résolution (écrans haute densité) ; icônes en 28 px.
-const HAUTEUR_IMAGE_MAX = 280;
-const TAILLE_ICONE = 28;
 const DELAI_ENREGISTREMENT = 600;
 
 const GUIDE = [
@@ -63,42 +57,6 @@ async function copierSignature(signature) {
 }
 
 /**
- * Prépare les images possibles à gauche de la signature.
- * @param {{personne:object, modele:object}} carte - Carte préparée.
- * @param {object|null} entreprise - Entreprise reliée (son logo passe en premier).
- * @returns {Promise<{photo:string, logo:string}>} Photo ronde et logo réduits ('' si absents).
- */
-async function preparerImages(carte, entreprise) {
-  const logo = entreprise?.logo || logoCarte(carte.modele);
-  const [photo, logoReduit] = await Promise.all([
-    carte.personne.photo ? decouperEnRond(carte.personne.photo, HAUTEUR_IMAGE_MAX) : '',
-    logo ? reduireImage(logo, HAUTEUR_IMAGE_MAX) : '',
-  ]);
-  return { photo, logo: logoReduit };
-}
-
-/**
- * Images à gauche et à droite selon le réglage « Image ».
- * Automatique : photo à gauche et logo à droite, ou logo à gauche sans photo.
- * @param {string} choix - auto, logo, photo ou aucune.
- * @param {{photo:string, logo:string}} images - Images disponibles.
- * @returns {{image:string, imageDroite:string}} Data URL ('' : pas d'image).
- */
-function imagesSignature(choix, images) {
-  if (choix === 'auto') return images.photo ? { image: images.photo, imageDroite: images.logo } : { image: images.logo, imageDroite: '' };
-  return { image: choix === 'aucune' ? '' : images[choix] || '', imageDroite: '' };
-}
-
-/**
- * Réglages de signature de la carte : ceux de son entreprise, sinon les siens.
- * @param {object} entree - Carte.
- * @returns {object} Réglages.
- */
-function reglagesDe(entree) {
-  return trouverEntreprise(entree.entrepriseId)?.signature || entree.personne.signature;
-}
-
-/**
  * Monte la section « Signature e-mail ».
  * @param {HTMLElement} conteneur - Zone de la section (volet de droite).
  */
@@ -109,7 +67,6 @@ export function monterSectionSignature(conteneur) {
   let minuterie = null;
   let enregistrementEnCours = false;
   let tour = 0;
-  const cacheIcones = new Map(); // Couleur → icônes PNG (évite de les redessiner à chaque frappe).
 
   // Redessine l'aperçu avec les réglages en cours.
   const dessiner = async () => {
@@ -118,21 +75,9 @@ export function monterSectionSignature(conteneur) {
     const monTour = tour;
     const entree = trouverPersonne(etat.id);
     if (!entree) return;
-    const carte = preparerCarte(entree);
-    const r = etat.reglages;
-    const couleur = r.couleursCarte ? couleurAccent(carte.modele) : r.couleur;
-    if (!cacheIcones.has(couleur)) cacheIcones.set(couleur, await iconesPng([...new Set(Object.values(ICONES_SIGNATURE))], couleur, TAILLE_ICONE));
-    const icones = cacheIcones.get(couleur);
+    const signature = await signatureCarte(preparerCarte(entree), etat.reglages, etat.images);
     if (monTour !== tour || !etat) return;
-    etat.signature = creerSignature(carte.personne, {
-      ...r,
-      couleur,
-      couleurTexte: r.couleursCarte ? couleurNomCarte(carte.modele) : r.couleurTexte,
-      police: policeSignature(r.police),
-      tailles: tailleSignature(r.taille),
-      ...imagesSignature(r.image, etat.images),
-      icones: r.icones ? icones : Object.fromEntries(Object.entries(icones).filter(([cle]) => !['entreprise', 'mobile', 'telephone', 'email', 'web', 'adresse'].includes(cle))),
-    });
+    etat.signature = signature;
     vider(etat.apercu);
     etat.apercu.append(etat.signature);
   };

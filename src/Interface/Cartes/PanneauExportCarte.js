@@ -31,7 +31,7 @@ const EXPORTS = [
   ['Planche A4', '-planche-a4.pdf', fichierPlanche],
   ['PDF imprimeur (fonds perdus)', '-imprimeur.pdf', fichierImprimeur],
   ['Contact (.vcf)', '.vcf', fichierVcf],
-  ['Tout (ZIP)', '.zip', fichierZip],
+  ['Kit complet (ZIP)', '-kit.zip', fichierZip],
 ];
 
 // Boutons du portefeuille mobile (même format).
