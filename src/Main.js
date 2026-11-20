@@ -11,6 +11,7 @@ import { monterOngletCartes } from './Interface/Cartes/OngletCartes.js';
 import { monterEditeurModeles } from './Interface/Modeles/EditeurModeles.js';
 import { notifier } from './Interface/Notifications.js';
 import { initialiserTheme, creerBoutonTheme } from './Interface/Themes.js';
+import { chargerPolices } from './Utilitaires/ChargementPolices.js';
 
 /**
  * Supprime l'ancien service worker des versions précédentes de Card Pro
@@ -31,6 +32,8 @@ async function demarrer() {
   initialiserTheme();
   obtenirElement('barreOnglets').before(creerBoutonTheme());
   retirerAncienServiceWorker().catch(() => {});
+  // Polices de la carte : chargées avant tout affichage (rendu identique au mobile).
+  await chargerPolices().catch(() => notifier('Polices de la carte non chargées : le texte peut différer du mobile.', 'erreur'));
   await chargerDonnees(() => notifier('Sauvegarde impossible : vérifie que le serveur Card Pro tourne.', 'erreur'));
   monterOngletCartes(obtenirElement('ongletCartes'));
   monterEditeurModeles(obtenirElement('ongletModeles'));

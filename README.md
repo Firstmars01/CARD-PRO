@@ -41,7 +41,7 @@ Application Windows (**CardPro-RH.exe**, sans installation) pour créer les **ca
     - **icônes** : 20 pictogrammes génériques (téléphone, e-mail, web, adresse…) ;
   - réglages de chaque élément :
     - position et taille en mm, **rotation**, opacité, visibilité, **ombre portée** ;
-    - police (12 au choix), taille, graisse, italique, majuscules, souligné, barré, texte vertical, couleur unie ou **dégradée**, contour, étiquette de fond, alignement, espacement, interligne, préfixe (ex. « Tél. ») ;
+    - police (13 au choix, **intégrées à l'appli** : rendu identique sur PC, Android, iPhone et dans les exports), taille, graisse, italique, majuscules, souligné, barré, texte vertical, couleur unie ou **dégradée**, contour, étiquette de fond, alignement, espacement, interligne, préfixe (ex. « Tél. ») ;
     - QR code : couleurs, marge, arrondi, **points carrés / arrondis / ronds**, forme et couleur des coins, **logo au centre** (n'importe quelle image) ;
     - images : cadrage rectangle, arrondi ou rond, bordure, noir et blanc ;
     - formes : remplissage uni, dégradé linéaire ou radial, contour, arrondi global ou coin par coin ;
@@ -98,6 +98,7 @@ CARD PRO/
 ├── contact/                   # Page ouverte par un iPhone qui lit le NFC (fiche contact dans le lien)
 ├── assets/
 │   ├── icons/                 # Icônes
+│   ├── polices/               # Polices intégrées (WOFF, licence OFL) + LISEZMOI.md des licences
 │   ├── styles/                # Themes.css (clair / sombre, partagé), Base.css, Composants.css, Editeur.css
 │   └── vendor/                # pdf-lib + licence
 ├── src/                       # Code du navigateur (en partie partagé avec le serveur)
@@ -184,6 +185,12 @@ npm test       # 40 tests
 - Le QR code principal contient toujours la **fiche contact** (vCard) : on le scanne et on ajoute le contact.
 - Avec un **logo**, le QR passe en correction d'erreur maximale (H). Il devient plus dense : agrandis-le, ou utilise un QR « lien » pour le logo.
 - Les coins **ronds ou arrondis** sont lus par les téléphones récents, mais pas par certains lecteurs anciens. L'aperçu affiche un avertissement : **teste toujours la lecture avec un téléphone avant d'imprimer**.
+
+## Polices et texte trop long
+
+- Les polices de la carte sont **livrées avec l'appli** (`assets/polices`), au lieu d'utiliser celles de l'appareil : une carte est identique sur PC, Android, iPhone et dans les exports (PNG, JPEG, PDF, SVG).
+- Les anciennes polices sont remplacées par l'équivalent libre le plus proche : « Moderne » → Inter, Arial → Liberation Sans, Times → Liberation Serif, Courier → Liberation Mono, Georgia → Gelasio (mêmes largeurs pour ces quatre dernières), Verdana → DM Sans, Trebuchet → Fira Sans, Impact → Anton, Garamond → Cardo, Palatino → Crimson Text, Condensée → Roboto condensée. Roboto et Open Sans sont aussi au choix. La police « Manuscrite » est retirée : les textes qui l'utilisaient passent en Inter.
+- Un texte trop long pour sa zone est **rétréci automatiquement** (jusqu'à la moitié de sa taille), sans changer son nombre de lignes. Il n'est coupé avec « … » que s'il ne tient toujours pas.
 
 ## Portefeuille mobile (Card Pro Portefeuille)
 
@@ -311,6 +318,7 @@ Android exige que chaque version soit signée avec **la même clé**. Garde-la p
   - 40 éléments maximum par face ;
   - taille des requêtes limitée.
 - **XSS** : aucun `innerHTML`. Le texte est inséré via `textContent`, et une **CSP stricte** (`script-src 'self'`) est appliquée par une balise et un en-tête HTTP.
+- **Polices** : chargées uniquement depuis les fichiers de l'appli (même origine, jamais depuis Internet) ; dans les exports, elles sont copiées dans le fichier en Base64.
 - **Images** : PNG, JPEG ou WebP uniquement (signature vérifiée, 8 Mo maximum), **redessinées dans un canvas** pour supprimer tout contenu caché. Le SVG est refusé.
 - **Injection vCard** : valeurs échappées (`\ ; ,` et retours à la ligne).
 - **CSV** : à l'export, les cellules qui commencent par `= + - @` sont neutralisées (pas de formule exécutée dans Excel). À l'import, le fichier est limité à 1 Mo et 500 personnes.

@@ -1,6 +1,6 @@
 {
   "name": "card-pro",
-  "version": "4.4.1",
+  "version": "4.5.0",
   "description": "Création de cartes de visite recto / verso avec QR code pour toute une équipe, à partir de modèles personnalisables.",
   "private": true,
   "type": "module",

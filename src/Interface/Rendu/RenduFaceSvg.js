@@ -8,9 +8,9 @@
  */
 
 import { creerSvg } from '../../Utilitaires/Dom.js';
-import { decouperTexte } from '../../Utilitaires/MesureTexte.js';
+import { ajusterTexte, lignesPossibles } from '../../Utilitaires/MesureTexte.js';
 import { cheminForme } from '../../Utilitaires/Formes.js';
-import { POLICES } from '../../Metier/Polices.js';
+import { POLICES, familleCss } from '../../Metier/Polices.js';
 import { TRACES_ICONES } from '../../Metier/IconesCarte.js';
 import { dimensionsModele, FOND_PERDU } from '../../Metier/Formats.js';
 import { valeurChamp, nomComplet, CHAMPS_AFFICHABLES } from '../../Metier/Personne.js';
@@ -117,7 +117,8 @@ function texteElement(element, personne, edition) {
 
 /**
  * Dessine un élément texte : lignes ou lettres empilées, couleur unie ou
- * dégradée, contour, soulignement, fond « étiquette ».
+ * dégradée, contour, soulignement, fond « étiquette ». Un texte trop long
+ * est rétréci pour tenir dans sa zone (centré sur la position prévue).
  * @param {SVGElement} groupe - Groupe parent.
  * @param {object} el - Élément texte.
  * @param {object} ctx - Contexte de rendu.
@@ -127,13 +128,13 @@ function dessinerTexte(groupe, el, ctx) {
   if (!texte) return;
   if (el.fondTexte) creerSvg('rect', { ...rect(el), rx: el.fondArrondi, fill: el.fondCouleur }, groupe);
 
-  const police = POLICES[el.police];
-  const pas = (el.taille * el.interligne) / 100;
-  const lignesMax = Math.max(1, Math.floor((el.hauteur - el.taille) / pas) + 1);
-  const style = { taille: el.taille, police, graisse: el.graisse, italique: el.italique, espacement: el.espacement };
-  const lignes = el.vertical
-    ? Array.from(texte.replace(/\s+/g, '')).slice(0, lignesMax)
-    : decouperTexte(texte, el.largeur, lignesMax, style);
+  const police = familleCss(el.police);
+  const style = { taille: el.taille, police, graisse: el.graisse, italique: el.italique, espacement: el.espacement, interligne: el.interligne };
+  const { lignes, taille } = el.vertical
+    ? { lignes: Array.from(texte.replace(/\s+/g, '')).slice(0, lignesPossibles(el.hauteur, el.taille, el.interligne)), taille: el.taille }
+    : ajusterTexte(texte, el, style);
+  const pas = (taille * el.interligne) / 100;
+  const decalage = (el.taille - taille) / 2; // Texte rétréci : centré sur la ligne prévue.
   const x = { start: el.x, middle: el.x + el.largeur / 2, end: el.x + el.largeur }[el.alignement];
   const couleur = el.typeCouleur === 'degrade'
     ? creerDegrade(ctx.defs, ctx.nouvelIdSvg(), { type: 'degrade', couleur1: el.couleur, couleur2: el.couleur2, angle: el.angleDegrade, boite: el })
@@ -146,9 +147,9 @@ function dessinerTexte(groupe, el, ctx) {
   lignes.forEach((ligne, i) => {
     const element = creerSvg('text', {
       x,
-      y: el.y + el.taille * 0.82 + i * pas,
+      y: el.y + decalage + taille * 0.82 + i * pas,
       'font-family': police,
-      'font-size': el.taille,
+      'font-size': taille,
       'font-weight': el.graisse,
       'font-style': el.italique ? 'italic' : undefined,
       'letter-spacing': el.espacement || undefined,

@@ -190,3 +190,32 @@ test('éditeur : changer plusieurs fois de format ne déforme pas la carte', () 
   }
   assert.equal(JSON.stringify(Edition.elementsFace()), depart);
 });
+
+test('texte trop long : rétréci pour tenir, sinon coupé avec « … »', async () => {
+  const { ajusterTexte } = await import('../src/Utilitaires/MesureTexte.js');
+  const style = { taille: 40, police: 'x', graisse: '700', interligne: 120 };
+  // Hors navigateur, un caractère mesure 0,55 × taille.
+  const court = ajusterTexte('Jean Dupont', { largeur: 400, hauteur: 50 }, style);
+  assert.equal(court.taille, 40);
+  assert.deepEqual(court.lignes, ['Jean Dupont']);
+  const long = ajusterTexte('Jean-Christophe Dupont', { largeur: 400, hauteur: 50 }, style);
+  assert.ok(long.taille < 40 && long.taille >= 20);
+  assert.deepEqual(long.lignes, ['Jean-Christophe Dupont']);
+  assert.ok(22 * long.taille * 0.55 <= 400);
+  const enorme = ajusterTexte('A'.repeat(200), { largeur: 400, hauteur: 50 }, style);
+  assert.equal(enorme.taille, 20);
+  assert.ok(enorme.lignes[0].endsWith('…'));
+});
+
+test('polices : clé inconnue (ancienne « manuscrite ») remplacée par Inter', async () => {
+  const { familleCss, POLICES, OPTIONS_POLICES, FACES_POLICES } = await import('../src/Metier/Polices.js');
+  assert.equal(familleCss('manuscrite'), POLICES.moderne);
+  OPTIONS_POLICES.forEach(([cle]) => {
+    const famille = POLICES[cle].match(/^"([^"]+)"/)[1];
+    assert.ok(FACES_POLICES[famille], `${famille} sans fichiers`);
+  });
+  const { existsSync } = await import('node:fs');
+  Object.values(FACES_POLICES).flat().forEach(([fichier]) => {
+    assert.ok(existsSync(new URL(`../assets/polices/${fichier}.woff`, import.meta.url)), `${fichier}.woff manquant`);
+  });
+});

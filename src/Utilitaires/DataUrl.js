@@ -36,10 +36,19 @@ export function dataUrlVersOctets(dataUrl) {
 export function octetsVersDataUrl(code, octets) {
   const type = TYPES.find((t) => t.code === code);
   if (!type || octets.length < 12 || !type.estDuType(octets)) return '';
+  return `data:${type.mime};base64,${octetsVersBase64(octets)}`;
+}
+
+/**
+ * Encode des octets en Base64 (par tranches, pour les gros fichiers).
+ * @param {Uint8Array} octets - Octets à encoder.
+ * @returns {string} Texte Base64.
+ */
+export function octetsVersBase64(octets) {
   let binaire = '';
   const TRANCHE = 0x8000;
   for (let i = 0; i < octets.length; i += TRANCHE) {
     binaire += String.fromCharCode(...octets.subarray(i, i + TRANCHE));
   }
-  return `data:${type.mime};base64,${btoa(binaire)}`;
+  return btoa(binaire);
 }

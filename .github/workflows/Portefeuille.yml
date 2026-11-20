@@ -62,7 +62,7 @@ jobs:
         run: |
           mkdir -p _site/src/Interface _site/assets
           cp -r portefeuille contact rh _site/
-          cp -r assets/icons assets/styles _site/assets/
+          cp -r assets/icons assets/styles assets/polices _site/assets/
           cp -r src/Metier src/Utilitaires _site/src/
           cp -r src/Interface/Rendu src/Interface/Themes.js src/Interface/Notifications.js _site/src/Interface/
           # Lecteur de QR code pour iPhone : jsQR 1.4.0 (licence Apache 2.0), version figée.

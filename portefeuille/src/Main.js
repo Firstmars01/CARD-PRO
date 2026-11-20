@@ -22,6 +22,7 @@ import { afficherEcranInstallation } from './Interface/EcranInstallation.js';
 import { estInstalle, systeme } from './Utilitaires/Plateforme.js';
 import { estAppliAndroid, fichiersRecus } from './Utilitaires/PontAndroid.js';
 import { activerMisesAJourWeb } from './Utilitaires/MiseAJourWeb.js';
+import { chargerPolices } from '../../src/Utilitaires/ChargementPolices.js';
 
 const CACHE_PARTAGE = 'cardpro-partage';
 
@@ -96,6 +97,8 @@ async function demarrer() {
     return;
   }
 
+  // Polices de la carte : chargées avant tout affichage (rendu identique au PC).
+  await chargerPolices().catch(() => notifier('Polices de la carte non chargées : le texte peut différer du PC.', 'erreur'));
   [['liste', creerVueListe()], ['carte', creerVueCarte()], ['scanner', creerVueScanner()]].forEach(([nom, ecran]) => {
     ecran.element.hidden = true;
     principal.append(ecran.element);

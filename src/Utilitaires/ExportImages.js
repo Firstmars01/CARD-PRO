@@ -1,7 +1,11 @@
 /**
  * ExportImages.js
  * Conversion d'un SVG en texte (fichier .svg) ou en image PNG / JPEG via un canvas.
+ * Les polices intégrées utilisées sont copiées dans le SVG : le fichier et
+ * l'image gardent exactement le rendu de l'écran, sur tous les appareils.
  */
+
+import { cssPolicesPourSvg } from './ChargementPolices.js';
 
 /**
  * Sérialise un SVG en texte, avec une taille en pixels fixée.
@@ -14,6 +18,12 @@ export function svgVersTexte(svg, largeur, hauteur) {
   const copie = svg.cloneNode(true);
   copie.setAttribute('width', String(largeur));
   copie.setAttribute('height', String(hauteur));
+  const css = cssPolicesPourSvg(new XMLSerializer().serializeToString(copie));
+  if (css) {
+    const style = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+    style.textContent = css;
+    copie.prepend(style);
+  }
   return `<?xml version="1.0" encoding="UTF-8"?>\n${new XMLSerializer().serializeToString(copie)}`;
 }
 

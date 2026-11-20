@@ -18,6 +18,7 @@ const TYPES = {
   '.css': 'text/css; charset=utf-8',
   '.svg': 'image/svg+xml',
   '.png': 'image/png',
+  '.woff': 'font/woff',
   '.webmanifest': 'application/manifest+json',
 };
 const FICHIERS_RACINE = ['index.html', 'manifest.webmanifest', 'sw.js'];
